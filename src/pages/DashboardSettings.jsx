@@ -31,6 +31,7 @@ export default function DashboardSettings() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [dashboardItems, setDashboardItems] = useState([]);
+  const [hiddenItems, setHiddenItems] = useState([]);
 
   const allMenuItems = {
     new_anamnesis: {
@@ -150,15 +151,14 @@ export default function DashboardSettings() {
       const validItems = currentUser.dashboard_items.filter(item => 
         availableItems.includes(item)
       );
-      setDashboardItems(validItems.map(id => ({
-        ...allMenuItems[id],
-        visible: true
-      })));
+      setDashboardItems(validItems.map(id => allMenuItems[id]));
+      
+      // Itens ocultos são aqueles disponíveis mas não salvos
+      const hidden = availableItems.filter(id => !validItems.includes(id));
+      setHiddenItems(hidden.map(id => allMenuItems[id]));
     } else {
-      setDashboardItems(availableItems.map(id => ({
-        ...allMenuItems[id],
-        visible: true
-      })));
+      setDashboardItems(availableItems.map(id => allMenuItems[id]));
+      setHiddenItems([]);
     }
     
     setIsLoading(false);
@@ -181,19 +181,25 @@ export default function DashboardSettings() {
     setDashboardItems(items);
   };
 
-  const toggleVisibility = (itemId) => {
-    setDashboardItems(items =>
-      items.map(item =>
-        item.id === itemId ? { ...item, visible: !item.visible } : item
-      )
-    );
+  const hideItem = (itemId) => {
+    const item = dashboardItems.find(i => i.id === itemId);
+    if (item) {
+      setDashboardItems(items => items.filter(i => i.id !== itemId));
+      setHiddenItems(items => [...items, item]);
+    }
+  };
+
+  const showItem = (itemId) => {
+    const item = hiddenItems.find(i => i.id === itemId);
+    if (item) {
+      setHiddenItems(items => items.filter(i => i.id !== itemId));
+      setDashboardItems(items => [...items, item]);
+    }
   };
 
   const handleSave = async () => {
     setIsSaving(true);
-    const visibleItems = dashboardItems
-      .filter(item => item.visible)
-      .map(item => item.id);
+    const visibleItems = dashboardItems.map(item => item.id);
     
     await User.updateMyUserData({ dashboard_items: visibleItems });
     setIsSaving(false);
@@ -204,10 +210,8 @@ export default function DashboardSettings() {
     const availableItems = Object.keys(allMenuItems).filter(key => 
       hasPermission(allMenuItems[key])
     );
-    setDashboardItems(availableItems.map(id => ({
-      ...allMenuItems[id],
-      visible: true
-    })));
+    setDashboardItems(availableItems.map(id => allMenuItems[id]));
+    setHiddenItems([]);
   };
 
   if (isLoading) {
@@ -244,10 +248,10 @@ export default function DashboardSettings() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Settings className="w-5 h-5" />
-                Itens do Dashboard
+                Itens Visíveis
               </CardTitle>
               <p className="text-sm text-gray-500">
-                Arraste para reordenar • Clique no olho para mostrar/ocultar
+                Arraste para reordenar • Clique no ícone de olho para ocultar
               </p>
             </CardHeader>
             <CardContent>
@@ -268,9 +272,7 @@ export default function DashboardSettings() {
                               className={`flex items-center gap-4 p-4 bg-white rounded-lg border-2 transition-all ${
                                 snapshot.isDragging
                                   ? 'border-blue-400 shadow-lg'
-                                  : item.visible
-                                  ? 'border-gray-200 hover:border-gray-300'
-                                  : 'border-gray-100 opacity-50'
+                                  : 'border-gray-200 hover:border-gray-300'
                               }`}
                             >
                               <div
@@ -289,24 +291,14 @@ export default function DashboardSettings() {
                                 <p className="text-sm text-gray-500 truncate">{item.description}</p>
                               </div>
 
-                              <Badge
-                                variant="outline"
-                                className={item.visible ? "bg-green-50 text-green-700 border-green-200" : ""}
-                              >
-                                {item.visible ? "Visível" : "Oculto"}
-                              </Badge>
-
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                onClick={() => toggleVisibility(item.id)}
+                                onClick={() => hideItem(item.id)}
                                 className="flex-shrink-0"
+                                title="Ocultar item"
                               >
-                                {item.visible ? (
-                                  <Eye className="w-5 h-5 text-green-600" />
-                                ) : (
-                                  <EyeOff className="w-5 h-5 text-gray-400" />
-                                )}
+                                <EyeOff className="w-5 h-5 text-gray-400 hover:text-gray-600" />
                               </Button>
                             </div>
                           )}
@@ -319,6 +311,49 @@ export default function DashboardSettings() {
               </DragDropContext>
             </CardContent>
           </Card>
+
+          {hiddenItems.length > 0 && (
+            <Card className="shadow-lg border-none mb-6">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-gray-600">
+                  <EyeOff className="w-5 h-5" />
+                  Itens Ocultos
+                </CardTitle>
+                <p className="text-sm text-gray-500">
+                  Clique no ícone de olho para tornar visível
+                </p>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {hiddenItems.map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg border-2 border-gray-100"
+                    >
+                      <div className={`w-12 h-12 bg-gradient-to-br ${item.color} rounded-xl flex items-center justify-center flex-shrink-0 opacity-50`}>
+                        <item.icon className="w-6 h-6 text-white" />
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-gray-600">{item.title}</h3>
+                        <p className="text-sm text-gray-400 truncate">{item.description}</p>
+                      </div>
+
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => showItem(item.id)}
+                        className="flex-shrink-0"
+                        title="Mostrar item"
+                      >
+                        <Eye className="w-5 h-5 text-green-600 hover:text-green-700" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           <div className="flex gap-3 justify-between">
             <Button

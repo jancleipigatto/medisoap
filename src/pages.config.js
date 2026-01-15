@@ -6,17 +6,17 @@ import ExameTemplates from './pages/ExameTemplates';
 import History from './pages/History';
 import Home from './pages/Home';
 import NewAnamnesis from './pages/NewAnamnesis';
+import NovaReceita from './pages/NovaReceita';
+import NovoAtestado from './pages/NovoAtestado';
+import NovoEncaminhamento from './pages/NovoEncaminhamento';
+import NovoExame from './pages/NovoExame';
 import Patients from './pages/Patients';
 import ProfileManagement from './pages/ProfileManagement';
+import ReceitaTemplates from './pages/ReceitaTemplates';
 import Templates from './pages/Templates';
 import Tools from './pages/Tools';
 import Trash from './pages/Trash';
 import UserManagement from './pages/UserManagement';
-import NovoAtestado from './pages/NovoAtestado';
-import NovoExame from './pages/NovoExame';
-import NovoEncaminhamento from './pages/NovoEncaminhamento';
-import NovaReceita from './pages/NovaReceita';
-import ReceitaTemplates from './pages/ReceitaTemplates';
 import __Layout from './Layout.jsx';
 
 
@@ -29,17 +29,17 @@ export const PAGES = {
     "History": History,
     "Home": Home,
     "NewAnamnesis": NewAnamnesis,
+    "NovaReceita": NovaReceita,
+    "NovoAtestado": NovoAtestado,
+    "NovoEncaminhamento": NovoEncaminhamento,
+    "NovoExame": NovoExame,
     "Patients": Patients,
     "ProfileManagement": ProfileManagement,
+    "ReceitaTemplates": ReceitaTemplates,
     "Templates": Templates,
     "Tools": Tools,
     "Trash": Trash,
     "UserManagement": UserManagement,
-    "NovoAtestado": NovoAtestado,
-    "NovoExame": NovoExame,
-    "NovoEncaminhamento": NovoEncaminhamento,
-    "NovaReceita": NovaReceita,
-    "ReceitaTemplates": ReceitaTemplates,
 }
 
 export const pagesConfig = {

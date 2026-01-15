@@ -1,12 +1,13 @@
-
 import React, { useState, useEffect } from "react";
 import { Patient } from "@/entities/Patient";
+import { useNavigate } from "react-router-dom";
+import { createPageUrl } from "@/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, User, Phone, Mail, MapPin, Edit, ExternalLink } from "lucide-react";
+import { Plus, User, Phone, Mail, MapPin, Edit, ExternalLink, ArrowLeft } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -15,6 +16,7 @@ import {
 } from "@/components/ui/dialog";
 
 export default function PatientsContent() {
+  const navigate = useNavigate();
   const [patients, setPatients] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingPatient, setEditingPatient] = useState(null);
@@ -172,14 +174,25 @@ export default function PatientsContent() {
   return (
     <div className="p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+        <div className="flex items-center gap-4 mb-6">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => navigate(createPageUrl("Home"))}
+            className="shadow-sm"
+          >
+            <ArrowLeft className="w-4 h-4" />
+          </Button>
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Pacientes</h1>
             <p className="text-gray-600 mt-1">Gerencie o cadastro dos seus pacientes</p>
           </div>
+        </div>
+
+        <div className="flex justify-end mb-6">
           <Button
-            onClick={() => { setShowForm(true); setEditingPatient(null); }} // Clear editingPatient when adding new
-            className="w-full md:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg"
+            onClick={() => { setShowForm(true); setEditingPatient(null); }}
+            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg"
           >
             <Plus className="w-5 h-5 mr-2" />
             Novo Paciente

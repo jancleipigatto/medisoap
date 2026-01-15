@@ -110,7 +110,7 @@ export default function ReceitaTemplates() {
     <PermissionGuard permission="can_access_templates">
       <div className="p-4 md:p-8 bg-gradient-to-br from-blue-50 to-indigo-50 min-h-screen">
         <div className="max-w-6xl mx-auto">
-          <div className="flex items-center gap-4 mb-8">
+          <div className="flex items-center gap-4 mb-6">
             <Button
               variant="outline"
               size="icon"
@@ -120,12 +120,12 @@ export default function ReceitaTemplates() {
               <ArrowLeft className="w-4 h-4" />
             </Button>
             <div className="flex-1">
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-                <Pill className="w-8 h-8" />
-                Modelos de Receita
-              </h1>
+              <h1 className="text-3xl font-bold text-gray-900">Modelos de Receita</h1>
               <p className="text-gray-600 mt-1">Gerencie seus modelos de receita médica</p>
             </div>
+          </div>
+
+          <div className="flex justify-end mb-6">
             <Button
               onClick={() => setShowForm(true)}
               className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
