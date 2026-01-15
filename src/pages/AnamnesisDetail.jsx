@@ -240,7 +240,7 @@ ${anamnesis.plano || "Não informado"}`;
         </div>
       )}
 
-      <div className="p-4 md:p-8 bg-gradient-to-br from-blue-50 to-indigo-50 min-h-screen">
+      <div className="p-4 md:p-8 bg-gradient-to-br from-blue-50 to-indigo-50 min-h-screen" style={{ paddingRight: 'calc(3cm + 2rem)' }}>
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center gap-4 mb-6">
             <Button
