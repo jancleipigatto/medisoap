@@ -11,6 +11,7 @@ import Trash from './pages/Trash';
 import History from './pages/History';
 import DashboardSettings from './pages/DashboardSettings';
 import ProfileManagement from './pages/ProfileManagement';
+import Tools from './pages/Tools';
 import __Layout from './Layout.jsx';
 
 
@@ -28,6 +29,7 @@ export const PAGES = {
     "History": History,
     "DashboardSettings": DashboardSettings,
     "ProfileManagement": ProfileManagement,
+    "Tools": Tools,
 }
 
 export const pagesConfig = {

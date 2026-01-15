@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { User } from "@/entities/User";
 import { Link } from "react-router-dom";
@@ -50,6 +49,14 @@ export default function Home() {
       icon: FileText,
       url: createPageUrl("History"),
       color: "from-green-500 to-emerald-600",
+      permission: "can_create_anamnesis"
+    },
+    tools: {
+      title: "Ferramentas",
+      description: "Calculadoras médicas",
+      icon: Settings,
+      url: createPageUrl("Tools"),
+      color: "from-cyan-500 to-blue-600",
       permission: "can_create_anamnesis"
     },
     patients: {

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { User } from "@/entities/User";
-import { Stethoscope, Home, Plus, Users, FileText, LayoutTemplate, Shield, ClipboardList, FileCheck, Send, Trash2, PanelLeftClose, PanelLeft } from "lucide-react";
+import { Stethoscope, Home, Plus, Users, FileText, LayoutTemplate, Shield, ClipboardList, FileCheck, Send, Trash2, PanelLeftClose, PanelLeft, Calculator } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -53,6 +53,12 @@ export default function Layout({ children, currentPageName }) {
       title: "Histórico",
       url: createPageUrl("History"),
       icon: FileText,
+      permission: "can_create_anamnesis"
+    },
+    {
+      title: "Ferramentas",
+      url: createPageUrl("Tools"),
+      icon: Calculator,
       permission: "can_create_anamnesis"
     },
     {
