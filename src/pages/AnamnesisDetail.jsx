@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Calendar, FileText, ClipboardList, FileCheck, Send, Copy, Check, Printer, Trash2 } from "lucide-react";
+import { ArrowLeft, Calendar, FileText, ClipboardList, FileCheck, Send, Copy, Check, Printer, Trash2, Pill, Save, Edit2 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -39,17 +39,21 @@ export default function AnamnesisDetail() {
   const [editData, setEditData] = useState({
     atestado: "",
     exames_solicitados: "",
-    encaminhamento: ""
+    encaminhamento: "",
+    receita: ""
   });
+  const [savedDocs, setSavedDocs] = useState([]);
   const [copied, setCopied] = useState({
     soap: false,
     atestado: false,
     exames: false,
-    encaminhamento: false
+    encaminhamento: false,
+    receita: false
   });
   const [atestadoTemplates, setAtestadoTemplates] = useState([]);
   const [exameTemplates, setExameTemplates] = useState([]);
   const [encaminhamentoTemplates, setEncaminhamentoTemplates] = useState([]);
+  const [receitaTemplates, setReceitaTemplates] = useState([]);
   const [showPrintPreview, setShowPrintPreview] = useState(null); // { tipo: string, conteudo: string }
   const [selectedTemplateData, setSelectedTemplateData] = useState({
     cabecalho: "",
@@ -79,7 +83,8 @@ export default function AnamnesisDetail() {
         setEditData({
           atestado: found.atestado || "",
           exames_solicitados: found.exames_solicitados || "",
-          encaminhamento: found.encaminhamento || ""
+          encaminhamento: found.encaminhamento || "",
+          receita: found.receita || ""
         });
       } else {
         navigate(createPageUrl("Home"));
@@ -89,14 +94,23 @@ export default function AnamnesisDetail() {
       const { AtestadoTemplate } = await import("@/entities/AtestadoTemplate");
       const { ExameTemplate } = await import("@/entities/ExameTemplate");
       const { EncaminhamentoTemplate } = await import("@/entities/EncaminhamentoTemplate");
+      const { ReceitaTemplate } = await import("@/entities/ReceitaTemplate");
+      const { MedicalDocument } = await import("@/entities/MedicalDocument");
       
       const atestados = await AtestadoTemplate.list("-created_date");
       const exames = await ExameTemplate.list("-created_date");
       const encaminhamentos = await EncaminhamentoTemplate.list("-created_date");
+      const receitas = await ReceitaTemplate.list("-created_date");
       
       setAtestadoTemplates(atestados);
       setExameTemplates(exames);
       setEncaminhamentoTemplates(encaminhamentos);
+      setReceitaTemplates(receitas);
+      
+      // Carregar documentos médicos salvos
+      const allDocs = await MedicalDocument.list("-created_date");
+      const myDocs = allDocs.filter(d => d.patient_name === found.patient_name && d.data_consulta === found.data_consulta);
+      setSavedDocs(myDocs);
       
       setIsLoading(false);
     };
@@ -109,6 +123,45 @@ export default function AnamnesisDetail() {
     await Anamnesis.update(anamnesis.id, editData);
     setAnamnesis({...anamnesis, ...editData});
     setIsSaving(false);
+  };
+
+  const saveDocument = async (tipo, conteudo, horario = "") => {
+    const { MedicalDocument } = await import("@/entities/MedicalDocument");
+    
+    const docData = {
+      tipo,
+      patient_name: anamnesis.patient_name,
+      data_consulta: anamnesis.data_consulta,
+      horario_consulta: horario,
+      conteudo,
+      cabecalho: selectedTemplateData.cabecalho,
+      rodape: selectedTemplateData.rodape,
+      logo_url: selectedTemplateData.logo_url
+    };
+    
+    const created = await MedicalDocument.create(docData);
+    setSavedDocs([...savedDocs, created]);
+    alert(`${tipo.charAt(0).toUpperCase() + tipo.slice(1)} salvo com sucesso!`);
+  };
+
+  const deleteDocument = async (docId) => {
+    if (!confirm("Tem certeza que deseja excluir este documento?")) return;
+    
+    const { MedicalDocument } = await import("@/entities/MedicalDocument");
+    await MedicalDocument.delete(docId);
+    setSavedDocs(savedDocs.filter(d => d.id !== docId));
+  };
+
+  const editDocument = (doc) => {
+    const field = doc.tipo === 'atestado' ? 'atestado' : 
+                  doc.tipo === 'exame' ? 'exames_solicitados' :
+                  doc.tipo === 'encaminhamento' ? 'encaminhamento' : 'receita';
+    setEditData({...editData, [field]: doc.conteudo});
+    setSelectedTemplateData({
+      cabecalho: doc.cabecalho || "",
+      rodape: doc.rodape || "",
+      logo_url: doc.logo_url || ""
+    });
   };
 
   const handleDelete = async () => {
@@ -389,6 +442,33 @@ className="text-red-600 hover:text-red-700 hover:bg-red-50"
             </TabsContent>
 
             <TabsContent value="documentos" className="space-y-6">
+              {savedDocs.filter(d => d.tipo === 'atestado').map(doc => (
+                <Card key={doc.id} className="shadow-md border-l-4 border-l-blue-500 bg-blue-50">
+                  <CardContent className="p-4">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <p className="font-semibold text-sm">Atestado Salvo</p>
+                        <p className="text-xs text-gray-600">
+                          {doc.data_consulta} {doc.horario_consulta && `às ${doc.horario_consulta}`}
+                        </p>
+                      </div>
+                      <div className="flex gap-1">
+                        <Button size="sm" variant="ghost" onClick={() => editDocument(doc)}>
+                          <Edit2 className="w-3 h-3" />
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => copyText(doc.conteudo, 'atestado')}>
+                          <Copy className="w-3 h-3" />
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => deleteDocument(doc.id)} className="text-red-600">
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    </div>
+                    <p className="text-sm line-clamp-2 text-gray-700">{doc.conteudo}</p>
+                  </CardContent>
+                </Card>
+              ))}
+              
               <Card className="shadow-lg border-none">
                 <CardHeader>
                   <div className="flex items-center justify-between">
@@ -443,15 +523,67 @@ className="text-red-600 hover:text-red-700 hover:bg-red-50"
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label>Data da Consulta *</Label>
+                      <Input type="date" value={anamnesis.data_consulta} readOnly className="bg-gray-50" />
+                    </div>
+                    <div>
+                      <Label>Horário</Label>
+                      <Input 
+                        type="time" 
+                        id="horario-atestado"
+                        placeholder="--:--"
+                      />
+                    </div>
+                  </div>
                   <Textarea
                     value={editData.atestado}
                     onChange={(e) => setEditData({...editData, atestado: e.target.value})}
                     placeholder="Digite o texto do atestado médico aqui..."
                     className="min-h-[150px]"
                   />
+                  <Button
+                    onClick={() => {
+                      const horario = document.getElementById('horario-atestado').value;
+                      saveDocument('atestado', editData.atestado, horario);
+                    }}
+                    disabled={!editData.atestado.trim()}
+                    className="w-full bg-green-600 hover:bg-green-700"
+                  >
+                    <Save className="w-4 h-4 mr-2" />
+                    Salvar Atestado
+                  </Button>
                 </CardContent>
               </Card>
+
+              {savedDocs.filter(d => d.tipo === 'exame').map(doc => (
+                <Card key={doc.id} className="shadow-md border-l-4 border-l-purple-500 bg-purple-50">
+                  <CardContent className="p-4">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <p className="font-semibold text-sm">Exame Salvo</p>
+                        <p className="text-xs text-gray-600">
+                          {doc.data_consulta} {doc.horario_consulta && `às ${doc.horario_consulta}`}
+                        </p>
+                      </div>
+                      <div className="flex gap-1">
+                        <Button size="sm" variant="ghost" onClick={() => editDocument(doc)}>
+                          <Edit2 className="w-3 h-3" />
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => copyText(doc.conteudo, 'exames')}>
+                          <Copy className="w-3 h-3" />
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => deleteDocument(doc.id)} className="text-red-600">
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    </div>
+                    <p className="text-sm line-clamp-2 text-gray-700">{doc.conteudo}</p>
+                  </CardContent>
+                </Card>
+              ))}
 
               <Card className="shadow-lg border-none">
                 <CardHeader>
@@ -507,15 +639,67 @@ className="text-red-600 hover:text-red-700 hover:bg-red-50"
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label>Data da Consulta *</Label>
+                      <Input type="date" value={anamnesis.data_consulta} readOnly className="bg-gray-50" />
+                    </div>
+                    <div>
+                      <Label>Horário</Label>
+                      <Input 
+                        type="time" 
+                        id="horario-exame"
+                        placeholder="--:--"
+                      />
+                    </div>
+                  </div>
                   <Textarea
                     value={editData.exames_solicitados}
                     onChange={(e) => setEditData({...editData, exames_solicitados: e.target.value})}
                     placeholder="Digite os exames laboratoriais e de imagem solicitados..."
                     className="min-h-[150px]"
                   />
+                  <Button
+                    onClick={() => {
+                      const horario = document.getElementById('horario-exame').value;
+                      saveDocument('exame', editData.exames_solicitados, horario);
+                    }}
+                    disabled={!editData.exames_solicitados.trim()}
+                    className="w-full bg-green-600 hover:bg-green-700"
+                  >
+                    <Save className="w-4 h-4 mr-2" />
+                    Salvar Exame
+                  </Button>
                 </CardContent>
               </Card>
+
+              {savedDocs.filter(d => d.tipo === 'encaminhamento').map(doc => (
+                <Card key={doc.id} className="shadow-md border-l-4 border-l-green-500 bg-green-50">
+                  <CardContent className="p-4">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <p className="font-semibold text-sm">Encaminhamento Salvo</p>
+                        <p className="text-xs text-gray-600">
+                          {doc.data_consulta} {doc.horario_consulta && `às ${doc.horario_consulta}`}
+                        </p>
+                      </div>
+                      <div className="flex gap-1">
+                        <Button size="sm" variant="ghost" onClick={() => editDocument(doc)}>
+                          <Edit2 className="w-3 h-3" />
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => copyText(doc.conteudo, 'encaminhamento')}>
+                          <Copy className="w-3 h-3" />
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => deleteDocument(doc.id)} className="text-red-600">
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    </div>
+                    <p className="text-sm line-clamp-2 text-gray-700">{doc.conteudo}</p>
+                  </CardContent>
+                </Card>
+              ))}
 
               <Card className="shadow-lg border-none">
                 <CardHeader>
@@ -571,23 +755,156 @@ className="text-red-600 hover:text-red-700 hover:bg-red-50"
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label>Data da Consulta *</Label>
+                      <Input type="date" value={anamnesis.data_consulta} readOnly className="bg-gray-50" />
+                    </div>
+                    <div>
+                      <Label>Horário</Label>
+                      <Input 
+                        type="time" 
+                        id="horario-encaminhamento"
+                        placeholder="--:--"
+                      />
+                    </div>
+                  </div>
                   <Textarea
                     value={editData.encaminhamento}
                     onChange={(e) => setEditData({...editData, encaminhamento: e.target.value})}
                     placeholder="Digite o encaminhamento para especialista..."
                     className="min-h-[150px]"
                   />
+                  <Button
+                    onClick={() => {
+                      const horario = document.getElementById('horario-encaminhamento').value;
+                      saveDocument('encaminhamento', editData.encaminhamento, horario);
+                    }}
+                    disabled={!editData.encaminhamento.trim()}
+                    className="w-full bg-green-600 hover:bg-green-700"
+                  >
+                    <Save className="w-4 h-4 mr-2" />
+                    Salvar Encaminhamento
+                  </Button>
                 </CardContent>
               </Card>
 
-              <Button
-                onClick={handleSave}
-                disabled={isSaving}
-                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
-              >
-                {isSaving ? "Salvando..." : "Salvar Documentos"}
-              </Button>
+              {savedDocs.filter(d => d.tipo === 'receita').map(doc => (
+                <Card key={doc.id} className="shadow-md border-l-4 border-l-pink-500 bg-pink-50">
+                  <CardContent className="p-4">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <p className="font-semibold text-sm">Receita Salva</p>
+                        <p className="text-xs text-gray-600">
+                          {doc.data_consulta} {doc.horario_consulta && `às ${doc.horario_consulta}`}
+                        </p>
+                      </div>
+                      <div className="flex gap-1">
+                        <Button size="sm" variant="ghost" onClick={() => editDocument(doc)}>
+                          <Edit2 className="w-3 h-3" />
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => copyText(doc.conteudo, 'receita')}>
+                          <Copy className="w-3 h-3" />
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => deleteDocument(doc.id)} className="text-red-600">
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    </div>
+                    <p className="text-sm line-clamp-2 text-gray-700">{doc.conteudo}</p>
+                  </CardContent>
+                </Card>
+              ))}
+
+              <Card className="shadow-lg border-none">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center gap-2">
+                      <Pill className="w-5 h-5 text-pink-600" />
+                      Receita Médica
+                    </CardTitle>
+                    <div className="flex gap-2">
+                      {receitaTemplates.length > 0 && (
+                        <Select onValueChange={(templateId) => loadTemplateForPrint(receitaTemplates, templateId, 'receita')}>
+                          <SelectTrigger className="w-[180px]">
+                            <SelectValue placeholder="Carregar modelo" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {receitaTemplates.map(t => (
+                              <SelectItem key={t.id} value={t.id}>{t.nome}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                      {editData.receita && (
+                        <>
+                          <Button
+                            onClick={() => handlePrint("Receita Médica", editData.receita)}
+                            variant="outline"
+                            size="sm"
+                            className="gap-2"
+                          >
+                            <Printer className="w-4 h-4" />
+                            Imprimir
+                          </Button>
+                          <Button
+                            onClick={() => copyText(editData.receita, 'receita')}
+                            variant="outline"
+                            size="sm"
+                            className="gap-2"
+                          >
+                            {copied.receita ? (
+                              <>
+                                <Check className="w-4 h-4 text-green-600" />
+                                Copiado!
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="w-4 h-4" />
+                                Copiar
+                              </>
+                            )}
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label>Data da Consulta *</Label>
+                      <Input type="date" value={anamnesis.data_consulta} readOnly className="bg-gray-50" />
+                    </div>
+                    <div>
+                      <Label>Horário</Label>
+                      <Input 
+                        type="time" 
+                        id="horario-receita"
+                        placeholder="--:--"
+                      />
+                    </div>
+                  </div>
+                  <Textarea
+                    value={editData.receita}
+                    onChange={(e) => setEditData({...editData, receita: e.target.value})}
+                    placeholder="Digite a receita médica..."
+                    className="min-h-[150px]"
+                  />
+                  <Button
+                    onClick={() => {
+                      const horario = document.getElementById('horario-receita').value;
+                      saveDocument('receita', editData.receita, horario);
+                    }}
+                    disabled={!editData.receita.trim()}
+                    className="w-full bg-green-600 hover:bg-green-700"
+                  >
+                    <Save className="w-4 h-4 mr-2" />
+                    Salvar Receita
+                  </Button>
+                </CardContent>
+              </Card>
             </TabsContent>
           </Tabs>
         </div>

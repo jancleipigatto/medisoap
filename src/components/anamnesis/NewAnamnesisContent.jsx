@@ -214,12 +214,15 @@ ${soapData.plano}`;
   };
 
   useEffect(() => {
-    // Verificar se estamos continuando um atendimento
+    // Verificar se estamos continuando um atendimento ou copiando
     const urlParams = new URLSearchParams(window.location.search);
     const continueId = urlParams.get('continue');
+    const copyText = urlParams.get('copyText');
     
     if (continueId) {
       loadExistingAnamnesis(continueId);
+    } else if (copyText) {
+      setTextoOriginal(decodeURIComponent(copyText));
     }
   }, []);
 

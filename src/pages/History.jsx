@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Search, Calendar, User as UserIcon, ArrowLeft, PlayCircle } from "lucide-react";
+import { FileText, Search, Calendar, User as UserIcon, ArrowLeft, Copy as CopyIcon } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -155,15 +155,43 @@ export default function History() {
                           <Badge className="bg-green-100 text-green-700 border-green-200">
                             SOAP
                           </Badge>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => navigate(createPageUrl(`NewAnamnesis?continue=${anamnesis.id}`))}
-                            className="gap-2"
-                          >
-                            <PlayCircle className="w-4 h-4" />
-                            Continuar
-                          </Button>
+                          {(anamnesis.subjetivo || anamnesis.objetivo || anamnesis.avaliacao || anamnesis.plano) ? (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                const soapText = `ANAMNESE - FORMATO SOAP
+
+S - SUBJETIVO:
+${anamnesis.subjetivo || "Não informado"}
+
+O - OBJETIVO:
+${anamnesis.objetivo || "Não informado"}
+
+A - AVALIAÇÃO:
+${anamnesis.avaliacao || "Não informado"}
+
+P - PLANO:
+${anamnesis.plano || "Não informado"}`;
+                                navigate(createPageUrl(`NewAnamnesis?copyText=${encodeURIComponent(soapText)}`));
+                              }}
+                              className="gap-2"
+                            >
+                              <CopyIcon className="w-4 h-4" />
+                              Copiar Atendimento
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => navigate(createPageUrl(`NewAnamnesis?continue=${anamnesis.id}`))}
+                              className="gap-2"
+                            >
+                              <CopyIcon className="w-4 h-4" />
+                              Continuar
+                            </Button>
+                          )}
                         </div>
                       </div>
                     </CardHeader>
