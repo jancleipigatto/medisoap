@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { AtestadoTemplate } from "@/entities/AtestadoTemplate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,7 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, ClipboardList, Edit, Trash2 } from "lucide-react";
+import { Plus, ClipboardList, Edit, Trash2, ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { createPageUrl } from "@/utils";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -28,6 +29,7 @@ import PermissionGuard from "../components/PermissionGuard";
 import { UploadFile } from "@/integrations/Core"; // Added UploadFile import
 
 export default function AtestadoTemplates() {
+  const navigate = useNavigate();
   const [templates, setTemplates] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState(null);
@@ -122,14 +124,25 @@ export default function AtestadoTemplates() {
     <PermissionGuard permission="can_access_templates">
       <div className="p-4 md:p-8">
         <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+          <div className="flex items-center gap-4 mb-6">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => navigate(createPageUrl("Home"))}
+              className="shadow-sm"
+            >
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Modelos de Atestado</h1>
               <p className="text-gray-600 mt-1">Crie modelos reutilizáveis de atestados médicos</p>
             </div>
+          </div>
+
+          <div className="flex justify-end mb-6">
             <Button
               onClick={() => setShowForm(true)}
-              className="w-full md:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg"
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg"
             >
               <Plus className="w-5 h-5 mr-2" />
               Novo Modelo
