@@ -31,6 +31,8 @@ export default function NewAnamnesisContent() {
   const [isSaving, setIsSaving] = useState(false);
   const [copied, setCopied] = useState(false);
   const [activeTool, setActiveTool] = useState(null);
+  const [currentAnamnesisId, setCurrentAnamnesisId] = useState(null);
+  const [isFinalized, setIsFinalized] = useState(false);
 
   useEffect(() => {
     loadTemplates();
@@ -137,22 +139,34 @@ ${soapData.plano}`;
 
     setIsSaving(true);
 
-    await Anamnesis.create({
-      patient_id: selectedPatient.id,
-      patient_name: selectedPatient.nome,
-      data_consulta: dataConsulta,
-      texto_original: textoOriginal,
-      subjetivo: "",
-      objetivo: "",
-      avaliacao: "",
-      plano: ""
-    });
+    if (currentAnamnesisId) {
+      // Atualizar anamnese existente
+      await Anamnesis.update(currentAnamnesisId, {
+        patient_id: selectedPatient.id,
+        patient_name: selectedPatient.nome,
+        data_consulta: dataConsulta,
+        texto_original: textoOriginal
+      });
+    } else {
+      // Criar nova anamnese
+      const created = await Anamnesis.create({
+        patient_id: selectedPatient.id,
+        patient_name: selectedPatient.nome,
+        data_consulta: dataConsulta,
+        texto_original: textoOriginal,
+        subjetivo: "",
+        objetivo: "",
+        avaliacao: "",
+        plano: ""
+      });
+      setCurrentAnamnesisId(created.id);
+    }
 
     setIsSaving(false);
-    navigate(createPageUrl("Home"));
+    alert("Anamnese salva com sucesso!");
   };
 
-  const saveAnamnesis = async () => {
+  const finalizeAnamnesis = async () => {
     if (!selectedPatient) {
       alert("Por favor, selecione um paciente");
       return;
@@ -173,10 +187,21 @@ ${soapData.plano}`;
       ...soapData
     };
 
-    const created = await Anamnesis.create(anamnesisData);
+    if (currentAnamnesisId) {
+      await Anamnesis.update(currentAnamnesisId, anamnesisData);
+    } else {
+      const created = await Anamnesis.create(anamnesisData);
+      setCurrentAnamnesisId(created.id);
+    }
 
     setIsSaving(false);
-    navigate(createPageUrl(`AnamnesisDetail?id=${created.id}`));
+    setIsFinalized(true);
+  };
+
+  const addDetails = () => {
+    if (currentAnamnesisId) {
+      navigate(createPageUrl(`AnamnesisDetail?id=${currentAnamnesisId}`));
+    }
   };
 
   const handleToolSave = (toolResult) => {
@@ -186,6 +211,37 @@ ${soapData.plano}`;
     
     // Fechar ferramenta
     setActiveTool(null);
+  };
+
+  useEffect(() => {
+    // Verificar se estamos continuando um atendimento
+    const urlParams = new URLSearchParams(window.location.search);
+    const continueId = urlParams.get('continue');
+    
+    if (continueId) {
+      loadExistingAnamnesis(continueId);
+    }
+  }, []);
+
+  const loadExistingAnamnesis = async (id) => {
+    const data = await Anamnesis.list();
+    const anamnesis = data.find(a => a.id === id);
+    
+    if (anamnesis) {
+      setCurrentAnamnesisId(id);
+      setSelectedPatient({ id: anamnesis.patient_id, nome: anamnesis.patient_name });
+      setDataConsulta(anamnesis.data_consulta);
+      setTextoOriginal(anamnesis.texto_original || "");
+      
+      if (anamnesis.subjetivo || anamnesis.objetivo || anamnesis.avaliacao || anamnesis.plano) {
+        setSoapData({
+          subjetivo: anamnesis.subjetivo || "",
+          objetivo: anamnesis.objetivo || "",
+          avaliacao: anamnesis.avaliacao || "",
+          plano: anamnesis.plano || ""
+        });
+      }
+    }
   };
 
   return (
@@ -362,7 +418,7 @@ ${soapData.plano}`;
                   <div className="flex items-center justify-between">
                     <CardTitle className="flex items-center gap-2">
                       <FileText className="w-5 h-5 text-orange-600" />
-                      Texto Formatado SOAP
+                      Texto Convertido para Modelo
                     </CardTitle>
                     <Button
                       onClick={copySOAPText}
@@ -387,7 +443,33 @@ ${soapData.plano}`;
                 <CardContent>
                   <Textarea
                     value={generateSOAPText()}
-                    readOnly
+                    onChange={(e) => {
+                      const lines = e.target.value.split('\n');
+                      const sections = {
+                        subjetivo: [],
+                        objetivo: [],
+                        avaliacao: [],
+                        plano: []
+                      };
+                      let currentSection = null;
+                      
+                      lines.forEach(line => {
+                        if (line.includes('S - SUBJETIVO:')) currentSection = 'subjetivo';
+                        else if (line.includes('O - OBJETIVO:')) currentSection = 'objetivo';
+                        else if (line.includes('A - AVALIAÇÃO:')) currentSection = 'avaliacao';
+                        else if (line.includes('P - PLANO:')) currentSection = 'plano';
+                        else if (currentSection && line.trim()) {
+                          sections[currentSection].push(line);
+                        }
+                      });
+                      
+                      setSoapData({
+                        subjetivo: sections.subjetivo.join('\n'),
+                        objetivo: sections.objetivo.join('\n'),
+                        avaliacao: sections.avaliacao.join('\n'),
+                        plano: sections.plano.join('\n')
+                      });
+                    }}
                     className="min-h-[300px] font-mono text-sm bg-white"
                   />
                   <Alert className="mt-4 bg-blue-50 border-blue-200">
@@ -446,26 +528,29 @@ ${soapData.plano}`;
                     />
                   </div>
 
-                  <Alert className="bg-blue-50 border-blue-200">
-                    <AlertDescription>
-                      Revise os campos acima e faça ajustes se necessário antes de salvar.
-                    </AlertDescription>
-                  </Alert>
-
                   <Button
-                    onClick={saveAnamnesis}
-                    disabled={isSaving}
-                    className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                    onClick={finalizeAnamnesis}
+                    disabled={isSaving || isFinalized}
+                    className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700"
                   >
                     {isSaving ? (
                       <>
                         <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                        Salvando...
+                        Finalizando...
                       </>
                     ) : (
-                      "Salvar e Adicionar Detalhes"
+                      "Finalizar Atendimento"
                     )}
                   </Button>
+
+                  {isFinalized && (
+                    <Button
+                      onClick={addDetails}
+                      className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                    >
+                      Adicionar Detalhes
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
             </>
