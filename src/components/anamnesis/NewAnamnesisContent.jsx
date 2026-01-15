@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Anamnesis } from "@/entities/Anamnesis";
 // This import is kept for entity definition, but actual loading will be in PatientSelector
@@ -15,6 +14,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowLeft, Sparkles, Loader2, FileText, Copy, Check } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import PatientSelector from "./PatientSelector";
+import ToolsSidebar from "../tools/ToolsSidebar";
+import GestationalAgeCalculator from "../tools/GestationalAgeCalculator";
+import BMICalculator from "../tools/BMICalculator";
+import { AnimatePresence } from "framer-motion";
 
 export default function NewAnamnesisContent() {
   const navigate = useNavigate();
@@ -27,6 +30,7 @@ export default function NewAnamnesisContent() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [activeTool, setActiveTool] = useState(null);
 
   useEffect(() => {
     loadTemplates();
@@ -175,9 +179,36 @@ ${soapData.plano}`;
     navigate(createPageUrl(`AnamnesisDetail?id=${created.id}`));
   };
 
+  const handleToolSave = (toolResult) => {
+    // Adicionar resultado da ferramenta ao texto original
+    const updatedText = textoOriginal + "\n\n" + toolResult;
+    setTextoOriginal(updatedText);
+    
+    // Fechar ferramenta
+    setActiveTool(null);
+  };
+
   return (
-    <div className="p-4 md:p-8 bg-gradient-to-br from-blue-50 to-indigo-50 min-h-screen">
-      <div className="max-w-4xl mx-auto">
+    <>
+      <ToolsSidebar onToolOpen={setActiveTool} />
+      
+      <AnimatePresence>
+        {activeTool === 'gestational_age' && (
+          <GestationalAgeCalculator 
+            onClose={() => setActiveTool(null)}
+            onSave={handleToolSave}
+          />
+        )}
+        {activeTool === 'bmi' && (
+          <BMICalculator 
+            onClose={() => setActiveTool(null)}
+            onSave={handleToolSave}
+          />
+        )}
+      </AnimatePresence>
+
+      <div className="p-4 md:p-8 bg-gradient-to-br from-blue-50 to-indigo-50 min-h-screen pr-36">
+        <div className="max-w-4xl mx-auto">
         <div className="flex items-center gap-4 mb-6">
           <Button
             variant="outline"
@@ -441,6 +472,6 @@ ${soapData.plano}`;
           )}
         </div>
       </div>
-    </div>
+    </>
   );
 }
