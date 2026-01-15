@@ -14,7 +14,8 @@ import {
   Trash2,
   FileText,
   Stethoscope,
-  Settings
+  Settings,
+  Calculator
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import PermissionGuard from "../components/PermissionGuard";
@@ -54,10 +55,34 @@ export default function Home() {
     tools: {
       title: "Ferramentas",
       description: "Calculadoras médicas",
-      icon: Settings,
+      icon: Calculator,
       url: createPageUrl("Tools"),
       color: "from-cyan-500 to-blue-600",
       permission: "can_create_anamnesis"
+    },
+    atestados: {
+      title: "Atestados",
+      description: "Criar modelos de atestados",
+      icon: ClipboardList,
+      url: createPageUrl("AtestadoTemplates"),
+      color: "from-amber-500 to-orange-600",
+      permission: "can_access_templates"
+    },
+    exames_models: {
+      title: "Exames",
+      description: "Criar modelos de exames",
+      icon: FileCheck,
+      url: createPageUrl("ExameTemplates"),
+      color: "from-emerald-500 to-teal-600",
+      permission: "can_access_templates"
+    },
+    encaminhamentos: {
+      title: "Encaminhamentos",
+      description: "Criar modelos de encaminhamento",
+      icon: Send,
+      url: createPageUrl("EncaminhamentoTemplates"),
+      color: "from-violet-500 to-purple-600",
+      permission: "can_access_templates"
     },
     patients: {
       title: "Pacientes",
