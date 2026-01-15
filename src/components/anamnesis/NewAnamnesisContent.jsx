@@ -471,6 +471,7 @@ ${soapData.plano}`;
             </>
           )}
         </div>
+        </div>
       </div>
     </>
   );
