@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { User } from "@/entities/User";
-import { Stethoscope, Home, Plus, Users, FileText, LayoutTemplate, Shield, ClipboardList, FileCheck, Send, Trash2 } from "lucide-react";
+import { Stethoscope, Home, Plus, Users, FileText, LayoutTemplate, Shield, ClipboardList, FileCheck, Send, Trash2, PanelLeftClose, PanelLeft } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -21,6 +20,7 @@ export default function Layout({ children, currentPageName }) {
   const location = useLocation();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   useEffect(() => {
     loadUser();
@@ -116,7 +116,8 @@ export default function Layout({ children, currentPageName }) {
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-gradient-to-br from-blue-50 to-indigo-50">
-        <Sidebar className="border-r border-gray-200 bg-white">
+        {sidebarOpen && (
+          <Sidebar className="border-r border-gray-200 bg-white">
           <SidebarHeader className="border-b border-gray-200 p-6">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
@@ -153,8 +154,27 @@ export default function Layout({ children, currentPageName }) {
             </SidebarGroup>
           </SidebarContent>
         </Sidebar>
+        )}
 
         <main className="flex-1 flex flex-col">
+          <header className="bg-white border-b border-gray-200 px-6 py-4 shadow-sm hidden md:flex items-center">
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="hover:bg-gray-100 p-2 rounded-lg transition-colors duration-200 flex items-center gap-2 text-gray-700"
+            >
+              {sidebarOpen ? (
+                <>
+                  <PanelLeftClose className="w-5 h-5" />
+                  <span className="text-sm font-medium">Esconder Painel</span>
+                </>
+              ) : (
+                <>
+                  <PanelLeft className="w-5 h-5" />
+                  <span className="text-sm font-medium">Mostrar Painel</span>
+                </>
+              )}
+            </button>
+          </header>
           <header className="bg-white border-b border-gray-200 px-6 py-4 md:hidden shadow-sm">
             <div className="flex items-center gap-4">
               <SidebarTrigger className="hover:bg-gray-100 p-2 rounded-lg transition-colors duration-200" />
