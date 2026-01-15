@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { User } from "@/entities/User";
 import { useNavigate } from "react-router-dom";
@@ -19,7 +18,8 @@ import {
   FileText,
   Settings,
   Eye,
-  EyeOff
+  EyeOff,
+  Calculator
 } from "lucide-react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -48,6 +48,38 @@ export default function DashboardSettings() {
       icon: FileText,
       color: "from-green-500 to-emerald-600",
       permission: "can_create_anamnesis"
+    },
+    tools: {
+      id: "tools",
+      title: "Ferramentas",
+      description: "Calculadoras médicas",
+      icon: Calculator,
+      color: "from-cyan-500 to-blue-600",
+      permission: "can_create_anamnesis"
+    },
+    atestados: {
+      id: "atestados",
+      title: "Atestados",
+      description: "Criar modelos de atestados",
+      icon: ClipboardList,
+      color: "from-amber-500 to-orange-600",
+      permission: "can_access_templates"
+    },
+    exames_models: {
+      id: "exames_models",
+      title: "Exames",
+      description: "Criar modelos de exames",
+      icon: FileCheck,
+      color: "from-emerald-500 to-teal-600",
+      permission: "can_access_templates"
+    },
+    encaminhamentos: {
+      id: "encaminhamentos",
+      title: "Encaminhamentos",
+      description: "Criar modelos de encaminhamento",
+      icon: Send,
+      color: "from-violet-500 to-purple-600",
+      permission: "can_access_templates"
     },
     patients: {
       id: "patients",
