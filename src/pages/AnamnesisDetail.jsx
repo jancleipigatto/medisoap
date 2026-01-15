@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Anamnesis } from "@/entities/Anamnesis";
 import { useNavigate } from "react-router-dom";
@@ -27,6 +26,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import ToolsSidebar from "../components/tools/ToolsSidebar";
+import GestationalAgeCalculator from "../components/tools/GestationalAgeCalculator";
+import BMICalculator from "../components/tools/BMICalculator";
+import { AnimatePresence } from "framer-motion";
 
 export default function AnamnesisDetail() {
   const navigate = useNavigate();
@@ -56,6 +59,7 @@ export default function AnamnesisDetail() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deletionReason, setDeletionReason] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
+  const [activeTool, setActiveTool] = useState(null);
 
   useEffect(() => {
     const loadAnamnesis = async () => {
@@ -166,6 +170,21 @@ ${anamnesis.plano || "Não informado"}`;
     }
   };
 
+  const handleToolSave = (toolResult) => {
+    // Adicionar resultado da ferramenta ao campo objetivo
+    const currentObjectivo = anamnesis.objetivo || "";
+    const updatedObjectivo = currentObjectivo + "\n\n" + toolResult;
+    
+    setEditData({...editData});
+    setAnamnesis({...anamnesis, objetivo: updatedObjectivo});
+    
+    // Salvar automaticamente
+    Anamnesis.update(anamnesis.id, { objetivo: updatedObjectivo });
+    
+    // Fechar ferramenta
+    setActiveTool(null);
+  };
+
   if (isLoading) {
     return (
       <div className="p-4 md:p-8">
@@ -181,6 +200,23 @@ ${anamnesis.plano || "Não informado"}`;
 
   return (
     <>
+      <ToolsSidebar onToolOpen={setActiveTool} />
+      
+      <AnimatePresence>
+        {activeTool === 'gestational_age' && (
+          <GestationalAgeCalculator 
+            onClose={() => setActiveTool(null)}
+            onSave={handleToolSave}
+          />
+        )}
+        {activeTool === 'bmi' && (
+          <BMICalculator 
+            onClose={() => setActiveTool(null)}
+            onSave={handleToolSave}
+          />
+        )}
+      </AnimatePresence>
+
       {showPrintPreview && (
         <div className="fixed inset-0 bg-white z-50 overflow-auto">
           <div className="no-print p-4 flex justify-end gap-2 bg-gray-100">
