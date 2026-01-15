@@ -172,8 +172,9 @@ ${soapData.plano}`;
       return;
     }
 
+    // Se não tem SOAP, converter primeiro
     if (!soapData) {
-      alert("Por favor, converta o texto para SOAP primeiro");
+      await convertToSOAP();
       return;
     }
 
@@ -410,6 +411,15 @@ ${soapData.plano}`;
                     </>
                   )}
                 </Button>
+                {currentAnamnesisId && !soapData && (
+                  <Button
+                    onClick={finalizeAnamnesis}
+                    disabled={isProcessing || isSaving || !textoOriginal.trim()}
+                    className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700"
+                  >
+                    Finalizar Atendimento
+                  </Button>
+                )}
               </div>
             </CardContent>
           </Card>
