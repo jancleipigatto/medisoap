@@ -15,7 +15,8 @@ import {
   FileText,
   Stethoscope,
   Settings,
-  Calculator
+  Calculator,
+  Pill
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import PermissionGuard from "../components/PermissionGuard";
@@ -62,26 +63,34 @@ export default function Home() {
     },
     atestados: {
       title: "Atestados",
-      description: "Criar modelos de atestados",
+      description: "Criar novo atestado",
       icon: ClipboardList,
-      url: createPageUrl("AtestadoTemplates"),
+      url: createPageUrl("NovoAtestado"),
       color: "from-amber-500 to-orange-600",
       permission: "can_access_templates"
     },
     exames_models: {
       title: "Exames",
-      description: "Criar modelos de exames",
+      description: "Solicitar exames",
       icon: FileCheck,
-      url: createPageUrl("ExameTemplates"),
+      url: createPageUrl("NovoExame"),
       color: "from-emerald-500 to-teal-600",
       permission: "can_access_templates"
     },
     encaminhamentos: {
       title: "Encaminhamentos",
-      description: "Criar modelos de encaminhamento",
+      description: "Criar encaminhamento",
       icon: Send,
-      url: createPageUrl("EncaminhamentoTemplates"),
+      url: createPageUrl("NovoEncaminhamento"),
       color: "from-violet-500 to-purple-600",
+      permission: "can_access_templates"
+    },
+    receitas: {
+      title: "Receitas",
+      description: "Criar receita médica",
+      icon: Pill,
+      url: createPageUrl("NovaReceita"),
+      color: "from-pink-500 to-rose-600",
       permission: "can_access_templates"
     },
     patients: {
@@ -122,6 +131,14 @@ export default function Home() {
       icon: Send,
       url: createPageUrl("EncaminhamentoTemplates"),
       color: "from-green-500 to-lime-600",
+      permission: "can_access_templates"
+    },
+    receita_models: {
+      title: "Modelos Receita",
+      description: "Templates de receita",
+      icon: Pill,
+      url: createPageUrl("ReceitaTemplates"),
+      color: "from-pink-500 to-rose-600",
       permission: "can_access_templates"
     },
     trash: {

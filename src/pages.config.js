@@ -12,6 +12,11 @@ import Templates from './pages/Templates';
 import Tools from './pages/Tools';
 import Trash from './pages/Trash';
 import UserManagement from './pages/UserManagement';
+import NovoAtestado from './pages/NovoAtestado';
+import NovoExame from './pages/NovoExame';
+import NovoEncaminhamento from './pages/NovoEncaminhamento';
+import NovaReceita from './pages/NovaReceita';
+import ReceitaTemplates from './pages/ReceitaTemplates';
 import __Layout from './Layout.jsx';
 
 
@@ -30,6 +35,11 @@ export const PAGES = {
     "Tools": Tools,
     "Trash": Trash,
     "UserManagement": UserManagement,
+    "NovoAtestado": NovoAtestado,
+    "NovoExame": NovoExame,
+    "NovoEncaminhamento": NovoEncaminhamento,
+    "NovaReceita": NovaReceita,
+    "ReceitaTemplates": ReceitaTemplates,
 }
 
 export const pagesConfig = {
