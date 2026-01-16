@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Search, Calendar, User as UserIcon, ArrowLeft, Copy as CopyIcon } from "lucide-react";
+import { FileText, Search, Calendar, User as UserIcon, ArrowLeft, Copy as CopyIcon, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -38,15 +38,53 @@ export default function History() {
     }
   }, [searchTerm, anamneses]);
 
+  const generateAttendanceNumber = (date, existingAnamneses) => {
+    const dateObj = new Date(date);
+    const day = String(dateObj.getDate()).padStart(2, '0');
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const year = dateObj.getFullYear();
+    const dateStr = `${day}${month}${year}`;
+    
+    const sameDay = existingAnamneses.filter(a => {
+      if (!a.numero_atendimento) return false;
+      return a.numero_atendimento.endsWith(dateStr);
+    });
+    
+    const nextNumber = sameDay.length + 1;
+    return `${nextNumber}_${dateStr}`;
+  };
+
   const loadData = async () => {
     setIsLoading(true);
     const user = await User.me();
     setCurrentUser(user);
     
-    const data = await Anamnesis.list("-data_consulta", 50);
+    let data = await Anamnesis.list("-data_consulta", 50);
     
     // Filtrar apenas anamneses não deletadas
-    const activeAnamneses = data.filter(a => !a.is_deleted);
+    let activeAnamneses = data.filter(a => !a.is_deleted);
+    
+    // Gerar números de atendimento para anamneses que não têm
+    const needsUpdate = activeAnamneses.some(a => !a.numero_atendimento);
+    
+    if (needsUpdate) {
+      const sortedByDate = [...activeAnamneses].sort((a, b) => 
+        new Date(a.data_consulta) - new Date(b.data_consulta)
+      );
+      
+      for (const anamnesis of sortedByDate) {
+        if (!anamnesis.numero_atendimento) {
+          const numero = generateAttendanceNumber(anamnesis.data_consulta, data);
+          await Anamnesis.update(anamnesis.id, {
+            numero_atendimento: numero
+          });
+        }
+      }
+      
+      // Recarregar dados atualizados
+      data = await Anamnesis.list("-data_consulta", 50);
+      activeAnamneses = data.filter(a => !a.is_deleted);
+    }
     
     // Filtrar por usuário - apenas vê suas próprias anamneses, exceto se tiver permissão de ver todas
     if (user.can_view_all_anamnesis) {
@@ -59,6 +97,19 @@ export default function History() {
     }
     
     setIsLoading(false);
+  };
+
+  const handleCancel = async (anamnesis) => {
+    if (!confirm("Deseja cancelar este atendimento? O número do atendimento será inutilizado.")) {
+      return;
+    }
+
+    await Anamnesis.update(anamnesis.id, {
+      is_cancelled: true,
+      cancelled_at: new Date().toISOString()
+    });
+
+    loadData();
   };
 
   return (
@@ -133,32 +184,60 @@ export default function History() {
               </Card>
             ) : (
               filteredAnamneses.map((anamnesis) => (
-                <Card key={anamnesis.id} className="shadow-md border-none hover:shadow-xl transition-shadow duration-200">
+                <Card 
+                  key={anamnesis.id} 
+                  className={`shadow-md border-none hover:shadow-xl transition-shadow duration-200 ${
+                    anamnesis.is_cancelled ? 'opacity-50 relative' : ''
+                  }`}
+                >
+                  {anamnesis.is_cancelled && (
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+                      <div className="w-full border-t-2 border-dashed border-gray-400" />
+                    </div>
+                  )}
                     <CardHeader className="pb-3">
                       <div className="flex justify-between items-start">
                         <div className="flex items-start gap-3 flex-1">
-                          <div className="w-10 h-10 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center">
-                            <UserIcon className="w-5 h-5 text-blue-600" />
+                          <div className={`w-10 h-10 bg-gradient-to-br ${anamnesis.is_cancelled ? 'from-gray-100 to-gray-200' : 'from-blue-100 to-indigo-100'} rounded-full flex items-center justify-center`}>
+                            <UserIcon className={`w-5 h-5 ${anamnesis.is_cancelled ? 'text-gray-400' : 'text-blue-600'}`} />
                           </div>
                           <div>
-                            <CardTitle className="text-xl">{anamnesis.patient_name}</CardTitle>
-                            <div className="flex items-center gap-2 mt-1 text-sm text-gray-500">
+                            <div className="flex items-center gap-2">
+                              <CardTitle 
+                                className={`text-xl hover:text-blue-600 cursor-pointer transition-colors ${anamnesis.is_cancelled ? 'text-gray-400' : ''}`}
+                                onClick={() => navigate(createPageUrl(`PatientHistory?patientId=${anamnesis.patient_id}`))}
+                              >
+                                {anamnesis.patient_name}
+                              </CardTitle>
+                              {anamnesis.numero_atendimento && (
+                                <Badge variant="outline" className={anamnesis.is_cancelled ? 'bg-gray-100 text-gray-400 border-gray-300' : 'bg-blue-50 text-blue-700 border-blue-200'}>
+                                  Nº {anamnesis.numero_atendimento}
+                                </Badge>
+                              )}
+                            </div>
+                            <div className={`flex items-center gap-2 mt-1 text-sm ${anamnesis.is_cancelled ? 'text-gray-400' : 'text-gray-500'}`}>
                               <Calendar className="w-4 h-4" />
                               {format(new Date(anamnesis.data_consulta), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
                             </div>
                           </div>
                         </div>
                         <div className="flex gap-2">
-                          <Badge className="bg-green-100 text-green-700 border-green-200">
-                            SOAP
-                          </Badge>
-                          {(anamnesis.subjetivo || anamnesis.objetivo || anamnesis.avaliacao || anamnesis.plano) ? (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                const soapText = `ANAMNESE - FORMATO SOAP
+                          {anamnesis.is_cancelled ? (
+                            <Badge className="bg-red-100 text-red-700 border-red-200">
+                              CANCELADO
+                            </Badge>
+                          ) : (
+                            <>
+                              <Badge className="bg-green-100 text-green-700 border-green-200">
+                                SOAP
+                              </Badge>
+                              {(anamnesis.subjetivo || anamnesis.objetivo || anamnesis.avaliacao || anamnesis.plano) ? (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    const soapText = `ANAMNESE - FORMATO SOAP
 
 S - SUBJETIVO:
 ${anamnesis.subjetivo || "Não informado"}
@@ -171,23 +250,36 @@ ${anamnesis.avaliacao || "Não informado"}
 
 P - PLANO:
 ${anamnesis.plano || "Não informado"}`;
-                                navigate(createPageUrl(`NewAnamnesis?copyText=${encodeURIComponent(soapText)}`));
-                              }}
-                              className="gap-2"
-                            >
-                              <CopyIcon className="w-4 h-4" />
-                              Copiar Atendimento
-                            </Button>
-                          ) : (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => navigate(createPageUrl(`NewAnamnesis?continue=${anamnesis.id}`))}
-                              className="gap-2"
-                            >
-                              <CopyIcon className="w-4 h-4" />
-                              Continuar
-                            </Button>
+                                    navigate(createPageUrl(`NewAnamnesis?copyText=${encodeURIComponent(soapText)}`));
+                                  }}
+                                  className="gap-2"
+                                >
+                                  <CopyIcon className="w-4 h-4" />
+                                  Copiar
+                                </Button>
+                              ) : (
+                                <>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => navigate(createPageUrl(`NewAnamnesis?continue=${anamnesis.id}`))}
+                                    className="gap-2"
+                                  >
+                                    <CopyIcon className="w-4 h-4" />
+                                    Continuar
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleCancel(anamnesis)}
+                                    className="gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                    Cancelar
+                                  </Button>
+                                </>
+                              )}
+                            </>
                           )}
                         </div>
                       </div>
