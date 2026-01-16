@@ -17,6 +17,7 @@ import Templates from './pages/Templates';
 import Tools from './pages/Tools';
 import Trash from './pages/Trash';
 import UserManagement from './pages/UserManagement';
+import UserProfile from './pages/UserProfile';
 import __Layout from './Layout.jsx';
 
 
@@ -40,6 +41,7 @@ export const PAGES = {
     "Tools": Tools,
     "Trash": Trash,
     "UserManagement": UserManagement,
+    "UserProfile": UserProfile,
 }
 
 export const pagesConfig = {

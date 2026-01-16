@@ -251,52 +251,7 @@ export default function Home() {
             </Card>
           )}
 
-          {/* Quick Stats */}
-          <div className="mt-12 grid md:grid-cols-3 gap-6">
-            <Card className="border-none shadow-lg">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-600 mb-1">Acesso Rápido</p>
-                    <h3 className="text-2xl font-bold text-gray-900">Sistema</h3>
-                  </div>
-                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                    <Stethoscope className="w-6 h-6 text-blue-600" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
 
-            <Card className="border-none shadow-lg">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-600 mb-1">Seu Perfil</p>
-                    <h3 className="text-2xl font-bold text-gray-900">
-                      {user?.role === 'admin' ? 'Admin' : user?.profile_type === 'expert' ? 'Expert' : 'Standard'}
-                    </h3>
-                  </div>
-                  <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                    <Users className="w-6 h-6 text-purple-600" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-none shadow-lg">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-600 mb-1">Organização</p>
-                    <h3 className="text-2xl font-bold text-gray-900">SOAP</h3>
-                  </div>
-                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                    <FileText className="w-6 h-6 text-green-600" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
         </div>
       </div>
     </PermissionGuard>
