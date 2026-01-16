@@ -22,6 +22,23 @@ export default function PatientHistory() {
     loadPatientHistory();
   }, []);
 
+  const generateAttendanceNumber = (date, existingAnamneses) => {
+    const dateObj = new Date(date);
+    const day = String(dateObj.getDate()).padStart(2, '0');
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const year = dateObj.getFullYear();
+    const dateStr = `${day}${month}${year}`;
+    
+    // Contar atendimentos do mesmo dia
+    const sameDay = existingAnamneses.filter(a => {
+      if (!a.numero_atendimento) return false;
+      return a.numero_atendimento.endsWith(dateStr);
+    });
+    
+    const nextNumber = sameDay.length + 1;
+    return `${nextNumber}_${dateStr}`;
+  };
+
   const loadPatientHistory = async () => {
     setIsLoading(true);
     const urlParams = new URLSearchParams(window.location.search);
@@ -33,9 +50,33 @@ export default function PatientHistory() {
     }
 
     const allAnamneses = await base44.entities.Anamnesis.list("-data_consulta");
-    const patientAnamneses = allAnamneses.filter(a => 
+    let patientAnamneses = allAnamneses.filter(a => 
       a.patient_id === patientId && !a.is_deleted
     );
+    
+    // Gerar números de atendimento para anamneses que não têm
+    const needsUpdate = patientAnamneses.some(a => !a.numero_atendimento);
+    
+    if (needsUpdate) {
+      const sortedByDate = [...patientAnamneses].sort((a, b) => 
+        new Date(a.data_consulta) - new Date(b.data_consulta)
+      );
+      
+      for (const anamnesis of sortedByDate) {
+        if (!anamnesis.numero_atendimento) {
+          const numero = generateAttendanceNumber(anamnesis.data_consulta, allAnamneses);
+          await base44.entities.Anamnesis.update(anamnesis.id, {
+            numero_atendimento: numero
+          });
+        }
+      }
+      
+      // Recarregar dados atualizados
+      const updatedAnamneses = await base44.entities.Anamnesis.list("-data_consulta");
+      patientAnamneses = updatedAnamneses.filter(a => 
+        a.patient_id === patientId && !a.is_deleted
+      );
+    }
     
     if (patientAnamneses.length > 0) {
       setPatientName(patientAnamneses[0].patient_name);
