@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Calendar, FileText, ClipboardList, FileCheck, Send, Copy, Check, Printer, Trash2, Pill, Save, Edit2 } from "lucide-react";
 import { format } from "date-fns";
@@ -40,7 +41,8 @@ export default function AnamnesisDetail() {
     atestado: "",
     exames_solicitados: "",
     encaminhamento: "",
-    receita: ""
+    receita: "",
+    orientacoes: ""
   });
   const [savedDocs, setSavedDocs] = useState([]);
   const [copied, setCopied] = useState({
@@ -48,7 +50,8 @@ export default function AnamnesisDetail() {
     atestado: false,
     exames: false,
     encaminhamento: false,
-    receita: false
+    receita: false,
+    orientacoes: false
   });
   const [atestadoTemplates, setAtestadoTemplates] = useState([]);
   const [exameTemplates, setExameTemplates] = useState([]);
@@ -84,7 +87,8 @@ export default function AnamnesisDetail() {
           atestado: found.atestado || "",
           exames_solicitados: found.exames_solicitados || "",
           encaminhamento: found.encaminhamento || "",
-          receita: found.receita || ""
+          receita: found.receita || "",
+          orientacoes: found.orientacoes || ""
         });
       } else {
         navigate(createPageUrl("Home"));
@@ -155,7 +159,8 @@ export default function AnamnesisDetail() {
   const editDocument = (doc) => {
     const field = doc.tipo === 'atestado' ? 'atestado' : 
                   doc.tipo === 'exame' ? 'exames_solicitados' :
-                  doc.tipo === 'encaminhamento' ? 'encaminhamento' : 'receita';
+                  doc.tipo === 'encaminhamento' ? 'encaminhamento' :
+                  doc.tipo === 'orientacoes' ? 'orientacoes' : 'receita';
     setEditData({...editData, [field]: doc.conteudo});
     setSelectedTemplateData({
       cabecalho: doc.cabecalho || "",
@@ -902,6 +907,110 @@ className="text-red-600 hover:text-red-700 hover:bg-red-50"
                   >
                     <Save className="w-4 h-4 mr-2" />
                     Salvar Receita
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {savedDocs.filter(d => d.tipo === 'orientacoes').map(doc => (
+                <Card key={doc.id} className="shadow-md border-l-4 border-l-amber-500 bg-amber-50">
+                  <CardContent className="p-4">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <p className="font-semibold text-sm">Orientações Salvas</p>
+                        <p className="text-xs text-gray-600">
+                          {doc.data_consulta} {doc.horario_consulta && `às ${doc.horario_consulta}`}
+                        </p>
+                      </div>
+                      <div className="flex gap-1">
+                        <Button size="sm" variant="ghost" onClick={() => editDocument(doc)}>
+                          <Edit2 className="w-3 h-3" />
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => copyText(doc.conteudo, 'orientacoes')}>
+                          <Copy className="w-3 h-3" />
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => deleteDocument(doc.id)} className="text-red-600">
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    </div>
+                    <p className="text-sm line-clamp-2 text-gray-700">{doc.conteudo}</p>
+                  </CardContent>
+                </Card>
+              ))}
+
+              <Card className="shadow-lg border-none">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center gap-2">
+                      <FileText className="w-5 h-5 text-amber-600" />
+                      Orientações ao Paciente
+                    </CardTitle>
+                    <div className="flex gap-2">
+                      {editData.orientacoes && (
+                        <>
+                          <Button
+                            onClick={() => handlePrint("Orientações", editData.orientacoes)}
+                            variant="outline"
+                            size="sm"
+                            className="gap-2"
+                          >
+                            <Printer className="w-4 h-4" />
+                            Imprimir
+                          </Button>
+                          <Button
+                            onClick={() => copyText(editData.orientacoes, 'orientacoes')}
+                            variant="outline"
+                            size="sm"
+                            className="gap-2"
+                          >
+                            {copied.orientacoes ? (
+                              <>
+                                <Check className="w-4 h-4 text-green-600" />
+                                Copiado!
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="w-4 h-4" />
+                                Copiar
+                              </>
+                            )}
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label>Data da Consulta *</Label>
+                      <Input type="date" value={anamnesis.data_consulta} readOnly className="bg-gray-50" />
+                    </div>
+                    <div>
+                      <Label>Horário</Label>
+                      <Input 
+                        type="time" 
+                        id="horario-orientacoes"
+                        placeholder="--:--"
+                      />
+                    </div>
+                  </div>
+                  <Textarea
+                    value={editData.orientacoes}
+                    onChange={(e) => setEditData({...editData, orientacoes: e.target.value})}
+                    placeholder="Digite as orientações ao paciente (cuidados, recomendações, sinais de alerta, etc.)..."
+                    className="min-h-[150px]"
+                  />
+                  <Button
+                    onClick={() => {
+                      const horario = document.getElementById('horario-orientacoes').value;
+                      saveDocument('orientacoes', editData.orientacoes, horario);
+                    }}
+                    disabled={!editData.orientacoes.trim()}
+                    className="w-full bg-green-600 hover:bg-green-700"
+                  >
+                    <Save className="w-4 h-4 mr-2" />
+                    Salvar Orientações
                   </Button>
                 </CardContent>
               </Card>
