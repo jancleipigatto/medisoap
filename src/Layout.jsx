@@ -142,11 +142,11 @@ export default function Layout({ children, currentPageName }) {
         {sidebarOpen && (
           <Sidebar className="border-r border-gray-200 bg-white">
           <SidebarHeader className="border-b border-gray-200 p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+            <div className="flex flex-col items-center mb-4">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg mb-2">
                 <Stethoscope className="w-6 h-6 text-white" />
               </div>
-              <div>
+              <div className="text-center">
                 <h2 className="font-bold text-gray-900 text-lg">MediSOAP</h2>
                 <p className="text-xs text-gray-500">Anamneses Inteligentes</p>
               </div>
@@ -156,7 +156,7 @@ export default function Layout({ children, currentPageName }) {
             {user && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 transition-colors duration-200 border border-gray-200">
+                  <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 transition-colors duration-200">
                     <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
                       <UserCircle className="w-5 h-5 text-white" />
                     </div>
