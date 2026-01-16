@@ -140,16 +140,8 @@ export default function Home() {
       url: createPageUrl("ReceitaTemplates"),
       color: "from-pink-500 to-rose-600",
       permission: "can_access_templates"
-    },
-    trash: {
-      title: "Lixeira",
-      description: "Anamneses excluídas",
-      icon: Trash2,
-      url: createPageUrl("Trash"),
-      color: "from-red-500 to-orange-600",
-      permission: "can_create_anamnesis"
     }
-  };
+    };
 
   const hasPermission = (item) => {
     if (!user) return false;

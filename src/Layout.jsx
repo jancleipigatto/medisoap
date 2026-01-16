@@ -169,7 +169,7 @@ export default function Layout({ children, currentPageName }) {
                     </div>
                     <div className="flex-1 text-left">
                       <p className="text-sm font-semibold text-gray-900 truncate">{user.full_name}</p>
-                      <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                      <p className="text-xs text-gray-500 truncate">{user.profile_type || 'Perfil Padrão'}</p>
                     </div>
                   </button>
                 </DropdownMenuTrigger>
