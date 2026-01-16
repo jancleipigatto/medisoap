@@ -19,7 +19,8 @@ import {
   Settings,
   Eye,
   EyeOff,
-  Calculator
+  Calculator,
+  Pill
 } from "lucide-react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -120,6 +121,22 @@ export default function DashboardSettings() {
       description: "Templates de encaminhamento",
       icon: Send,
       color: "from-green-500 to-lime-600",
+      permission: "can_access_templates"
+    },
+    receita_models: {
+      id: "receita_models",
+      title: "Modelos Receita",
+      description: "Templates de receita",
+      icon: Pill,
+      color: "from-pink-500 to-rose-600",
+      permission: "can_access_templates"
+    },
+    receitas: {
+      id: "receitas",
+      title: "Receitas",
+      description: "Criar receita médica",
+      icon: Pill,
+      color: "from-pink-500 to-rose-600",
       permission: "can_access_templates"
     },
     trash: {
