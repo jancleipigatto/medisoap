@@ -37,6 +37,13 @@ export default function Layout({ children, currentPageName }) {
     try {
       const currentUser = await User.me();
       setUser(currentUser);
+      
+      // Se o perfil não está completo, redireciona para completar
+      if (currentUser && !currentUser.perfil_completo) {
+        if (!window.location.pathname.includes("CompletarPerfil")) {
+          window.location.href = createPageUrl("CompletarPerfil");
+        }
+      }
     } catch (error) {
       console.error("Error loading user:", error);
     }

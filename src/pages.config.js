@@ -18,6 +18,7 @@ import Tools from './pages/Tools';
 import Trash from './pages/Trash';
 import UserManagement from './pages/UserManagement';
 import UserProfile from './pages/UserProfile';
+import CompletarPerfil from './pages/CompletarPerfil';
 import __Layout from './Layout.jsx';
 
 
@@ -42,6 +43,7 @@ export const PAGES = {
     "Trash": Trash,
     "UserManagement": UserManagement,
     "UserProfile": UserProfile,
+    "CompletarPerfil": CompletarPerfil,
 }
 
 export const pagesConfig = {
