@@ -1,5 +1,6 @@
 import AnamnesisDetail from './pages/AnamnesisDetail';
 import AtestadoTemplates from './pages/AtestadoTemplates';
+import CompletarPerfil from './pages/CompletarPerfil';
 import DashboardSettings from './pages/DashboardSettings';
 import EncaminhamentoTemplates from './pages/EncaminhamentoTemplates';
 import ExameTemplates from './pages/ExameTemplates';
@@ -10,6 +11,7 @@ import NovaReceita from './pages/NovaReceita';
 import NovoAtestado from './pages/NovoAtestado';
 import NovoEncaminhamento from './pages/NovoEncaminhamento';
 import NovoExame from './pages/NovoExame';
+import PatientHistory from './pages/PatientHistory';
 import Patients from './pages/Patients';
 import ProfileManagement from './pages/ProfileManagement';
 import ReceitaTemplates from './pages/ReceitaTemplates';
@@ -18,14 +20,13 @@ import Tools from './pages/Tools';
 import Trash from './pages/Trash';
 import UserManagement from './pages/UserManagement';
 import UserProfile from './pages/UserProfile';
-import CompletarPerfil from './pages/CompletarPerfil';
-import PatientHistory from './pages/PatientHistory';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
     "AnamnesisDetail": AnamnesisDetail,
     "AtestadoTemplates": AtestadoTemplates,
+    "CompletarPerfil": CompletarPerfil,
     "DashboardSettings": DashboardSettings,
     "EncaminhamentoTemplates": EncaminhamentoTemplates,
     "ExameTemplates": ExameTemplates,
@@ -36,6 +37,7 @@ export const PAGES = {
     "NovoAtestado": NovoAtestado,
     "NovoEncaminhamento": NovoEncaminhamento,
     "NovoExame": NovoExame,
+    "PatientHistory": PatientHistory,
     "Patients": Patients,
     "ProfileManagement": ProfileManagement,
     "ReceitaTemplates": ReceitaTemplates,
@@ -44,8 +46,6 @@ export const PAGES = {
     "Trash": Trash,
     "UserManagement": UserManagement,
     "UserProfile": UserProfile,
-    "CompletarPerfil": CompletarPerfil,
-    "PatientHistory": PatientHistory,
 }
 
 export const pagesConfig = {

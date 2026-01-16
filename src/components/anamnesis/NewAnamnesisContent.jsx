@@ -126,6 +126,24 @@ ${soapData.plano}`;
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const generateAttendanceNumber = async (date) => {
+    const dateObj = new Date(date);
+    const day = String(dateObj.getDate()).padStart(2, '0');
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const year = dateObj.getFullYear();
+    const dateStr = `${day}${month}${year}`;
+    
+    // Buscar atendimentos do mesmo dia
+    const allAnamneses = await Anamnesis.list();
+    const sameDay = allAnamneses.filter(a => {
+      if (!a.numero_atendimento) return false;
+      return a.numero_atendimento.endsWith(dateStr);
+    });
+    
+    const nextNumber = sameDay.length + 1;
+    return `${nextNumber}_${dateStr}`;
+  };
+
   const saveAnamnesisWithoutSOAP = async () => {
     if (!selectedPatient) {
       alert("Por favor, selecione um paciente");
@@ -148,12 +166,14 @@ ${soapData.plano}`;
         texto_original: textoOriginal
       });
     } else {
-      // Criar nova anamnese
+      // Criar nova anamnese com número de atendimento
+      const numeroAtendimento = await generateAttendanceNumber(dataConsulta);
       const created = await Anamnesis.create({
         patient_id: selectedPatient.id,
         patient_name: selectedPatient.nome,
         data_consulta: dataConsulta,
         texto_original: textoOriginal,
+        numero_atendimento: numeroAtendimento,
         subjetivo: "",
         objetivo: "",
         avaliacao: "",
@@ -191,7 +211,11 @@ ${soapData.plano}`;
     if (currentAnamnesisId) {
       await Anamnesis.update(currentAnamnesisId, anamnesisData);
     } else {
-      const created = await Anamnesis.create(anamnesisData);
+      const numeroAtendimento = await generateAttendanceNumber(dataConsulta);
+      const created = await Anamnesis.create({
+        ...anamnesisData,
+        numero_atendimento: numeroAtendimento
+      });
       setCurrentAnamnesisId(created.id);
     }
 

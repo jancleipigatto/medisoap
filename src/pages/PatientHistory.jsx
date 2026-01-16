@@ -5,7 +5,7 @@ import { createPageUrl } from "@/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Calendar, User as UserIcon, ArrowLeft, Copy as CopyIcon, Eye, EyeOff } from "lucide-react";
+import { FileText, Calendar, User as UserIcon, ArrowLeft, Copy as CopyIcon, Eye, EyeOff, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -43,6 +43,19 @@ export default function PatientHistory() {
     
     setAnamneses(patientAnamneses);
     setIsLoading(false);
+  };
+
+  const handleCancel = async (anamnesis) => {
+    if (!confirm("Deseja cancelar este atendimento? O número do atendimento será inutilizado.")) {
+      return;
+    }
+
+    await base44.entities.Anamnesis.update(anamnesis.id, {
+      is_cancelled: true,
+      cancelled_at: new Date().toISOString()
+    });
+
+    loadPatientHistory();
   };
 
   const handleContinue = (anamnesis) => {
@@ -129,51 +142,92 @@ ${anamnesis.plano || "Não informado"}`;
               </Card>
             ) : (
               anamneses.map((anamnesis) => (
-                <Card key={anamnesis.id} className="shadow-md border-none hover:shadow-xl transition-shadow duration-200">
+                <Card 
+                  key={anamnesis.id} 
+                  className={`shadow-md border-none hover:shadow-xl transition-shadow duration-200 ${
+                    anamnesis.is_cancelled ? 'opacity-50 relative' : ''
+                  }`}
+                >
+                  {anamnesis.is_cancelled && (
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+                      <div className="w-full border-t-2 border-dashed border-gray-400" />
+                    </div>
+                  )}
                   <CardHeader className="pb-3">
                     <div className="flex justify-between items-start">
                       <div className="flex items-start gap-3 flex-1">
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center">
-                          <UserIcon className="w-5 h-5 text-blue-600" />
+                        <div className={`w-10 h-10 bg-gradient-to-br ${anamnesis.is_cancelled ? 'from-gray-100 to-gray-200' : 'from-blue-100 to-indigo-100'} rounded-full flex items-center justify-center`}>
+                          <UserIcon className={`w-5 h-5 ${anamnesis.is_cancelled ? 'text-gray-400' : 'text-blue-600'}`} />
                         </div>
                         <div>
-                          <CardTitle className="text-xl">{anamnesis.patient_name}</CardTitle>
-                          <div className="flex items-center gap-2 mt-1 text-sm text-gray-500">
+                          <div className="flex items-center gap-2">
+                            <CardTitle className={`text-xl ${anamnesis.is_cancelled ? 'text-gray-400' : ''}`}>
+                              {anamnesis.patient_name}
+                            </CardTitle>
+                            {anamnesis.numero_atendimento && (
+                              <Badge variant="outline" className={anamnesis.is_cancelled ? 'bg-gray-100 text-gray-400 border-gray-300' : 'bg-blue-50 text-blue-700 border-blue-200'}>
+                                Nº {anamnesis.numero_atendimento}
+                              </Badge>
+                            )}
+                          </div>
+                          <div className={`flex items-center gap-2 mt-1 text-sm ${anamnesis.is_cancelled ? 'text-gray-400' : 'text-gray-500'}`}>
                             <Calendar className="w-4 h-4" />
                             {format(new Date(anamnesis.data_consulta), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
                           </div>
                         </div>
                       </div>
                       <div className="flex gap-2">
-                        <Badge className="bg-green-100 text-green-700 border-green-200">
-                          SOAP
-                        </Badge>
-                        {(anamnesis.subjetivo || anamnesis.objetivo || anamnesis.avaliacao || anamnesis.plano) ? (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleCopy(anamnesis);
-                            }}
-                            className="gap-2"
-                          >
-                            <CopyIcon className="w-4 h-4" />
-                            Copiar Atendimento
-                          </Button>
+                        {anamnesis.is_cancelled ? (
+                          <Badge className="bg-red-100 text-red-700 border-red-200">
+                            CANCELADO
+                          </Badge>
                         ) : (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleContinue(anamnesis);
-                            }}
-                            className="gap-2"
-                          >
-                            <CopyIcon className="w-4 h-4" />
-                            Continuar
-                          </Button>
+                          <>
+                            <Badge className="bg-green-100 text-green-700 border-green-200">
+                              SOAP
+                            </Badge>
+                            {(anamnesis.subjetivo || anamnesis.objetivo || anamnesis.avaliacao || anamnesis.plano) ? (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleCopy(anamnesis);
+                                }}
+                                className="gap-2"
+                              >
+                                <CopyIcon className="w-4 h-4" />
+                                Copiar
+                              </Button>
+                            ) : (
+                              <>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleContinue(anamnesis);
+                                  }}
+                                  className="gap-2"
+                                >
+                                  <CopyIcon className="w-4 h-4" />
+                                  Continuar
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleCancel(anamnesis);
+                                  }}
+                                  className="gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                  Cancelar
+                                </Button>
+                              </>
+                            )}
+                          </>
                         )}
                       </div>
                     </div>
