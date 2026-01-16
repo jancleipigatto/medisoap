@@ -19,6 +19,7 @@ import Trash from './pages/Trash';
 import UserManagement from './pages/UserManagement';
 import UserProfile from './pages/UserProfile';
 import CompletarPerfil from './pages/CompletarPerfil';
+import PatientHistory from './pages/PatientHistory';
 import __Layout from './Layout.jsx';
 
 
@@ -44,6 +45,7 @@ export const PAGES = {
     "UserManagement": UserManagement,
     "UserProfile": UserProfile,
     "CompletarPerfil": CompletarPerfil,
+    "PatientHistory": PatientHistory,
 }
 
 export const pagesConfig = {

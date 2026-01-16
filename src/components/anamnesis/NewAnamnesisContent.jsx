@@ -296,14 +296,13 @@ ${soapData.plano}`;
               />
 
               {selectedPatient && (
-                <div className="flex gap-2">
+                <div className="grid grid-cols-3 gap-2">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => {
                       window.open(createPageUrl(`Patients?edit=${selectedPatient.id}`), '_blank');
                     }}
-                    className="flex-1"
                   >
                     Editar Paciente
                   </Button>
@@ -313,9 +312,17 @@ ${soapData.plano}`;
                     onClick={() => {
                       window.open(createPageUrl(`Patients?new=true`), '_blank');
                     }}
-                    className="flex-1"
                   >
                     Novo Paciente
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      window.open(createPageUrl(`PatientHistory?patientId=${selectedPatient.id}`), '_blank');
+                    }}
+                  >
+                    Histórico
                   </Button>
                 </div>
               )}

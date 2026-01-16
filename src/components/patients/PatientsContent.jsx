@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, User, Phone, Mail, MapPin, Edit, ExternalLink, ArrowLeft } from "lucide-react";
+import { Plus, User, Phone, Mail, MapPin, Edit, ExternalLink, ArrowLeft, FileText } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -230,14 +230,26 @@ export default function PatientsContent() {
                         </p>
                       )}
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleEdit(patient)}
-                      className="flex-shrink-0"
-                    >
-                      <Edit className="w-4 h-4" />
-                    </Button>
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => navigate(createPageUrl(`PatientHistory?patientId=${patient.id}`))}
+                        className="flex-shrink-0"
+                        title="Ver histórico"
+                      >
+                        <FileText className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleEdit(patient)}
+                        className="flex-shrink-0"
+                        title="Editar paciente"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-2">
