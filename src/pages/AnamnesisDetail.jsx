@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Calendar, FileText, ClipboardList, FileCheck, Send, Copy, Check, Printer, Trash2, Pill, Save, Edit2 } from "lucide-react";
+import { ArrowLeft, Calendar, FileText, ClipboardList, FileCheck, Send, Copy, Check, Printer, Trash2, Pill, Save, Edit2, Download } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -31,6 +31,9 @@ import ToolsSidebar from "../components/tools/ToolsSidebar";
 import GestationalAgeCalculator from "../components/tools/GestationalAgeCalculator";
 import BMICalculator from "../components/tools/BMICalculator";
 import { AnimatePresence } from "framer-motion";
+import { base44 } from "@/api/base44Client";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
 export default function AnamnesisDetail() {
   const navigate = useNavigate();
@@ -233,7 +236,7 @@ ${anamnesis.plano || "Não informado"}`;
   };
 
   const handlePrintAll = () => {
-    // Criar um array com todos os documentos preenchidos
+    // Criar um array com todos os documentos preenchidos (sem duplicar)
     const allDocuments = [];
     
     if (editData.atestado && editData.atestado.trim()) {
@@ -261,6 +264,76 @@ ${anamnesis.plano || "Não informado"}`;
     setTimeout(() => {
       window.print();
     }, 100);
+  };
+
+  const handleGeneratePDF = async () => {
+    // Criar um array com todos os documentos preenchidos
+    const allDocuments = [];
+    
+    if (editData.atestado && editData.atestado.trim()) {
+      allDocuments.push({ tipo: "Atestado Médico", conteudo: editData.atestado });
+    }
+    if (editData.exames_solicitados && editData.exames_solicitados.trim()) {
+      allDocuments.push({ tipo: "Solicitação de Exames", conteudo: editData.exames_solicitados });
+    }
+    if (editData.encaminhamento && editData.encaminhamento.trim()) {
+      allDocuments.push({ tipo: "Encaminhamento Médico", conteudo: editData.encaminhamento });
+    }
+    if (editData.receita && editData.receita.trim()) {
+      allDocuments.push({ tipo: "Receita Médica", conteudo: editData.receita });
+    }
+    if (editData.orientacoes && editData.orientacoes.trim()) {
+      allDocuments.push({ tipo: "Orientações", conteudo: editData.orientacoes });
+    }
+    
+    if (allDocuments.length === 0) {
+      alert("Nenhum documento para gerar PDF. Preencha ao menos um documento.");
+      return;
+    }
+    
+    // Obter usuário atual
+    const currentUser = await base44.auth.me();
+    
+    // Formatar nome do arquivo: Nome do paciente_data da consulta_nome do atendente
+    const dataFormatada = format(new Date(anamnesis.data_consulta), "dd-MM-yyyy");
+    const fileName = `${anamnesis.patient_name}_${dataFormatada}_${currentUser.full_name}.pdf`;
+    
+    // Mostrar preview temporário
+    setShowPrintPreview({ tipo: "Todos os Documentos", conteudo: allDocuments, isMultiple: true });
+    
+    // Aguardar renderização
+    setTimeout(async () => {
+      const printArea = document.querySelector('.pdf-print-area');
+      if (!printArea) return;
+      
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      
+      for (let i = 0; i < allDocuments.length; i++) {
+        const docElement = printArea.children[i];
+        if (!docElement) continue;
+        
+        const canvas = await html2canvas(docElement, {
+          scale: 2,
+          useCORS: true,
+          logging: false
+        });
+        
+        const imgData = canvas.toDataURL('image/png');
+        const imgWidth = pageWidth;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        
+        if (i > 0) {
+          pdf.addPage();
+        }
+        
+        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+      }
+      
+      pdf.save(fileName);
+      setShowPrintPreview(null);
+    }, 500);
   };
 
   const loadTemplateForPrint = (templates, templateId, field) => {
@@ -330,11 +403,11 @@ ${anamnesis.plano || "Não informado"}`;
             </Button>
             <Button onClick={() => window.print()} className="bg-blue-600 hover:bg-blue-700">
               <Printer className="w-4 h-4 mr-2" />
-              Imprimir / Salvar PDF
+              {showPrintPreview.isMultiple ? "Imprimir" : "Imprimir / Salvar PDF"}
             </Button>
           </div>
           {showPrintPreview.isMultiple ? (
-            <div className="p-8">
+            <div className="p-8 pdf-print-area">
               {showPrintPreview.conteudo.map((doc, index) => (
                 <div key={index} className={index > 0 ? "page-break-before" : ""}>
                   <PrintableDocument
@@ -393,6 +466,15 @@ ${anamnesis.plano || "Não informado"}`;
               >
                 <Printer className="w-4 h-4" />
                 Imprimir Todos
+              </Button>
+              <Button
+                onClick={handleGeneratePDF}
+                variant="outline"
+                size="sm"
+                className="gap-2"
+              >
+                <Download className="w-4 h-4" />
+                Gerar PDF
               </Button>
               <Button
                 variant="outline"
