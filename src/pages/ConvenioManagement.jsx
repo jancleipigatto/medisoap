@@ -32,6 +32,7 @@ export default function ConvenioManagement() {
   const [showForm, setShowForm] = useState(false);
   const [editingConvenio, setEditingConvenio] = useState(null);
   const [deleteConvenio, setDeleteConvenio] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [formData, setFormData] = useState({
     nome: "",
     nome_fantasia: "",
@@ -49,8 +50,19 @@ export default function ConvenioManagement() {
   });
 
   useEffect(() => {
-    loadConvenios();
+    checkAuthAndLoadData();
   }, []);
+
+  const checkAuthAndLoadData = async () => {
+    try {
+      await base44.auth.me();
+      await loadConvenios();
+    } catch (error) {
+      console.error("Auth error:", error);
+      base44.auth.redirectToLogin();
+    }
+    setIsLoading(false);
+  };
 
   const loadConvenios = async () => {
     const data = await base44.entities.Convenio.list("-created_date");
@@ -103,14 +115,23 @@ export default function ConvenioManagement() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (editingConvenio) {
-      await base44.entities.Convenio.update(editingConvenio.id, formData);
-    } else {
-      await base44.entities.Convenio.create(formData);
+    try {
+      if (editingConvenio) {
+        await base44.entities.Convenio.update(editingConvenio.id, formData);
+      } else {
+        await base44.entities.Convenio.create(formData);
+      }
+      
+      handleCloseForm();
+      loadConvenios();
+    } catch (error) {
+      console.error("Erro ao salvar convênio:", error);
+      if (error.message && error.message.includes("logged in")) {
+        base44.auth.redirectToLogin();
+      } else {
+        alert("Erro ao salvar convênio: " + error.message);
+      }
     }
-    
-    handleCloseForm();
-    loadConvenios();
   };
 
   const handleDelete = async () => {
@@ -140,6 +161,18 @@ export default function ConvenioManagement() {
       observacoes: ""
     });
   };
+
+  if (isLoading) {
+    return (
+      <div className="p-4 md:p-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-center h-64">
+            <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <PermissionGuard permission="can_create_anamnesis">
