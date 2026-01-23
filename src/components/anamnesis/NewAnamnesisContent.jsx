@@ -303,7 +303,7 @@ ${soapData.plano}`;
             <ArrowLeft className="w-4 h-4" />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Nova Anamnese</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Novo Atendimento</h1>
             <p className="text-gray-600 mt-1">Digite ou cole o texto da consulta</p>
           </div>
         </div>
@@ -422,7 +422,7 @@ ${soapData.plano}`;
                       Salvando...
                     </>
                   ) : (
-                    "Salvar Anamnese"
+                    "Salvar Atendimento"
                   )}
                 </Button>
                 <Button
@@ -592,7 +592,7 @@ ${soapData.plano}`;
                       onClick={addDetails}
                       className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
                     >
-                      Adicionar Detalhes
+                      Saída de Atendimento
                     </Button>
                   )}
                 </CardContent>

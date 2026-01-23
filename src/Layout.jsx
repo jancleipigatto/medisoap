@@ -62,7 +62,7 @@ export default function Layout({ children, currentPageName }) {
       permission: "can_create_anamnesis"
     },
     {
-      title: "Nova Anamnese",
+      title: "Novo Atendimento",
       url: createPageUrl("NewAnamnesis"),
       icon: Plus,
       permission: "can_create_anamnesis"

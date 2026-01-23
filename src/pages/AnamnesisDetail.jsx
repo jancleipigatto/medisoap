@@ -232,6 +232,37 @@ ${anamnesis.plano || "Não informado"}`;
     }, 100);
   };
 
+  const handlePrintAll = () => {
+    // Criar um array com todos os documentos preenchidos
+    const allDocuments = [];
+    
+    if (editData.atestado && editData.atestado.trim()) {
+      allDocuments.push({ tipo: "Atestado Médico", conteudo: editData.atestado });
+    }
+    if (editData.exames_solicitados && editData.exames_solicitados.trim()) {
+      allDocuments.push({ tipo: "Solicitação de Exames", conteudo: editData.exames_solicitados });
+    }
+    if (editData.encaminhamento && editData.encaminhamento.trim()) {
+      allDocuments.push({ tipo: "Encaminhamento Médico", conteudo: editData.encaminhamento });
+    }
+    if (editData.receita && editData.receita.trim()) {
+      allDocuments.push({ tipo: "Receita Médica", conteudo: editData.receita });
+    }
+    if (editData.orientacoes && editData.orientacoes.trim()) {
+      allDocuments.push({ tipo: "Orientações", conteudo: editData.orientacoes });
+    }
+    
+    if (allDocuments.length === 0) {
+      alert("Nenhum documento para imprimir. Preencha ao menos um documento.");
+      return;
+    }
+    
+    setShowPrintPreview({ tipo: "Todos os Documentos", conteudo: allDocuments, isMultiple: true });
+    setTimeout(() => {
+      window.print();
+    }, 100);
+  };
+
   const loadTemplateForPrint = (templates, templateId, field) => {
     const template = templates.find(t => t.id === templateId);
     if (template) {
@@ -302,15 +333,33 @@ ${anamnesis.plano || "Não informado"}`;
               Imprimir / Salvar PDF
             </Button>
           </div>
-          <PrintableDocument
-            tipo={showPrintPreview.tipo}
-            paciente={anamnesis.patient_name}
-            dataConsulta={anamnesis.data_consulta}
-            conteudo={showPrintPreview.conteudo}
-            cabecalho={selectedTemplateData.cabecalho}
-            rodape={selectedTemplateData.rodape}
-            logoUrl={selectedTemplateData.logo_url}
-          />
+          {showPrintPreview.isMultiple ? (
+            <div className="p-8">
+              {showPrintPreview.conteudo.map((doc, index) => (
+                <div key={index} className={index > 0 ? "page-break-before" : ""}>
+                  <PrintableDocument
+                    tipo={doc.tipo}
+                    paciente={anamnesis.patient_name}
+                    dataConsulta={anamnesis.data_consulta}
+                    conteudo={doc.conteudo}
+                    cabecalho={selectedTemplateData.cabecalho}
+                    rodape={selectedTemplateData.rodape}
+                    logoUrl={selectedTemplateData.logo_url}
+                  />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <PrintableDocument
+              tipo={showPrintPreview.tipo}
+              paciente={anamnesis.patient_name}
+              dataConsulta={anamnesis.data_consulta}
+              conteudo={showPrintPreview.conteudo}
+              cabecalho={selectedTemplateData.cabecalho}
+              rodape={selectedTemplateData.rodape}
+              logoUrl={selectedTemplateData.logo_url}
+            />
+          )}
         </div>
       )}
 
@@ -337,10 +386,19 @@ ${anamnesis.plano || "Não informado"}`;
                 SOAP
               </Badge>
               <Button
+                onClick={handlePrintAll}
+                variant="outline"
+                size="sm"
+                className="gap-2"
+              >
+                <Printer className="w-4 h-4" />
+                Imprimir Todos
+              </Button>
+              <Button
                 variant="outline"
                 size="icon"
-onClick={() => setShowDeleteDialog(true)}
-className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                onClick={() => setShowDeleteDialog(true)}
+                className="text-red-600 hover:text-red-700 hover:bg-red-50"
               >
                 <Trash2 className="w-4 h-4" />
               </Button>
