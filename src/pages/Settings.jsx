@@ -15,7 +15,11 @@ import { createPageUrl } from "@/utils";
 export default function Settings() {
   const navigate = useNavigate();
   const [settings, setSettings] = useState({
-    endereco_consultorio: "",
+    cep: "",
+    logradouro: "",
+    bairro: "",
+    cidade: "",
+    uf: "",
     timezone: "America/Sao_Paulo",
     logo_padrao_url: "",
     assinatura_plano: "Gratuito"
@@ -49,7 +53,11 @@ export default function Settings() {
     // Carregar configurações do usuário
     if (user.app_settings) {
       setSettings({
-        endereco_consultorio: user.app_settings.endereco_consultorio || "",
+        cep: user.app_settings.cep || "",
+        logradouro: user.app_settings.logradouro || "",
+        bairro: user.app_settings.bairro || "",
+        cidade: user.app_settings.cidade || "",
+        uf: user.app_settings.uf || "",
         timezone: user.app_settings.timezone || "America/Sao_Paulo",
         logo_padrao_url: user.app_settings.logo_padrao_url || "",
         assinatura_plano: user.app_settings.assinatura_plano || "Gratuito"
@@ -80,6 +88,33 @@ export default function Settings() {
     setSettings({ ...settings, logo_padrao_url: result.file_url });
     
     setIsUploading(false);
+  };
+
+  const handleCepBlur = async () => {
+    const cep = settings.cep.replace(/\D/g, ''); // Remove caracteres não numéricos
+
+    if (cep.length === 8) {
+      try {
+        const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+        const data = await response.json();
+        
+        if (!data.erro) {
+          // Preenche os campos automaticamente
+          setSettings({
+            ...settings,
+            logradouro: data.logradouro,
+            bairro: data.bairro,
+            cidade: data.localidade,
+            uf: data.uf
+          });
+        } else {
+          alert('CEP não encontrado.');
+        }
+      } catch (error) {
+        console.error('Erro ao buscar CEP:', error);
+        alert('Erro ao buscar CEP. Tente novamente.');
+      }
+    }
   };
 
   if (isLoading) {
@@ -129,17 +164,71 @@ export default function Settings() {
               <CardTitle>Configurações Gerais</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div>
-                <Label htmlFor="endereco">Endereço do Consultório</Label>
-                <Input
-                  id="endereco"
-                  placeholder="Rua, número, bairro, cidade - Estado"
-                  value={settings.endereco_consultorio}
-                  onChange={(e) => setSettings({ ...settings, endereco_consultorio: e.target.value })}
-                  className="mt-2"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Este endereço será usado nos rodapés dos documentos médicos
+              <div className="space-y-4">
+                <h3 className="font-semibold text-gray-900">Endereço do Consultório</h3>
+                
+                <div>
+                  <Label htmlFor="cep">CEP</Label>
+                  <Input
+                    id="cep"
+                    maxLength={8}
+                    placeholder="00000000"
+                    value={settings.cep}
+                    onChange={(e) => setSettings({ ...settings, cep: e.target.value })}
+                    onBlur={handleCepBlur}
+                    className="mt-2"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="rua">Logradouro</Label>
+                  <Input
+                    id="rua"
+                    placeholder="Rua, Avenida, etc"
+                    value={settings.logradouro}
+                    onChange={(e) => setSettings({ ...settings, logradouro: e.target.value })}
+                    className="mt-2"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="bairro">Bairro</Label>
+                  <Input
+                    id="bairro"
+                    placeholder="Nome do bairro"
+                    value={settings.bairro}
+                    onChange={(e) => setSettings({ ...settings, bairro: e.target.value })}
+                    className="mt-2"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="cidade">Cidade</Label>
+                    <Input
+                      id="cidade"
+                      placeholder="Nome da cidade"
+                      value={settings.cidade}
+                      onChange={(e) => setSettings({ ...settings, cidade: e.target.value })}
+                      className="mt-2"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="uf">UF</Label>
+                    <Input
+                      id="uf"
+                      maxLength={2}
+                      placeholder="SP"
+                      value={settings.uf}
+                      onChange={(e) => setSettings({ ...settings, uf: e.target.value.toUpperCase() })}
+                      className="mt-2"
+                    />
+                  </div>
+                </div>
+
+                <p className="text-xs text-gray-500">
+                  Digite o CEP e os campos serão preenchidos automaticamente
                 </p>
               </div>
 
