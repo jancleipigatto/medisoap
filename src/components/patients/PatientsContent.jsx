@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { base44 } from "@/api/base44Client";
 import { Patient } from "@/entities/Patient";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -14,18 +15,22 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function PatientsContent() {
   const navigate = useNavigate();
   const [patients, setPatients] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingPatient, setEditingPatient] = useState(null);
+  const [convenios, setConvenios] = useState([]);
+  const [paises, setPaises] = useState([]);
   const [formData, setFormData] = useState({
     nome: "",
     data_nascimento: "",
     cpf: "",
     telefone: "",
     email: "",
+    nacionalidade: "Brasileira",
     convenio: "",
     endereco_rua: "",
     endereco_numero: "",
@@ -42,6 +47,8 @@ export default function PatientsContent() {
 
   useEffect(() => {
     loadPatients();
+    loadConvenios();
+    loadPaises();
     
     // Verificar parâmetros da URL
     const urlParams = new URLSearchParams(window.location.search);
@@ -53,7 +60,7 @@ export default function PatientsContent() {
     } else if (editId) {
       loadAndEditPatient(editId);
     }
-  }, []); // Dependency array remains empty, as loadPatients, setShowForm, and loadAndEditPatient (and its dependencies like handleEdit) are stable across renders in this context.
+  }, []);
 
   const loadAndEditPatient = async (id) => {
     const data = await Patient.list(); // Or fetch a single patient if API supports it
@@ -68,6 +75,22 @@ export default function PatientsContent() {
     setPatients(data);
   };
 
+  const loadConvenios = async () => {
+    const data = await base44.entities.Convenio.list("nome");
+    setConvenios(data);
+  };
+
+  const loadPaises = async () => {
+    try {
+      const response = await fetch('https://servicodados.ibge.gov.br/api/v1/localidades/paises');
+      const data = await response.json();
+      const sorted = data.sort((a, b) => a.nome.localeCompare(b.nome));
+      setPaises(sorted);
+    } catch (error) {
+      console.error('Erro ao carregar países:', error);
+    }
+  };
+
   const handleEdit = (patient) => {
     setEditingPatient(patient);
     setFormData({
@@ -76,6 +99,7 @@ export default function PatientsContent() {
       cpf: patient.cpf || "",
       telefone: patient.telefone || "",
       email: patient.email || "",
+      nacionalidade: patient.nacionalidade || "Brasileira",
       convenio: patient.convenio || "",
       endereco_rua: patient.endereco_rua || "",
       endereco_numero: patient.endereco_numero || "",
@@ -149,6 +173,7 @@ export default function PatientsContent() {
       cpf: "",
       telefone: "",
       email: "",
+      nacionalidade: "Brasileira",
       convenio: "",
       endereco_rua: "",
       endereco_numero: "",
@@ -370,14 +395,54 @@ export default function PatientsContent() {
                 </div>
               </div>
 
-              <div>
-                <Label htmlFor="convenio">Convênio</Label>
-                <Input
-                  id="convenio"
-                  value={formData.convenio}
-                  onChange={(e) => setFormData({...formData, convenio: e.target.value})}
-                  placeholder="Ex: Unimed, SulAmérica, Particular"
-                />
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="nacionalidade">Nacionalidade</Label>
+                  <Select
+                    value={formData.nacionalidade}
+                    onValueChange={(value) => setFormData({...formData, nacionalidade: value})}
+                  >
+                    <SelectTrigger id="nacionalidade">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Brasileira">Brasileira</SelectItem>
+                      {paises.map((pais) => (
+                        <SelectItem key={pais.id['ISO-3166-1-ALPHA-3']} value={pais.nome}>
+                          {pais.nome}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="convenio">Convênio</Label>
+                  <Select
+                    value={formData.convenio}
+                    onValueChange={(value) => setFormData({...formData, convenio: value})}
+                  >
+                    <SelectTrigger id="convenio">
+                      <SelectValue placeholder="Selecione ou digite" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Particular">Particular</SelectItem>
+                      {convenios.map((conv) => (
+                        <SelectItem key={conv.id} value={conv.nome}>
+                          {conv.nome}
+                        </SelectItem>
+                      ))}
+                      <SelectItem value="__outro__">Outro (Digite abaixo)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {formData.convenio === "__outro__" && (
+                    <Input
+                      className="mt-2"
+                      placeholder="Digite o nome do convênio"
+                      onChange={(e) => setFormData({...formData, convenio: e.target.value})}
+                    />
+                  )}
+                </div>
               </div>
 
               <div className="border-t pt-4">

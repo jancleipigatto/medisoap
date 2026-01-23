@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { User } from "@/entities/User";
-import { Stethoscope, Home, Plus, Users, FileText, LayoutTemplate, Shield, ClipboardList, FileCheck, Send, Trash2, PanelLeftClose, PanelLeft, Calculator, Pill, LogOut, UserCircle, Edit, Settings } from "lucide-react";
+import { Stethoscope, Home, Plus, Users, FileText, LayoutTemplate, Shield, ClipboardList, FileCheck, Send, Trash2, PanelLeftClose, PanelLeft, Calculator, Pill, LogOut, UserCircle, Edit, Settings, Building2 } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -84,6 +84,12 @@ export default function Layout({ children, currentPageName }) {
       url: createPageUrl("Patients"),
       icon: Users,
       permission: "can_access_patients"
+    },
+    {
+      title: "Convênios",
+      url: createPageUrl("ConvenioManagement"),
+      icon: Building2,
+      permission: "can_create_anamnesis"
     },
     {
       title: "Modelos Anamnese",

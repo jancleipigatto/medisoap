@@ -15,12 +15,13 @@ import PatientHistory from './pages/PatientHistory';
 import Patients from './pages/Patients';
 import ProfileManagement from './pages/ProfileManagement';
 import ReceitaTemplates from './pages/ReceitaTemplates';
+import Settings from './pages/Settings';
 import Templates from './pages/Templates';
 import Tools from './pages/Tools';
 import Trash from './pages/Trash';
 import UserManagement from './pages/UserManagement';
 import UserProfile from './pages/UserProfile';
-import Settings from './pages/Settings';
+import ConvenioManagement from './pages/ConvenioManagement';
 import __Layout from './Layout.jsx';
 
 
@@ -42,12 +43,13 @@ export const PAGES = {
     "Patients": Patients,
     "ProfileManagement": ProfileManagement,
     "ReceitaTemplates": ReceitaTemplates,
+    "Settings": Settings,
     "Templates": Templates,
     "Tools": Tools,
     "Trash": Trash,
     "UserManagement": UserManagement,
     "UserProfile": UserProfile,
-    "Settings": Settings,
+    "ConvenioManagement": ConvenioManagement,
 }
 
 export const pagesConfig = {
