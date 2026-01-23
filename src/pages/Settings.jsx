@@ -17,6 +17,8 @@ export default function Settings() {
   const [settings, setSettings] = useState({
     cep: "",
     logradouro: "",
+    numero: "",
+    complemento: "",
     bairro: "",
     cidade: "",
     uf: "",
@@ -55,6 +57,8 @@ export default function Settings() {
       setSettings({
         cep: user.app_settings.cep || "",
         logradouro: user.app_settings.logradouro || "",
+        numero: user.app_settings.numero || "",
+        complemento: user.app_settings.complemento || "",
         bairro: user.app_settings.bairro || "",
         cidade: user.app_settings.cidade || "",
         uf: user.app_settings.uf || "",
@@ -189,6 +193,30 @@ export default function Settings() {
                     onChange={(e) => setSettings({ ...settings, logradouro: e.target.value })}
                     className="mt-2"
                   />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="numero">Número</Label>
+                    <Input
+                      id="numero"
+                      placeholder="123"
+                      value={settings.numero}
+                      onChange={(e) => setSettings({ ...settings, numero: e.target.value })}
+                      className="mt-2"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="complemento">Complemento</Label>
+                    <Input
+                      id="complemento"
+                      placeholder="Apto 10, Sala 5, etc"
+                      value={settings.complemento}
+                      onChange={(e) => setSettings({ ...settings, complemento: e.target.value })}
+                      className="mt-2"
+                    />
+                  </div>
                 </div>
 
                 <div>
