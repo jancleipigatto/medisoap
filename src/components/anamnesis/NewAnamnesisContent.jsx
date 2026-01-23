@@ -225,7 +225,7 @@ ${soapData.plano}`;
 
   const addDetails = () => {
     if (currentAnamnesisId) {
-      navigate(createPageUrl(`AnamnesisDetail?id=${currentAnamnesisId}`));
+      window.location.href = createPageUrl(`AnamnesisDetail?id=${currentAnamnesisId}`);
     }
   };
 
