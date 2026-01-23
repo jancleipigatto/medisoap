@@ -292,7 +292,13 @@ ${anamnesis.plano || "Não informado"}`;
     }
     
     // Obter usuário atual
-    const currentUser = await base44.auth.me();
+    let currentUser;
+    try {
+      currentUser = await base44.auth.me();
+    } catch (error) {
+      console.error("Erro ao obter usuário:", error);
+      currentUser = { full_name: "Usuario" };
+    }
     
     // Formatar nome do arquivo: Nome do paciente_data da consulta_nome do atendente
     const dataFormatada = format(new Date(anamnesis.data_consulta), "dd-MM-yyyy");
