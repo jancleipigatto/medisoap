@@ -15,21 +15,16 @@ export default function PrintableDocument({
     <div className="printable-document bg-white p-8 max-w-[21cm] mx-auto">
       <style>{`
         @media print {
-          body * {
-            visibility: hidden;
-          }
-          .printable-document, .printable-document * {
-            visibility: visible;
+          .no-print {
+            display: none !important;
           }
           .printable-document {
-            position: absolute;
-            left: 0;
-            top: 0;
+            page-break-after: always;
             width: 100%;
             padding: 2cm;
           }
-          .no-print {
-            display: none !important;
+          .printable-document:last-child {
+            page-break-after: auto;
           }
           @page {
             size: A4;
