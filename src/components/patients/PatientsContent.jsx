@@ -415,6 +415,40 @@ export default function PatientsContent() {
                 </h3>
                 
                 <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="endereco_cep">CEP</Label>
+                    <Input
+                      id="endereco_cep"
+                      maxLength={8}
+                      value={formData.endereco_cep}
+                      onChange={(e) => setFormData({...formData, endereco_cep: e.target.value})}
+                      onBlur={async () => {
+                        const cep = formData.endereco_cep.replace(/\D/g, '');
+                        if (cep.length === 8) {
+                          try {
+                            const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+                            const data = await response.json();
+                            if (!data.erro) {
+                              setFormData({
+                                ...formData,
+                                endereco_rua: data.logradouro,
+                                endereco_bairro: data.bairro,
+                                endereco_cidade: data.localidade,
+                                endereco_estado: data.uf
+                              });
+                            } else {
+                              alert('CEP não encontrado.');
+                            }
+                          } catch (error) {
+                            console.error('Erro ao buscar CEP:', error);
+                          }
+                        }
+                      }}
+                      placeholder="00000000"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Digite o CEP para preencher automaticamente</p>
+                  </div>
+
                   <div className="grid md:grid-cols-3 gap-4">
                     <div className="md:col-span-2">
                       <Label htmlFor="endereco_rua">Rua/Avenida</Label>
@@ -457,7 +491,7 @@ export default function PatientsContent() {
                     </div>
                   </div>
 
-                  <div className="grid md:grid-cols-3 gap-4">
+                  <div className="grid md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="endereco_cidade">Cidade</Label>
                       <Input
@@ -472,18 +506,9 @@ export default function PatientsContent() {
                       <Input
                         id="endereco_estado"
                         value={formData.endereco_estado}
-                        onChange={(e) => setFormData({...formData, endereco_estado: e.target.value})}
+                        onChange={(e) => setFormData({...formData, endereco_estado: e.target.value.toUpperCase()})}
                         placeholder="SP"
                         maxLength={2}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="endereco_cep">CEP</Label>
-                      <Input
-                        id="endereco_cep"
-                        value={formData.endereco_cep}
-                        onChange={(e) => setFormData({...formData, endereco_cep: e.target.value})}
-                        placeholder="00000-000"
                       />
                     </div>
                   </div>
