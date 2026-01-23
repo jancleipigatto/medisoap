@@ -24,7 +24,15 @@ export default function NewAnamnesisContent() {
   const [templates, setTemplates] = useState([]);
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [selectedTemplate, setSelectedTemplate] = useState("");
-  const [dataConsulta, setDataConsulta] = useState(new Date().toISOString().split('T')[0]);
+  const [dataConsulta, setDataConsulta] = useState(() => {
+    // Obter data/hora atual de Brasília (UTC-3)
+    const now = new Date();
+    const brasiliaOffset = -3 * 60; // Brasília UTC-3 em minutos
+    const localOffset = now.getTimezoneOffset();
+    const diffMinutes = brasiliaOffset - localOffset;
+    const brasiliaTime = new Date(now.getTime() + diffMinutes * 60000);
+    return brasiliaTime.toISOString().split('T')[0];
+  });
   const [textoOriginal, setTextoOriginal] = useState("");
   const [soapData, setSoapData] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);

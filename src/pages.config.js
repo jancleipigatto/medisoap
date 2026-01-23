@@ -20,6 +20,7 @@ import Tools from './pages/Tools';
 import Trash from './pages/Trash';
 import UserManagement from './pages/UserManagement';
 import UserProfile from './pages/UserProfile';
+import Settings from './pages/Settings';
 import __Layout from './Layout.jsx';
 
 
@@ -46,6 +47,7 @@ export const PAGES = {
     "Trash": Trash,
     "UserManagement": UserManagement,
     "UserProfile": UserProfile,
+    "Settings": Settings,
 }
 
 export const pagesConfig = {

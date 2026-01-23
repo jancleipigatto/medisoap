@@ -126,7 +126,7 @@ export default function History() {
               <ArrowLeft className="w-4 h-4" />
             </Button>
             <div className="flex-1">
-              <h1 className="text-3xl font-bold text-gray-900">Histórico de Anamneses</h1>
+              <h1 className="text-3xl font-bold text-gray-900">Histórico de Consultas</h1>
               <p className="text-gray-600 mt-1">Visualize suas consultas anteriores</p>
             </div>
             <Link to={createPageUrl("NewAnamnesis")}>

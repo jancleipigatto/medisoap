@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { User } from "@/entities/User";
-import { Stethoscope, Home, Plus, Users, FileText, LayoutTemplate, Shield, ClipboardList, FileCheck, Send, Trash2, PanelLeftClose, PanelLeft, Calculator, Pill, LogOut, UserCircle, Edit } from "lucide-react";
+import { Stethoscope, Home, Plus, Users, FileText, LayoutTemplate, Shield, ClipboardList, FileCheck, Send, Trash2, PanelLeftClose, PanelLeft, Calculator, Pill, LogOut, UserCircle, Edit, Settings } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -68,7 +68,7 @@ export default function Layout({ children, currentPageName }) {
       permission: "can_create_anamnesis"
     },
     {
-      title: "Histórico",
+      title: "Histórico de Consultas",
       url: createPageUrl("History"),
       icon: FileText,
       permission: "can_create_anamnesis"
@@ -133,7 +133,13 @@ export default function Layout({ children, currentPageName }) {
       icon: Users, // Changed icon from Shield to Users as per outline
       masterOnly: true
     },
-  ];
+    {
+      title: "Configurações",
+      url: createPageUrl("Settings"),
+      icon: Settings,
+      permission: "can_create_anamnesis"
+    },
+    ];
 
   const hasPermission = (item) => {
     if (loading) return false;
