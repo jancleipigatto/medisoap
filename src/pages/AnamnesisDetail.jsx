@@ -70,18 +70,23 @@ export default function AnamnesisDetail() {
 
   useEffect(() => {
     const loadAnamnesis = async () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const id = urlParams.get('id');
-      
-      if (!id) {
-        navigate(createPageUrl("Home"));
-        return;
-      }
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const id = urlParams.get('id');
+        
+        if (!id) {
+          navigate(createPageUrl("Home"));
+          return;
+        }
 
-      const data = await Anamnesis.list();
-      const found = data.find(a => a.id === id);
-      
-      if (found) {
+        const data = await Anamnesis.list();
+        const found = data.find(a => a.id === id);
+        
+        if (!found) {
+          navigate(createPageUrl("Home"));
+          return;
+        }
+
         setAnamnesis(found);
         setEditData({
           atestado: found.atestado || "",
@@ -90,33 +95,44 @@ export default function AnamnesisDetail() {
           receita: found.receita || "",
           orientacoes: found.orientacoes || ""
         });
-      } else {
-        navigate(createPageUrl("Home"));
+        
+        // Carregar templates e documentos
+        const [
+          { AtestadoTemplate },
+          { ExameTemplate },
+          { EncaminhamentoTemplate },
+          { ReceitaTemplate },
+          { MedicalDocument }
+        ] = await Promise.all([
+          import("@/entities/AtestadoTemplate"),
+          import("@/entities/ExameTemplate"),
+          import("@/entities/EncaminhamentoTemplate"),
+          import("@/entities/ReceitaTemplate"),
+          import("@/entities/MedicalDocument")
+        ]);
+        
+        const [atestados, exames, encaminhamentos, receitas, allDocs] = await Promise.all([
+          AtestadoTemplate.list("-created_date"),
+          ExameTemplate.list("-created_date"),
+          EncaminhamentoTemplate.list("-created_date"),
+          ReceitaTemplate.list("-created_date"),
+          MedicalDocument.list("-created_date")
+        ]);
+        
+        setAtestadoTemplates(atestados);
+        setExameTemplates(exames);
+        setEncaminhamentoTemplates(encaminhamentos);
+        setReceitaTemplates(receitas);
+        
+        const myDocs = allDocs.filter(d => d.patient_name === found.patient_name && d.data_consulta === found.data_consulta);
+        setSavedDocs(myDocs);
+        
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error loading anamnesis:", error);
+        setIsLoading(false);
+        alert("Erro ao carregar anamnese: " + error.message);
       }
-      
-      // Carregar templates
-      const { AtestadoTemplate } = await import("@/entities/AtestadoTemplate");
-      const { ExameTemplate } = await import("@/entities/ExameTemplate");
-      const { EncaminhamentoTemplate } = await import("@/entities/EncaminhamentoTemplate");
-      const { ReceitaTemplate } = await import("@/entities/ReceitaTemplate");
-      const { MedicalDocument } = await import("@/entities/MedicalDocument");
-      
-      const atestados = await AtestadoTemplate.list("-created_date");
-      const exames = await ExameTemplate.list("-created_date");
-      const encaminhamentos = await EncaminhamentoTemplate.list("-created_date");
-      const receitas = await ReceitaTemplate.list("-created_date");
-      
-      setAtestadoTemplates(atestados);
-      setExameTemplates(exames);
-      setEncaminhamentoTemplates(encaminhamentos);
-      setReceitaTemplates(receitas);
-      
-      // Carregar documentos médicos salvos
-      const allDocs = await MedicalDocument.list("-created_date");
-      const myDocs = allDocs.filter(d => d.patient_name === found.patient_name && d.data_consulta === found.data_consulta);
-      setSavedDocs(myDocs);
-      
-      setIsLoading(false);
     };
 
     loadAnamnesis();
