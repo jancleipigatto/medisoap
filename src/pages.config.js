@@ -1,3 +1,4 @@
+import Agenda from './pages/Agenda';
 import AnamnesisDetail from './pages/AnamnesisDetail';
 import AtestadoTemplates from './pages/AtestadoTemplates';
 import CompletarPerfil from './pages/CompletarPerfil';
@@ -23,11 +24,12 @@ import Templates from './pages/Templates';
 import Tools from './pages/Tools';
 import UserManagement from './pages/UserManagement';
 import UserProfile from './pages/UserProfile';
-import Agenda from './pages/Agenda';
+import MedicamentosDatabase from './pages/MedicamentosDatabase';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
+    "Agenda": Agenda,
     "AnamnesisDetail": AnamnesisDetail,
     "AtestadoTemplates": AtestadoTemplates,
     "CompletarPerfil": CompletarPerfil,
@@ -53,7 +55,7 @@ export const PAGES = {
     "Tools": Tools,
     "UserManagement": UserManagement,
     "UserProfile": UserProfile,
-    "Agenda": Agenda,
+    "MedicamentosDatabase": MedicamentosDatabase,
 }
 
 export const pagesConfig = {
