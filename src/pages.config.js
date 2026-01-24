@@ -23,6 +23,7 @@ import Templates from './pages/Templates';
 import Tools from './pages/Tools';
 import UserManagement from './pages/UserManagement';
 import UserProfile from './pages/UserProfile';
+import Agenda from './pages/Agenda';
 import __Layout from './Layout.jsx';
 
 
@@ -52,6 +53,7 @@ export const PAGES = {
     "Tools": Tools,
     "UserManagement": UserManagement,
     "UserProfile": UserProfile,
+    "Agenda": Agenda,
 }
 
 export const pagesConfig = {
