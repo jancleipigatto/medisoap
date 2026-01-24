@@ -8,10 +8,12 @@ import ExameTemplates from './pages/ExameTemplates';
 import History from './pages/History';
 import Home from './pages/Home';
 import NewAnamnesis from './pages/NewAnamnesis';
+import NovaOrientacao from './pages/NovaOrientacao';
 import NovaReceita from './pages/NovaReceita';
 import NovoAtestado from './pages/NovoAtestado';
 import NovoEncaminhamento from './pages/NovoEncaminhamento';
 import NovoExame from './pages/NovoExame';
+import OrientacoesTemplates from './pages/OrientacoesTemplates';
 import PatientHistory from './pages/PatientHistory';
 import Patients from './pages/Patients';
 import ProfileManagement from './pages/ProfileManagement';
@@ -21,8 +23,6 @@ import Templates from './pages/Templates';
 import Tools from './pages/Tools';
 import UserManagement from './pages/UserManagement';
 import UserProfile from './pages/UserProfile';
-import OrientacoesTemplates from './pages/OrientacoesTemplates';
-import NovaOrientacao from './pages/NovaOrientacao';
 import __Layout from './Layout.jsx';
 
 
@@ -37,10 +37,12 @@ export const PAGES = {
     "History": History,
     "Home": Home,
     "NewAnamnesis": NewAnamnesis,
+    "NovaOrientacao": NovaOrientacao,
     "NovaReceita": NovaReceita,
     "NovoAtestado": NovoAtestado,
     "NovoEncaminhamento": NovoEncaminhamento,
     "NovoExame": NovoExame,
+    "OrientacoesTemplates": OrientacoesTemplates,
     "PatientHistory": PatientHistory,
     "Patients": Patients,
     "ProfileManagement": ProfileManagement,
@@ -50,8 +52,6 @@ export const PAGES = {
     "Tools": Tools,
     "UserManagement": UserManagement,
     "UserProfile": UserProfile,
-    "OrientacoesTemplates": OrientacoesTemplates,
-    "NovaOrientacao": NovaOrientacao,
 }
 
 export const pagesConfig = {

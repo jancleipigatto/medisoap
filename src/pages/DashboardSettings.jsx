@@ -14,13 +14,13 @@ import {
   ClipboardList,
   FileCheck,
   Send,
-  Trash2,
   FileText,
   Settings,
   Eye,
   EyeOff,
   Calculator,
-  Pill
+  Pill,
+  Info
 } from "lucide-react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -139,13 +139,21 @@ export default function DashboardSettings() {
       color: "from-pink-500 to-rose-600",
       permission: "can_access_templates"
     },
-    trash: {
-      id: "trash",
-      title: "Lixeira",
-      description: "Anamneses excluídas",
-      icon: Trash2,
-      color: "from-red-500 to-orange-600",
-      permission: "can_create_anamnesis"
+    orientacoes_models: {
+      id: "orientacoes_models",
+      title: "Modelos Orientações",
+      description: "Templates de orientações",
+      icon: Info,
+      color: "from-teal-500 to-cyan-600",
+      permission: "can_access_templates"
+    },
+    orientacoes: {
+      id: "orientacoes",
+      title: "Orientações",
+      description: "Criar orientação ao paciente",
+      icon: Info,
+      color: "from-cyan-500 to-teal-600",
+      permission: "can_access_templates"
     }
   };
 
