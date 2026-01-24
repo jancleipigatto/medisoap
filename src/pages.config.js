@@ -22,6 +22,8 @@ import Tools from './pages/Tools';
 import Trash from './pages/Trash';
 import UserManagement from './pages/UserManagement';
 import UserProfile from './pages/UserProfile';
+import OrientacoesTemplates from './pages/OrientacoesTemplates';
+import NovaOrientacao from './pages/NovaOrientacao';
 import __Layout from './Layout.jsx';
 
 
@@ -50,6 +52,8 @@ export const PAGES = {
     "Trash": Trash,
     "UserManagement": UserManagement,
     "UserProfile": UserProfile,
+    "OrientacoesTemplates": OrientacoesTemplates,
+    "NovaOrientacao": NovaOrientacao,
 }
 
 export const pagesConfig = {

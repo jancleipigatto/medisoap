@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { User } from "@/entities/User";
-import { Stethoscope, Home, Plus, Users, FileText, LayoutTemplate, Shield, ClipboardList, FileCheck, Send, Trash2, PanelLeftClose, PanelLeft, Calculator, Pill, LogOut, UserCircle, Edit, Settings, Building2 } from "lucide-react";
+import { Stethoscope, Home, Plus, Users, FileText, LayoutTemplate, Shield, ClipboardList, FileCheck, Send, Trash2, PanelLeftClose, PanelLeft, Calculator, Pill, LogOut, UserCircle, Edit, Settings, Building2, Info } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -119,6 +119,12 @@ export default function Layout({ children, currentPageName }) {
       title: "Modelos Receita",
       url: createPageUrl("ReceitaTemplates"),
       icon: Pill,
+      permission: "can_access_templates"
+    },
+    {
+      title: "Modelos Orientações",
+      url: createPageUrl("OrientacoesTemplates"),
+      icon: Info,
       permission: "can_access_templates"
     },
     {

@@ -16,7 +16,8 @@ import {
   Stethoscope,
   Settings,
   Calculator,
-  Pill
+  Pill,
+  Info
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import PermissionGuard from "../components/PermissionGuard";
@@ -139,6 +140,22 @@ export default function Home() {
       icon: Pill,
       url: createPageUrl("ReceitaTemplates"),
       color: "from-pink-500 to-rose-600",
+      permission: "can_access_templates"
+    },
+    orientacoes: {
+      title: "Orientações",
+      description: "Criar orientação ao paciente",
+      icon: Info,
+      url: createPageUrl("NovaOrientacao"),
+      color: "from-cyan-500 to-teal-600",
+      permission: "can_access_templates"
+    },
+    orientacoes_models: {
+      title: "Modelos Orientações",
+      description: "Templates de orientações",
+      icon: Info,
+      url: createPageUrl("OrientacoesTemplates"),
+      color: "from-teal-500 to-cyan-600",
       permission: "can_access_templates"
     }
     };
