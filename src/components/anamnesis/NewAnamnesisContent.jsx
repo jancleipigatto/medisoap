@@ -462,7 +462,7 @@ ${soapData.plano}`;
                         Salvando...
                       </>
                     ) : (
-                      "Salvar Rascunho"
+                      "Salvar"
                     )}
                   </Button>
                 </div>
