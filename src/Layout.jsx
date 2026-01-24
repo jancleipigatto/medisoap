@@ -80,6 +80,12 @@ export default function Layout({ children, currentPageName }) {
       permission: "can_create_anamnesis"
     },
     {
+      title: "Agenda",
+      url: createPageUrl("Agenda"),
+      icon: Calendar,
+      permission: "can_create_anamnesis"
+    },
+    {
       title: "Pacientes",
       url: createPageUrl("Patients"),
       icon: Users,
