@@ -81,13 +81,26 @@ export default function ReceitaFormAdvanced() {
     const lines = templateText.split('\n');
     const medications = [];
     let currentMed = null;
+    let currentVia = 'oral';
 
     lines.forEach(line => {
       const trimmed = line.trim();
       if (!trimmed) return;
       
-      // Se é uma linha de via de administração, pula
-      if (trimmed.startsWith('USO ')) return;
+      // Se é uma linha de via de administração, atualiza a via atual
+      if (trimmed.startsWith('USO ')) {
+        const viaMap = {
+          'USO ORAL': 'oral',
+          'USO INJETÁVEL': 'injetável',
+          'USO TÓPICO': 'tópica',
+          'USO INALATÓRIO': 'inalatória',
+          'USO RETAL': 'retal',
+          'USO SUBLINGUAL': 'sublingual',
+          'OUTROS': 'outra'
+        };
+        currentVia = viaMap[trimmed] || 'oral';
+        return;
+      }
       
       // Se tem " - ", é o nome do medicamento com quantidade
       if (trimmed.includes(' - ')) {
@@ -95,7 +108,8 @@ export default function ReceitaFormAdvanced() {
         currentMed = {
           id: Date.now() + Math.random(),
           nome: trimmed,
-          posologia: ''
+          posologia: '',
+          via_administracao: currentVia
         };
       } else if (currentMed) {
         // É a posologia do medicamento atual
@@ -125,17 +139,57 @@ export default function ReceitaFormAdvanced() {
   };
 
   const handleAddMedicationsFromTemplate = () => {
-    const medsToAdd = templateMedications
-      .filter(med => selectedMeds.includes(med.id))
-      .map(med => `${med.nome}\n${med.posologia}`)
-      .join('\n\n');
+    const selectedMedications = templateMedications.filter(med => selectedMeds.includes(med.id));
+    const formattedText = formatMedicationsByVia(selectedMedications);
     
-    setConteudo(prev => prev ? `${prev}\n\n${medsToAdd}` : medsToAdd);
+    setConteudo(prev => prev ? `${prev}\n\n${formattedText}` : formattedText);
     setShowTemplateMeds(false);
   };
 
+  const formatMedicationsByVia = (medications) => {
+    const grouped = medications.reduce((acc, med) => {
+      const via = med.via_administracao || 'oral';
+      if (!acc[via]) acc[via] = [];
+      acc[via].push(med);
+      return acc;
+    }, {});
+
+    const viaLabels = {
+      oral: 'USO ORAL',
+      injetável: 'USO INJETÁVEL',
+      tópica: 'USO TÓPICO',
+      inalatória: 'USO INALATÓRIO',
+      retal: 'USO RETAL',
+      sublingual: 'USO SUBLINGUAL',
+      outra: 'OUTROS'
+    };
+
+    let text = '';
+    Object.entries(grouped).forEach(([via, meds]) => {
+      text += `${viaLabels[via] || via.toUpperCase()}:\n\n`;
+      meds.forEach(med => {
+        text += `${med.nome}\n${med.posologia}\n\n`;
+      });
+      text += '\n';
+    });
+
+    return text.trim();
+  };
+
   const handleAddMedicamentoFromDatabase = (med) => {
-    const medText = `${med.nome}${med.apresentacao ? ` - ${med.apresentacao}` : ''}\n${med.posologia || ''}`;
+    const via = med.via_administracao || 'oral';
+    const viaLabels = {
+      oral: 'USO ORAL',
+      injetável: 'USO INJETÁVEL',
+      tópica: 'USO TÓPICO',
+      inalatória: 'USO INALATÓRIO',
+      retal: 'USO RETAL',
+      sublingual: 'USO SUBLINGUAL',
+      outra: 'OUTROS'
+    };
+    
+    const viaLabel = viaLabels[via] || 'USO ORAL';
+    const medText = `${viaLabel}:\n\n${med.nome}${med.apresentacao ? ` - ${med.apresentacao}` : ''}\n${med.posologia || ''}`;
     setConteudo(prev => prev ? `${prev}\n\n${medText}` : medText);
     setSearchMedicamento("");
     setOpen(false);
