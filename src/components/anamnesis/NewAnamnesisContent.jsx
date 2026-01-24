@@ -240,6 +240,8 @@ ${soapData.plano}`;
       plano: soapData?.plano || ""
     };
 
+    let savedId = currentAnamnesisId;
+
     if (currentAnamnesisId) {
       await base44.entities.Anamnesis.update(currentAnamnesisId, anamnesisData);
     } else {
@@ -248,11 +250,15 @@ ${soapData.plano}`;
         ...anamnesisData,
         numero_atendimento: numeroAtendimento
       });
-      setCurrentAnamnesisId(created.id);
+      savedId = created.id;
+      setCurrentAnamnesisId(savedId);
     }
 
     setIsSaving(false);
     setIsFinalized(true);
+    
+    // Redirecionar para saída de atendimento
+    window.location.href = createPageUrl(`AnamnesisDetail?id=${savedId}`);
   };
 
   const addDetails = () => {
@@ -505,8 +511,7 @@ ${soapData.plano}`;
                   <Button
                     onClick={finalizeAnamnesis}
                     disabled={isSaving || !textoOriginal.trim() || !selectedPatient || !cidText.trim()}
-                    variant="outline"
-                    className="flex-1 min-w-[140px] text-sm h-9"
+                    className="flex-1 min-w-[140px] text-sm h-9 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
                   >
                     {isSaving ? (
                       <>
@@ -599,6 +604,15 @@ ${soapData.plano}`;
                 </Button>
               )}
             </>
+          )}
+
+          {!soapData && isFinalized && (
+            <Button
+              onClick={addDetails}
+              className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-sm h-9"
+            >
+              Saída de Atendimento
+            </Button>
           )}
         </div>
         </div>
