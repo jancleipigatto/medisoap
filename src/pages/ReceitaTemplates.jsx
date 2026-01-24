@@ -77,6 +77,7 @@ export default function ReceitaTemplates() {
     const newMed = {
       id: Date.now(),
       nome: med.nome,
+      quantidade: '',
       posologia: med.posologia || '',
       via_administracao: med.via_administracao || 'oral'
     };
@@ -115,7 +116,8 @@ export default function ReceitaTemplates() {
     Object.entries(grouped).forEach(([via, meds]) => {
       text += `${viaLabels[via] || via.toUpperCase()}:\n\n`;
       meds.forEach(med => {
-        text += `${med.nome}\n${med.posologia}\n\n`;
+        const quantidadeText = med.quantidade ? ` - ${med.quantidade}` : '';
+        text += `${med.nome}${quantidadeText}\n${med.posologia}\n\n`;
       });
       text += '\n';
     });
@@ -388,19 +390,49 @@ export default function ReceitaTemplates() {
                   {selectedMedicamentos.map((med) => (
                     <Card key={med.id} className="p-3 bg-white">
                       <div className="space-y-2">
-                        <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-start gap-2">
                           <Input
                             value={med.nome}
                             onChange={(e) => updateMedicamento(med.id, 'nome', e.target.value)}
                             placeholder="Nome do medicamento"
                             className="flex-1"
                           />
+                          <div className="flex gap-2 items-start min-w-[200px]">
+                            <Input
+                              value={med.quantidade}
+                              onChange={(e) => updateMedicamento(med.id, 'quantidade', e.target.value)}
+                              placeholder="Qtd"
+                              className="w-24"
+                            />
+                            <Select
+                              value={med.quantidade}
+                              onValueChange={(value) => updateMedicamento(med.id, 'quantidade', value)}
+                            >
+                              <SelectTrigger className="w-28">
+                                <SelectValue placeholder="Qtd" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="1 caixa">1 caixa</SelectItem>
+                                <SelectItem value="2 caixas">2 caixas</SelectItem>
+                                <SelectItem value="3 caixas">3 caixas</SelectItem>
+                                <SelectItem value="1 frasco">1 frasco</SelectItem>
+                                <SelectItem value="2 frascos">2 frascos</SelectItem>
+                                <SelectItem value="1 tubo">1 tubo</SelectItem>
+                                <SelectItem value="2 tubos">2 tubos</SelectItem>
+                                <SelectItem value="1 ampola">1 ampola</SelectItem>
+                                <SelectItem value="5 ampolas">5 ampolas</SelectItem>
+                                <SelectItem value="10 ampolas">10 ampolas</SelectItem>
+                                <SelectItem value="1 envelope">1 envelope</SelectItem>
+                                <SelectItem value="30 envelopes">30 envelopes</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
                           <Button
                             type="button"
                             variant="ghost"
                             size="icon"
                             onClick={() => removeMedicamento(med.id)}
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50 flex-shrink-0"
                           >
                             <X className="w-4 h-4" />
                           </Button>
