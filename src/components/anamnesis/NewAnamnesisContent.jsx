@@ -83,11 +83,11 @@ export default function NewAnamnesisContent() {
 
     setIsProcessing(true);
     
-    let prompt = appSettings?.prompt_prontuario || `Você é um assistente médico especializado. Analise o seguinte texto de uma anamnese médica e organize-o no formato SOAP (Subjetivo, Objetivo, Avaliação, Plano).
+    let prompt = appSettings?.prompt_prontuario || `Você é um assistente médico especializado. Analise o seguinte texto de um atendimento médico e organize-o no formato SOAP (Subjetivo, Objetivo, Avaliação, Plano).
 
 IMPORTANTE: Preserve TODA a formatação original do texto, incluindo quebras de linha, espaçamentos, bullets, hífens e estruturas. NÃO consolide tudo em uma única linha.
 
-Texto da anamnese:
+Texto do atendimento:
 ${textoOriginal}
 
 Organize as informações nos seguintes campos, mantendo a formatação exata do texto original:
@@ -127,7 +127,7 @@ Se alguma seção não tiver informação no texto, deixe em branco ou indique "
   const generateSOAPText = () => {
     if (!soapData) return "";
     
-    return `ANAMNESE - FORMATO SOAP
+    return `ATENDIMENTO - FORMATO SOAP
 
 S - SUBJETIVO:
 ${soapData.subjetivo}
@@ -174,7 +174,7 @@ ${soapData.plano}`;
     }
 
     if (!textoOriginal.trim()) {
-      alert("Por favor, digite o texto da anamnese");
+      alert("Por favor, digite o texto do atendimento");
       return;
     }
 
@@ -206,7 +206,7 @@ ${soapData.plano}`;
     }
 
     setIsSaving(false);
-    alert("Anamnese salva com sucesso!");
+    alert("Atendimento salvo com sucesso!");
   };
 
   const finalizeAnamnesis = async () => {

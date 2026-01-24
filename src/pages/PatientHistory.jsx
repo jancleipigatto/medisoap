@@ -104,7 +104,7 @@ export default function PatientHistory() {
   };
 
   const handleCopy = (anamnesis) => {
-    const soapText = `ANAMNESE - FORMATO SOAP
+    const soapText = `ATENDIMENTO - FORMATO SOAP
 
 S - SUBJETIVO:
 ${anamnesis.subjetivo || "Não informado"}
@@ -150,7 +150,7 @@ ${anamnesis.plano || "Não informado"}`;
               ) : (
                 <>
                   <Eye className="w-4 h-4" />
-                  Mostrar Anamnese Completa
+                  Mostrar Atendimento Completo
                 </>
               )}
             </Button>
@@ -174,7 +174,7 @@ ${anamnesis.plano || "Não informado"}`;
                 <CardContent className="p-12 text-center">
                   <FileText className="w-16 h-16 mx-auto text-gray-300 mb-4" />
                   <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                    Nenhuma anamnese registrada
+                    Nenhum atendimento registrado
                   </h3>
                   <p className="text-gray-500 mb-6">
                     Este paciente ainda não possui consultas registradas

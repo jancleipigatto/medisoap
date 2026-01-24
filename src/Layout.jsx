@@ -98,7 +98,7 @@ export default function Layout({ children, currentPageName }) {
       permission: "can_create_anamnesis"
     },
     {
-      title: "Modelos Anamnese",
+      title: "Modelos Atendimento",
       url: createPageUrl("Templates"),
       icon: LayoutTemplate,
       permission: "can_access_templates"

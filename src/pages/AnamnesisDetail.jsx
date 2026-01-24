@@ -138,7 +138,7 @@ export default function AnamnesisDetail() {
       } catch (error) {
         console.error("Error loading anamnesis:", error);
         setIsLoading(false);
-        alert("Erro ao carregar anamnese: " + error.message);
+        alert("Erro ao carregar atendimento: " + error.message);
       }
     };
 
@@ -211,7 +211,7 @@ export default function AnamnesisDetail() {
   const generateSOAPText = () => {
     if (!anamnesis) return "";
     
-    return `ANAMNESE - FORMATO SOAP
+    return `ATENDIMENTO - FORMATO SOAP
 
 S - SUBJETIVO:
 ${anamnesis.subjetivo || "Não informado"}
@@ -546,7 +546,7 @@ ${anamnesis.plano || "Não informado"}`;
             return urlParams.get('tab') || 'anamnese';
           })()} className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-6">
-              <TabsTrigger value="anamnese">Anamnese</TabsTrigger>
+              <TabsTrigger value="anamnese">Atendimento</TabsTrigger>
               <TabsTrigger value="documentos">Documentos Médicos</TabsTrigger>
             </TabsList>
 
@@ -1196,13 +1196,13 @@ ${anamnesis.plano || "Não informado"}`;
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-red-600">
               <Trash2 className="w-5 h-5" />
-              Excluir Anamnese
+              Excluir Atendimento
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <p className="text-sm text-gray-600">
-              A anamnese será movida para a lixeira e poderá ser restaurada nos próximos 30 dias. 
-              Após esse período, será excluída definitivamente.
+              O atendimento será movido para a lixeira e poderá ser restaurado nos próximos 30 dias. 
+              Após esse período, será excluído definitivamente.
             </p>
             <div>
               <Label htmlFor="reason">Motivo da Exclusão *</Label>
