@@ -584,7 +584,7 @@ ${soapData.plano}`;
                   />
                   <Alert className="mt-4 bg-blue-50 border-blue-200">
                     <AlertDescription>
-                      Use o botão "Copiar" acima para copiar todo o texto formatado e colar em outro sistema.
+                      Use o botão "Copiar" acima para copiar todo o texto formatado.
                     </AlertDescription>
                   </Alert>
                 </CardContent>
