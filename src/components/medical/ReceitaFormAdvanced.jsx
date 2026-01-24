@@ -346,7 +346,7 @@ export default function ReceitaFormAdvanced() {
           <div className="space-y-6">
             <Card className="shadow-lg border-none">
               <CardHeader>
-                <CardTitle>Informações do Paciente</CardTitle>
+                <CardTitle>Atendimento</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
