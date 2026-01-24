@@ -1,8 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Anamnesis } from "@/entities/Anamnesis";
-// This import is kept for entity definition, but actual loading will be in PatientSelector
-import { AnamnesisTemplate } from "@/entities/AnamnesisTemplate";
-import { InvokeLLM } from "@/integrations/Core";
+import { base44 } from '@/api/base44Client';
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -47,7 +44,7 @@ export default function NewAnamnesisContent() {
   }, []);
 
   const loadTemplates = async () => {
-    const data = await AnamnesisTemplate.list("-created_date");
+    const data = await base44.entities.AnamnesisTemplate.list("-created_date");
     setTemplates(data);
     
     // Carregar modelo padrão automaticamente
@@ -92,7 +89,7 @@ Organize as informações nos seguintes campos, mantendo a formatação exata do
 Mantenha quebras de linha, bullets (- ou •), e toda estrutura de formatação presente no texto original.
 Se alguma seção não tiver informação no texto, deixe em branco ou indique "Não informado".`;
 
-    const result = await InvokeLLM({
+    const result = await base44.integrations.Core.InvokeLLM({
       prompt: prompt,
       response_json_schema: {
         type: "object",
@@ -142,7 +139,7 @@ ${soapData.plano}`;
     const dateStr = `${day}${month}${year}`;
     
     // Buscar atendimentos do mesmo dia
-    const allAnamneses = await Anamnesis.list();
+    const allAnamneses = await base44.entities.Anamnesis.list();
     const sameDay = allAnamneses.filter(a => {
       if (!a.numero_atendimento) return false;
       return a.numero_atendimento.endsWith(dateStr);
@@ -167,7 +164,7 @@ ${soapData.plano}`;
 
     if (currentAnamnesisId) {
       // Atualizar anamnese existente
-      await Anamnesis.update(currentAnamnesisId, {
+      await base44.entities.Anamnesis.update(currentAnamnesisId, {
         patient_id: selectedPatient.id,
         patient_name: selectedPatient.nome,
         data_consulta: dataConsulta,
@@ -176,7 +173,7 @@ ${soapData.plano}`;
     } else {
       // Criar nova anamnese com número de atendimento
       const numeroAtendimento = await generateAttendanceNumber(dataConsulta);
-      const created = await Anamnesis.create({
+      const created = await base44.entities.Anamnesis.create({
         patient_id: selectedPatient.id,
         patient_name: selectedPatient.nome,
         data_consulta: dataConsulta,
@@ -217,10 +214,10 @@ ${soapData.plano}`;
     };
 
     if (currentAnamnesisId) {
-      await Anamnesis.update(currentAnamnesisId, anamnesisData);
+      await base44.entities.Anamnesis.update(currentAnamnesisId, anamnesisData);
     } else {
       const numeroAtendimento = await generateAttendanceNumber(dataConsulta);
-      const created = await Anamnesis.create({
+      const created = await base44.entities.Anamnesis.create({
         ...anamnesisData,
         numero_atendimento: numeroAtendimento
       });
@@ -260,7 +257,7 @@ ${soapData.plano}`;
   }, []);
 
   const loadExistingAnamnesis = async (id) => {
-    const data = await Anamnesis.list();
+    const data = await base44.entities.Anamnesis.list();
     const anamnesis = data.find(a => a.id === id);
     
     if (anamnesis) {
