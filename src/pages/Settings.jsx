@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Settings as SettingsIcon, Save, Upload, Loader2, ArrowLeft } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -24,7 +25,8 @@ export default function Settings() {
     uf: "",
     timezone: "America/Sao_Paulo",
     logo_padrao_url: "",
-    assinatura_plano: "Gratuito"
+    assinatura_plano: "Gratuito",
+    prompt_prontuario: ""
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -64,7 +66,8 @@ export default function Settings() {
         uf: user.app_settings.uf || "",
         timezone: user.app_settings.timezone || "America/Sao_Paulo",
         logo_padrao_url: user.app_settings.logo_padrao_url || "",
-        assinatura_plano: user.app_settings.assinatura_plano || "Gratuito"
+        assinatura_plano: user.app_settings.assinatura_plano || "Gratuito",
+        prompt_prontuario: user.app_settings.prompt_prontuario || ""
       });
     }
     
@@ -322,6 +325,20 @@ export default function Settings() {
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
                   Recomendado: 3cm x 3cm (aproximadamente 300x300 pixels)
+                </p>
+              </div>
+
+              <div>
+                <Label htmlFor="prompt">Prompt para Prontuário Eletrônico com IA</Label>
+                <Textarea
+                  id="prompt"
+                  placeholder="Digite o prompt que será usado para converter o texto em prontuário eletrônico..."
+                  value={settings.prompt_prontuario}
+                  onChange={(e) => setSettings({ ...settings, prompt_prontuario: e.target.value })}
+                  className="mt-2 min-h-[150px] font-mono text-sm"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Personalize como a IA deve processar e estruturar os atendimentos
                 </p>
               </div>
 
