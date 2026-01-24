@@ -1,6 +1,7 @@
 import AnamnesisDetail from './pages/AnamnesisDetail';
 import AtestadoTemplates from './pages/AtestadoTemplates';
 import CompletarPerfil from './pages/CompletarPerfil';
+import ConvenioManagement from './pages/ConvenioManagement';
 import DashboardSettings from './pages/DashboardSettings';
 import EncaminhamentoTemplates from './pages/EncaminhamentoTemplates';
 import ExameTemplates from './pages/ExameTemplates';
@@ -21,7 +22,6 @@ import Tools from './pages/Tools';
 import Trash from './pages/Trash';
 import UserManagement from './pages/UserManagement';
 import UserProfile from './pages/UserProfile';
-import ConvenioManagement from './pages/ConvenioManagement';
 import __Layout from './Layout.jsx';
 
 
@@ -29,6 +29,7 @@ export const PAGES = {
     "AnamnesisDetail": AnamnesisDetail,
     "AtestadoTemplates": AtestadoTemplates,
     "CompletarPerfil": CompletarPerfil,
+    "ConvenioManagement": ConvenioManagement,
     "DashboardSettings": DashboardSettings,
     "EncaminhamentoTemplates": EncaminhamentoTemplates,
     "ExameTemplates": ExameTemplates,
@@ -49,7 +50,6 @@ export const PAGES = {
     "Trash": Trash,
     "UserManagement": UserManagement,
     "UserProfile": UserProfile,
-    "ConvenioManagement": ConvenioManagement,
 }
 
 export const pagesConfig = {

@@ -552,60 +552,7 @@ ${anamnesis.plano || "Não informado"}`;
                 </CardContent>
               </Card>
 
-              <Card className="shadow-lg border-none bg-gradient-to-br from-green-50 to-emerald-50">
-                <CardHeader>
-                  <CardTitle className="text-2xl">Formato SOAP - Divisão</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div>
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center font-bold">
-                        S
-                      </div>
-                      <h3 className="text-lg font-semibold text-green-700">Subjetivo</h3>
-                    </div>
-                    <div className="bg-white rounded-lg p-4 shadow-sm">
-                      <p className="text-gray-700 whitespace-pre-wrap">{anamnesis.subjetivo || "Não informado"}</p>
-                    </div>
-                  </div>
 
-                  <div>
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">
-                        O
-                      </div>
-                      <h3 className="text-lg font-semibold text-blue-700">Objetivo</h3>
-                    </div>
-                    <div className="bg-white rounded-lg p-4 shadow-sm">
-                      <p className="text-gray-700 whitespace-pre-wrap">{anamnesis.objetivo || "Não informado"}</p>
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="w-8 h-8 bg-purple-600 text-white rounded-full flex items-center justify-center font-bold">
-                        A
-                      </div>
-                      <h3 className="text-lg font-semibold text-purple-700">Avaliação</h3>
-                    </div>
-                    <div className="bg-white rounded-lg p-4 shadow-sm">
-                      <p className="text-gray-700 whitespace-pre-wrap">{anamnesis.avaliacao || "Não informado"}</p>
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="w-8 h-8 bg-orange-600 text-white rounded-full flex items-center justify-center font-bold">
-                        P
-                      </div>
-                      <h3 className="text-lg font-semibold text-orange-700">Plano</h3>
-                    </div>
-                    <div className="bg-white rounded-lg p-4 shadow-sm">
-                      <p className="text-gray-700 whitespace-pre-wrap">{anamnesis.plano || "Não informado"}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
             </TabsContent>
 
             <TabsContent value="documentos" className="space-y-6">
