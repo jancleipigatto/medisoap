@@ -493,7 +493,10 @@ ${anamnesis.plano || "Não informado"}`;
             </div>
           </div>
 
-          <Tabs defaultValue="anamnese" className="w-full">
+          <Tabs defaultValue={(() => {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('tab') || 'anamnese';
+          })()} className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-6">
               <TabsTrigger value="anamnese">Anamnese</TabsTrigger>
               <TabsTrigger value="documentos">Documentos Médicos</TabsTrigger>
