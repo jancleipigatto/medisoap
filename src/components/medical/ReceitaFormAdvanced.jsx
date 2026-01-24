@@ -359,7 +359,7 @@ export default function ReceitaFormAdvanced() {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                   <div>
                     <Label htmlFor="data">Data da Consulta *</Label>
                     <Input
@@ -378,48 +378,47 @@ export default function ReceitaFormAdvanced() {
                       onChange={(e) => setHorarioConsulta(e.target.value)}
                     />
                   </div>
+                  {templates.length > 0 && (
+                    <div>
+                      <Label htmlFor="template">Modelo de Receita</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            className="w-full justify-between"
+                          >
+                            {selectedTemplate
+                              ? templates.find((t) => t.id === selectedTemplate)?.nome
+                              : "Selecione um modelo"}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-full p-0">
+                          <Command>
+                            <CommandInput placeholder="Buscar modelo..." />
+                            <CommandEmpty>Nenhum modelo encontrado.</CommandEmpty>
+                            <CommandGroup>
+                              {templates.map((template) => (
+                                <CommandItem
+                                  key={template.id}
+                                  value={template.nome}
+                                  onSelect={() => handleTemplateSelect(template.id)}
+                                >
+                                  <Check
+                                    className={`mr-2 h-4 w-4 ${
+                                      selectedTemplate === template.id ? "opacity-100" : "opacity-0"
+                                    }`}
+                                  />
+                                  {template.nome}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                  )}
                 </div>
-
-                {templates.length > 0 && (
-                  <div>
-                    <Label htmlFor="template">Usar Modelo (Opcional)</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          role="combobox"
-                          className="w-full justify-between"
-                        >
-                          {selectedTemplate
-                            ? templates.find((t) => t.id === selectedTemplate)?.nome
-                            : "Selecione um modelo"}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-full p-0">
-                        <Command>
-                          <CommandInput placeholder="Buscar modelo..." />
-                          <CommandEmpty>Nenhum modelo encontrado.</CommandEmpty>
-                          <CommandGroup>
-                            {templates.map((template) => (
-                              <CommandItem
-                                key={template.id}
-                                value={template.nome}
-                                onSelect={() => handleTemplateSelect(template.id)}
-                              >
-                                <Check
-                                  className={`mr-2 h-4 w-4 ${
-                                    selectedTemplate === template.id ? "opacity-100" : "opacity-0"
-                                  }`}
-                                />
-                                {template.nome}
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                )}
               </CardContent>
             </Card>
 
