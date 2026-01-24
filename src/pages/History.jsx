@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Search, Calendar, User as UserIcon, ArrowLeft, Copy as CopyIcon, Trash2 } from "lucide-react";
+import { FileText, Search, Calendar, User as UserIcon, ArrowLeft, Copy as CopyIcon, Trash2, FileCheck } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -231,13 +231,32 @@ export default function History() {
                               <Badge className="bg-green-100 text-green-700 border-green-200">
                                 SOAP
                               </Badge>
-                              {(anamnesis.subjetivo || anamnesis.objetivo || anamnesis.avaliacao || anamnesis.plano) ? (
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    const soapText = `ANAMNESE - FORMATO SOAP
+                              {(anamnesis.subjetivo || anamnesis.objetivo || anamnesis.avaliacao || anamnesis.plano) && (
+                                <>
+                                  <Button
+                                    variant="default"
+                                    size="sm"
+                                    onClick={() => navigate(createPageUrl("AnamnesisDetail") + "?id=" + anamnesis.id)}
+                                    className="gap-2 bg-blue-600 hover:bg-blue-700"
+                                  >
+                                    <FileText className="w-4 h-4" />
+                                    Abrir Atendimento
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => navigate(createPageUrl("AnamnesisDetail") + "?id=" + anamnesis.id + "&tab=documentos")}
+                                    className="gap-2"
+                                  >
+                                    <FileCheck className="w-4 h-4" />
+                                    Ver Documentos
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      const soapText = `ANAMNESE - FORMATO SOAP
 
 S - SUBJETIVO:
 ${anamnesis.subjetivo || "Não informado"}
@@ -250,14 +269,16 @@ ${anamnesis.avaliacao || "Não informado"}
 
 P - PLANO:
 ${anamnesis.plano || "Não informado"}`;
-                                    navigate(createPageUrl(`NewAnamnesis?copyText=${encodeURIComponent(soapText)}`));
-                                  }}
-                                  className="gap-2"
-                                >
-                                  <CopyIcon className="w-4 h-4" />
-                                  Copiar
-                                </Button>
-                              ) : (
+                                      navigate(createPageUrl(`NewAnamnesis?copyText=${encodeURIComponent(soapText)}`));
+                                    }}
+                                    className="gap-2"
+                                  >
+                                    <CopyIcon className="w-4 h-4" />
+                                    Copiar
+                                  </Button>
+                                </>
+                              )}
+                              {!(anamnesis.subjetivo || anamnesis.objetivo || anamnesis.avaliacao || anamnesis.plano) && (
                                 <>
                                   <Button
                                     variant="outline"
