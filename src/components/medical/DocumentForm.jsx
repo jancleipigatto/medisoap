@@ -119,7 +119,7 @@ export default function DocumentForm({ tipo, tipoLabel, icon: Icon, templateEnti
             <div>
               <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
                 <Icon className="w-8 h-8" />
-                Novo {tipoLabel}
+                Nova {tipoLabel}
               </h1>
               <p className="text-gray-600 mt-1">Preencha as informações do documento</p>
             </div>
