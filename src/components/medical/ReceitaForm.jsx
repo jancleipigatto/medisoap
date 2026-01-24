@@ -11,6 +11,7 @@ import { ArrowLeft, Printer, Save, Pill, Sparkles, Loader2 } from "lucide-react"
 import PrintableDocument from "./PrintableDocument";
 import PatientSelector from "../anamnesis/PatientSelector";
 import { InvokeLLM } from "@/integrations/Core";
+import MedicamentoAutocomplete from "./MedicamentoAutocomplete";
 
 export default function ReceitaForm({ templateEntity }) {
   const navigate = useNavigate();
@@ -217,12 +218,14 @@ Formate como uma receita médica padrão, mantendo todas as informações import
                 <CardTitle>Conteúdo da Receita</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <Textarea
-                  value={conteudo}
-                  onChange={(e) => setConteudo(e.target.value)}
-                  placeholder="Digite o conteúdo da receita médica..."
-                  className="min-h-[300px]"
-                />
+                <div>
+                  <Label>Receita (Digite o nome do medicamento para ver sugestões)</Label>
+                  <MedicamentoAutocomplete
+                    value={conteudo}
+                    onChange={setConteudo}
+                    placeholder="Digite o conteúdo da receita médica... (Digite nome do medicamento para autocompletar)"
+                  />
+                </div>
                 
                 <Button
                   onClick={convertToTemplate}

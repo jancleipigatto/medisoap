@@ -128,6 +128,12 @@ export default function Layout({ children, currentPageName }) {
       permission: "can_access_templates"
     },
     {
+      title: "Banco de Medicamentos",
+      url: createPageUrl("MedicamentosDatabase"),
+      icon: Pill,
+      permission: "can_access_templates"
+    },
+    {
       title: "Modelos Orientações",
       url: createPageUrl("OrientacoesTemplates"),
       icon: Info,
