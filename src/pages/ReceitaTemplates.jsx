@@ -77,7 +77,8 @@ export default function ReceitaTemplates() {
     const newMed = {
       id: Date.now(),
       nome: med.nome,
-      quantidade: '',
+      quantidade_numero: '',
+      quantidade_unidade: 'Comprimido(s)',
       posologia: med.posologia || '',
       via_administracao: med.via_administracao || 'oral'
     };
@@ -116,7 +117,9 @@ export default function ReceitaTemplates() {
     Object.entries(grouped).forEach(([via, meds]) => {
       text += `${viaLabels[via] || via.toUpperCase()}:\n\n`;
       meds.forEach(med => {
-        const quantidadeText = med.quantidade ? ` - ${med.quantidade}` : '';
+        const quantidadeText = (med.quantidade_numero && med.quantidade_unidade) 
+          ? ` - ${med.quantidade_numero} ${med.quantidade_unidade}` 
+          : '';
         text += `${med.nome}${quantidadeText}\n${med.posologia}\n\n`;
       });
       text += '\n';
@@ -397,36 +400,35 @@ export default function ReceitaTemplates() {
                             placeholder="Nome do medicamento"
                             className="flex-1"
                           />
-                          <div className="flex gap-2 items-start min-w-[200px]">
-                            <Input
-                              value={med.quantidade}
-                              onChange={(e) => updateMedicamento(med.id, 'quantidade', e.target.value)}
-                              placeholder="Qtd"
-                              className="w-24"
-                            />
-                            <Select
-                              value={med.quantidade}
-                              onValueChange={(value) => updateMedicamento(med.id, 'quantidade', value)}
-                            >
-                              <SelectTrigger className="w-28">
-                                <SelectValue placeholder="Qtd" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="1 caixa">1 caixa</SelectItem>
-                                <SelectItem value="2 caixas">2 caixas</SelectItem>
-                                <SelectItem value="3 caixas">3 caixas</SelectItem>
-                                <SelectItem value="1 frasco">1 frasco</SelectItem>
-                                <SelectItem value="2 frascos">2 frascos</SelectItem>
-                                <SelectItem value="1 tubo">1 tubo</SelectItem>
-                                <SelectItem value="2 tubos">2 tubos</SelectItem>
-                                <SelectItem value="1 ampola">1 ampola</SelectItem>
-                                <SelectItem value="5 ampolas">5 ampolas</SelectItem>
-                                <SelectItem value="10 ampolas">10 ampolas</SelectItem>
-                                <SelectItem value="1 envelope">1 envelope</SelectItem>
-                                <SelectItem value="30 envelopes">30 envelopes</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
+                          <Input
+                            value={med.quantidade_numero}
+                            onChange={(e) => updateMedicamento(med.id, 'quantidade_numero', e.target.value)}
+                            placeholder="Qtd"
+                            className="w-20"
+                          />
+                          <Select
+                            value={med.quantidade_unidade}
+                            onValueChange={(value) => updateMedicamento(med.id, 'quantidade_unidade', value)}
+                          >
+                            <SelectTrigger className="w-40">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Comprimido(s)">Comprimido(s)</SelectItem>
+                              <SelectItem value="Cápsula(s)">Cápsula(s)</SelectItem>
+                              <SelectItem value="Drágea(s)">Drágea(s)</SelectItem>
+                              <SelectItem value="Frasco">Frasco</SelectItem>
+                              <SelectItem value="Bisnaga">Bisnaga</SelectItem>
+                              <SelectItem value="mL">mL</SelectItem>
+                              <SelectItem value="Solução">Solução</SelectItem>
+                              <SelectItem value="Ampola(s)">Ampola(s)</SelectItem>
+                              <SelectItem value="Frasco-ampola">Frasco-ampola</SelectItem>
+                              <SelectItem value="Supositório(s)">Supositório(s)</SelectItem>
+                              <SelectItem value="Spray">Spray</SelectItem>
+                              <SelectItem value="Aerossol">Aerossol</SelectItem>
+                              <SelectItem value="Adesivo(s)">Adesivo(s)</SelectItem>
+                            </SelectContent>
+                          </Select>
                           <Button
                             type="button"
                             variant="ghost"
