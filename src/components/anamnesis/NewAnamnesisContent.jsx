@@ -441,46 +441,45 @@ ${soapData.plano}`;
                 onChange={(e) => setTextoOriginal(e.target.value)}
                 className="min-h-[200px] font-mono text-sm"
               />
-              <div className="mt-3">
-                <Button
-                  onClick={() => setShowCidDialog(true)}
-                  variant="outline"
-                  size="sm"
-                  className="w-full"
-                >
-                  {cidText ? `CID: ${cidText}` : "Incluir CID"}
-                </Button>
-              </div>
-              <div className="flex flex-col gap-3 mt-4">
-                <Button
-                  onClick={saveAnamnesisWithoutSOAP}
-                  disabled={isSaving || !textoOriginal.trim() || !selectedPatient}
-                  variant="outline"
-                  className="w-full"
-                >
-                  {isSaving ? (
-                    <>
-                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                      Salvando...
-                    </>
-                  ) : (
-                    "Salvar Rascunho"
-                  )}
-                </Button>
+              <div className="space-y-3 mt-4">
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => setShowCidDialog(true)}
+                    variant="outline"
+                    className="flex-1 text-sm"
+                  >
+                    {cidText ? `CID: ${cidText}` : "Incluir CID"}
+                  </Button>
+                  <Button
+                    onClick={saveAnamnesisWithoutSOAP}
+                    disabled={isSaving || !textoOriginal.trim() || !selectedPatient}
+                    variant="outline"
+                    className="flex-1 text-sm"
+                  >
+                    {isSaving ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Salvando...
+                      </>
+                    ) : (
+                      "Salvar Rascunho"
+                    )}
+                  </Button>
+                </div>
                 <div className="flex gap-2">
                   <Button
                     onClick={() => convertToSOAP(true)}
                     disabled={isProcessing || !textoOriginal.trim()}
-                    className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700"
+                    className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-sm"
                   >
                     {isProcessing ? (
                       <>
-                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                         Convertendo...
                       </>
                     ) : (
                       <>
-                        <Sparkles className="w-5 h-5 mr-2" />
+                        <Sparkles className="w-4 h-4 mr-2" />
                         Converter para Modelo
                       </>
                     )}
@@ -491,7 +490,7 @@ ${soapData.plano}`;
                       onValueChange={setSelectedTemplate}
                       disabled={isProcessing}
                     >
-                      <SelectTrigger className="w-[180px]">
+                      <SelectTrigger className="w-[180px] h-9 text-sm">
                         <SelectValue placeholder="Modelo" />
                       </SelectTrigger>
                       <SelectContent>
@@ -508,11 +507,11 @@ ${soapData.plano}`;
                 <Button
                   onClick={finalizeAnamnesis}
                   disabled={isSaving || !textoOriginal.trim() || !selectedPatient || !cidText.trim()}
-                  className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                  className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-sm"
                 >
                   {isSaving ? (
                     <>
-                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                       Finalizando...
                     </>
                   ) : (
