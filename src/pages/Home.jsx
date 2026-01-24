@@ -54,7 +54,6 @@ export default function Home() {
     },
     tools: {
       title: "Ferramentas",
-      description: "Calculadoras médicas",
       icon: Calculator,
       url: createPageUrl("Tools"),
       color: "from-cyan-500 to-blue-600",
@@ -62,7 +61,6 @@ export default function Home() {
     },
     atestados: {
       title: "Atestados",
-      description: "Criar novo atestado",
       icon: ClipboardList,
       url: createPageUrl("NovoAtestado"),
       color: "from-amber-500 to-orange-600",
@@ -70,7 +68,6 @@ export default function Home() {
     },
     exames_models: {
       title: "Exames",
-      description: "Solicitar exames",
       icon: FileCheck,
       url: createPageUrl("NovoExame"),
       color: "from-emerald-500 to-teal-600",
@@ -78,7 +75,6 @@ export default function Home() {
     },
     encaminhamentos: {
       title: "Encaminhamentos",
-      description: "Criar encaminhamento",
       icon: Send,
       url: createPageUrl("NovoEncaminhamento"),
       color: "from-violet-500 to-purple-600",
@@ -86,7 +82,6 @@ export default function Home() {
     },
     receitas: {
       title: "Receitas",
-      description: "Criar receita médica",
       icon: Pill,
       url: createPageUrl("NovaReceita"),
       color: "from-pink-500 to-rose-600",
@@ -94,7 +89,6 @@ export default function Home() {
     },
     patients: {
       title: "Pacientes",
-      description: "Gerenciar pacientes",
       icon: Users,
       url: createPageUrl("Patients"),
       color: "from-purple-500 to-pink-600",
@@ -102,7 +96,6 @@ export default function Home() {
     },
     templates: {
       title: "Modelos Anamnese",
-      description: "Templates de consulta",
       icon: LayoutTemplate,
       url: createPageUrl("Templates"),
       color: "from-indigo-500 to-purple-600",
@@ -110,7 +103,6 @@ export default function Home() {
     },
     atestado: {
       title: "Modelos Atestado",
-      description: "Templates de atestado",
       icon: ClipboardList,
       url: createPageUrl("AtestadoTemplates"),
       color: "from-blue-500 to-cyan-600",
@@ -118,7 +110,6 @@ export default function Home() {
     },
     exames: {
       title: "Modelos Exames",
-      description: "Templates de exames",
       icon: FileCheck,
       url: createPageUrl("ExameTemplates"),
       color: "from-teal-500 to-green-600",
@@ -126,7 +117,6 @@ export default function Home() {
     },
     encaminhamento: {
       title: "Modelos Encaminhamento",
-      description: "Templates de encaminhamento",
       icon: Send,
       url: createPageUrl("EncaminhamentoTemplates"),
       color: "from-green-500 to-lime-600",
@@ -134,7 +124,6 @@ export default function Home() {
     },
     receita_models: {
       title: "Modelos Receita",
-      description: "Templates de receita",
       icon: Pill,
       url: createPageUrl("ReceitaTemplates"),
       color: "from-pink-500 to-rose-600",
@@ -150,7 +139,6 @@ export default function Home() {
     },
     orientacoes_models: {
       title: "Modelos Orientações",
-      description: "Templates de orientações",
       icon: Info,
       url: createPageUrl("OrientacoesTemplates"),
       color: "from-teal-500 to-cyan-600",
