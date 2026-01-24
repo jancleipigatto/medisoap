@@ -591,12 +591,47 @@ ${soapData.plano}`;
                 </CardContent>
               </Card>
 
-
+              {isFinalized && (
+                <Button
+                  onClick={addDetails}
+                  className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                >
+                  Saída de Atendimento
+                </Button>
+              )}
             </>
           )}
         </div>
         </div>
       </div>
+
+      <Dialog open={showCidDialog} onOpenChange={setShowCidDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Incluir CID</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <Label htmlFor="cid">CID da Consulta</Label>
+              <Input
+                id="cid"
+                value={cidText}
+                onChange={(e) => setCidText(e.target.value)}
+                placeholder="Ex: CID 10 - J06.9 (Infecção das vias aéreas superiores)"
+                className="mt-2"
+              />
+            </div>
+          </div>
+          <div className="flex justify-end gap-3">
+            <Button variant="outline" onClick={() => setShowCidDialog(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={() => setShowCidDialog(false)}>
+              Confirmar
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
