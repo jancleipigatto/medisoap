@@ -567,7 +567,7 @@ ${anamnesis.plano || "Não informado"}`;
                   <div className="flex items-center justify-between">
                     <CardTitle className="flex items-center gap-2">
                       <FileText className="w-5 h-5 text-orange-600" />
-                      Texto convertido usando IA
+                      Prontuário - IA
                     </CardTitle>
                     <Button
                       onClick={() => copyText(generateSOAPText(), 'soap')}
