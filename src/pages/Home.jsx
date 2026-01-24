@@ -39,16 +39,14 @@ export default function Home() {
 
   const allMenuItems = {
     new_anamnesis: {
-      title: "Nova Anamnese",
-      description: "Criar nova consulta",
+      title: "Novo Atendimento",
       icon: Plus,
       url: createPageUrl("NewAnamnesis"),
       color: "from-blue-500 to-indigo-600",
       permission: "can_create_anamnesis"
     },
     history: {
-      title: "Histórico",
-      description: "Ver anamneses anteriores",
+      title: "Histórico de Consultas",
       icon: FileText,
       url: createPageUrl("History"),
       color: "from-green-500 to-emerald-600",
@@ -238,16 +236,13 @@ export default function Home() {
                 <Link key={item.title} to={item.url}>
                   <Card className="group hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border-none overflow-hidden cursor-pointer h-full">
                     <div className={`h-2 bg-gradient-to-r ${item.color}`} />
-                    <CardHeader className="pb-4">
-                      <div className={`w-16 h-16 bg-gradient-to-br ${item.color} rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
-                        <item.icon className="w-8 h-8 text-white" />
+                    <CardContent className="flex flex-col items-center justify-center py-8 px-4">
+                      <div className={`w-20 h-20 bg-gradient-to-br ${item.color} rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
+                        <item.icon className="w-10 h-10 text-white" />
                       </div>
-                      <CardTitle className="text-xl font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">
+                      <CardTitle className="text-xl font-bold text-gray-900 group-hover:text-indigo-600 transition-colors text-center">
                         {item.title}
                       </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-gray-600 text-sm">{item.description}</p>
                     </CardContent>
                   </Card>
                 </Link>
