@@ -176,7 +176,7 @@ export default function History() {
                   {!searchTerm && (
                     <Link to={createPageUrl("NewAnamnesis")}>
                       <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700">
-                        Criar Anamnese
+                        Meu primeiro atendimento 
                       </Button>
                     </Link>
                   )}
