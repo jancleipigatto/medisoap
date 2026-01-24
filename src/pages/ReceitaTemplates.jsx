@@ -314,7 +314,7 @@ export default function ReceitaTemplates() {
 
             <div>
               <div className="flex items-center justify-between mb-2">
-                <Label>Medicamentos da Receita</Label>
+                <Label>Medicamentos</Label>
                 <Button
                   type="button"
                   variant="outline"
