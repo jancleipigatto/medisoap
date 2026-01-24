@@ -38,10 +38,21 @@ export default function NewAnamnesisContent() {
   const [activeTool, setActiveTool] = useState(null);
   const [currentAnamnesisId, setCurrentAnamnesisId] = useState(null);
   const [isFinalized, setIsFinalized] = useState(false);
+  const [showCidDialog, setShowCidDialog] = useState(false);
+  const [cidText, setCidText] = useState("");
+  const [appSettings, setAppSettings] = useState(null);
 
   useEffect(() => {
     loadTemplates();
+    loadAppSettings();
   }, []);
+
+  const loadAppSettings = async () => {
+    const settings = await base44.entities.AppSettings.list();
+    if (settings.length > 0) {
+      setAppSettings(settings[0]);
+    }
+  };
 
   const loadTemplates = async () => {
     const data = await base44.entities.AnamnesisTemplate.list("-created_date");
@@ -65,15 +76,15 @@ export default function NewAnamnesisContent() {
     }
   };
 
-  const convertToSOAP = async () => {
+  const convertToSOAP = async (useTemplate = false) => {
     if (!textoOriginal.trim()) {
-      alert("Por favor, digite o texto da anamnese");
+      alert("Por favor, digite o texto do atendimento");
       return;
     }
 
     setIsProcessing(true);
     
-    const prompt = `Você é um assistente médico especializado. Analise o seguinte texto de uma anamnese médica e organize-o no formato SOAP (Subjetivo, Objetivo, Avaliação, Plano).
+    let prompt = appSettings?.prompt_prontuario || `Você é um assistente médico especializado. Analise o seguinte texto de uma anamnese médica e organize-o no formato SOAP (Subjetivo, Objetivo, Avaliação, Plano).
 
 IMPORTANTE: Preserve TODA a formatação original do texto, incluindo quebras de linha, espaçamentos, bullets, hífens e estruturas. NÃO consolide tudo em uma única linha.
 
@@ -88,6 +99,14 @@ Organize as informações nos seguintes campos, mantendo a formatação exata do
 
 Mantenha quebras de linha, bullets (- ou •), e toda estrutura de formatação presente no texto original.
 Se alguma seção não tiver informação no texto, deixe em branco ou indique "Não informado".`;
+
+    // Se está usando template, adicionar o template ao prompt
+    if (useTemplate && selectedTemplate && selectedTemplate !== "none") {
+      const template = templates.find(t => t.id === selectedTemplate);
+      if (template) {
+        prompt = `${prompt}\n\nUse o seguinte modelo como referência para estruturar a resposta:\n${template.template_texto}`;
+      }
+    }
 
     const result = await base44.integrations.Core.InvokeLLM({
       prompt: prompt,
@@ -197,9 +216,13 @@ ${soapData.plano}`;
       return;
     }
 
-    // Se não tem SOAP, converter primeiro
-    if (!soapData) {
-      await convertToSOAP();
+    if (!textoOriginal.trim()) {
+      alert("Por favor, digite o texto do atendimento");
+      return;
+    }
+
+    if (!cidText.trim()) {
+      alert("Por favor, inclua o CID antes de finalizar o atendimento");
       return;
     }
 
@@ -210,7 +233,10 @@ ${soapData.plano}`;
       patient_name: selectedPatient.nome,
       data_consulta: dataConsulta,
       texto_original: textoOriginal,
-      ...soapData
+      subjetivo: soapData?.subjetivo || "",
+      objetivo: soapData?.objetivo || "",
+      avaliacao: (soapData?.avaliacao || "") + (cidText ? `\n\nCID: ${cidText}` : ""),
+      plano: soapData?.plano || ""
     };
 
     if (currentAnamnesisId) {
@@ -405,7 +431,7 @@ ${soapData.plano}`;
 
           <Card className="shadow-lg border-none">
             <CardHeader>
-              <CardTitle>Texto da Anamnese</CardTitle>
+              <CardTitle>Atendimento</CardTitle>
             </CardHeader>
             <CardContent>
               <Textarea
@@ -414,6 +440,16 @@ ${soapData.plano}`;
                 onChange={(e) => setTextoOriginal(e.target.value)}
                 className="min-h-[200px] font-mono text-sm"
               />
+              <div className="mt-3">
+                <Button
+                  onClick={() => setShowCidDialog(true)}
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                >
+                  {cidText ? `CID: ${cidText}` : "Incluir CID"}
+                </Button>
+              </div>
               <div className="flex flex-col gap-3 mt-4">
                 <Button
                   onClick={saveAnamnesisWithoutSOAP}
@@ -430,50 +466,47 @@ ${soapData.plano}`;
                     "Salvar Rascunho"
                   )}
                 </Button>
-                <Button
-                  onClick={convertToSOAP}
-                  disabled={isProcessing || !textoOriginal.trim()}
-                  className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700"
-                >
-                  {isProcessing ? (
-                    <>
-                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                      Convertendo para SOAP...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="w-5 h-5 mr-2" />
-                      Converter para SOAP com IA
-                    </>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => convertToSOAP(true)}
+                    disabled={isProcessing || !textoOriginal.trim()}
+                    className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700"
+                  >
+                    {isProcessing ? (
+                      <>
+                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                        Convertendo...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-5 h-5 mr-2" />
+                        Converter para Modelo
+                      </>
+                    )}
+                  </Button>
+                  {templates.length > 0 && (
+                    <Select
+                      value={selectedTemplate}
+                      onValueChange={setSelectedTemplate}
+                      disabled={isProcessing}
+                    >
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Modelo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">Nenhum</SelectItem>
+                        {templates.map((template) => (
+                          <SelectItem key={template.id} value={template.id}>
+                            {template.nome}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   )}
-                </Button>
+                </div>
                 <Button
-                  onClick={async () => {
-                    if (!selectedPatient) {
-                      alert("Por favor, selecione um paciente");
-                      return;
-                    }
-                    if (!textoOriginal.trim()) {
-                      alert("Por favor, digite o texto da anamnese");
-                      return;
-                    }
-                    setIsSaving(true);
-                    const numeroAtendimento = await generateAttendanceNumber(dataConsulta);
-                    const created = await base44.entities.Anamnesis.create({
-                      patient_id: selectedPatient.id,
-                      patient_name: selectedPatient.nome,
-                      data_consulta: dataConsulta,
-                      texto_original: textoOriginal,
-                      numero_atendimento: numeroAtendimento,
-                      subjetivo: "",
-                      objetivo: "",
-                      avaliacao: "",
-                      plano: ""
-                    });
-                    setIsSaving(false);
-                    window.location.href = createPageUrl("History");
-                  }}
-                  disabled={isSaving || !textoOriginal.trim() || !selectedPatient}
+                  onClick={finalizeAnamnesis}
+                  disabled={isSaving || !textoOriginal.trim() || !selectedPatient || !cidText.trim()}
                   className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
                 >
                   {isSaving ? (
@@ -496,7 +529,7 @@ ${soapData.plano}`;
                   <div className="flex items-center justify-between">
                     <CardTitle className="flex items-center gap-2">
                       <FileText className="w-5 h-5 text-orange-600" />
-                      Prontuário de Atendimento com Uso de IA
+                      Prontuário - IA
                     </CardTitle>
                     <Button
                       onClick={copySOAPText}
