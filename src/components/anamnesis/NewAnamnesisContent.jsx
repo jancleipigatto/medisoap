@@ -515,7 +515,7 @@ ${soapData.plano}`;
                       Finalizando...
                     </>
                   ) : (
-                    "Finalizar Atendimento"
+                    "Finalizar"
                   )}
                 </Button>
               </div>
