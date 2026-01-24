@@ -335,15 +335,15 @@ ${soapData.plano}`;
             <ArrowLeft className="w-4 h-4" />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Novo Atendimento</h1>
-            <p className="text-gray-600 mt-1">Digite ou cole o texto da consulta</p>
+            <h1 className="text-2xl font-bold text-gray-900">Novo Atendimento</h1>
+            <p className="text-sm text-gray-600 mt-1">Digite ou cole o texto da consulta</p>
           </div>
         </div>
 
         <div className="space-y-6">
           <Card className="shadow-lg border-none">
             <CardHeader>
-              <CardTitle>Informações da Consulta</CardTitle>
+              <CardTitle className="text-base">Informações da Consulta</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <PatientSelector
@@ -355,7 +355,7 @@ ${soapData.plano}`;
                 <div className="grid grid-cols-3 gap-2">
                   <Button
                     variant="outline"
-                    size="sm"
+                    className="text-sm h-9"
                     onClick={() => {
                       window.open(createPageUrl(`Patients?edit=${selectedPatient.id}`), '_blank');
                     }}
@@ -364,7 +364,7 @@ ${soapData.plano}`;
                   </Button>
                   <Button
                     variant="outline"
-                    size="sm"
+                    className="text-sm h-9"
                     onClick={() => {
                       window.open(createPageUrl(`Patients?new=true`), '_blank');
                     }}
@@ -373,7 +373,7 @@ ${soapData.plano}`;
                   </Button>
                   <Button
                     variant="outline"
-                    size="sm"
+                    className="text-sm h-9"
                     onClick={() => {
                       window.open(createPageUrl(`PatientHistory?patientId=${selectedPatient.id}`), '_blank');
                     }}
@@ -386,34 +386,34 @@ ${soapData.plano}`;
               {!selectedPatient && (
                 <Button
                   variant="outline"
-                  size="sm"
                   onClick={() => {
                     window.open(createPageUrl(`Patients?new=true`), '_blank');
                   }}
-                  className="w-full"
+                  className="w-full text-sm h-9"
                 >
                   Criar Novo Paciente
                 </Button>
               )}
 
               <div>
-                <Label htmlFor="data">Data da Consulta</Label>
+                <Label htmlFor="data" className="text-sm">Data da Consulta</Label>
                 <Input
                   id="data"
                   type="date"
                   value={dataConsulta}
                   onChange={(e) => setDataConsulta(e.target.value)}
+                  className="text-sm h-9"
                 />
               </div>
 
               {templates.length > 0 && (
                 <div>
-                  <Label htmlFor="template">Usar Modelo (Opcional)</Label>
+                  <Label htmlFor="template" className="text-sm">Usar Modelo (Opcional)</Label>
                   <Select
                     value={selectedTemplate}
                     onValueChange={handleTemplateSelect}
                   >
-                    <SelectTrigger id="template">
+                    <SelectTrigger id="template" className="text-sm h-9">
                       <SelectValue placeholder="Selecione um modelo" />
                     </SelectTrigger>
                     <SelectContent>
@@ -432,7 +432,7 @@ ${soapData.plano}`;
 
           <Card className="shadow-lg border-none">
             <CardHeader>
-              <CardTitle>Atendimento</CardTitle>
+              <CardTitle className="text-base">Atendimento</CardTitle>
             </CardHeader>
             <CardContent>
               <Textarea
@@ -446,8 +446,7 @@ ${soapData.plano}`;
                   <Button
                     onClick={() => setShowCidDialog(true)}
                     variant="outline"
-                    size="sm"
-                    className="text-xs"
+                    className="flex-1 min-w-[140px] text-sm h-9"
                   >
                     {cidText ? `CID: ${cidText}` : "Incluir CID"}
                   </Button>
@@ -455,12 +454,11 @@ ${soapData.plano}`;
                     onClick={saveAnamnesisWithoutSOAP}
                     disabled={isSaving || !textoOriginal.trim() || !selectedPatient}
                     variant="outline"
-                    size="sm"
-                    className="text-xs"
+                    className="flex-1 min-w-[140px] text-sm h-9"
                   >
                     {isSaving ? (
                       <>
-                        <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                         Salvando...
                       </>
                     ) : (
@@ -471,17 +469,16 @@ ${soapData.plano}`;
                     onClick={() => convertToSOAP(true)}
                     disabled={isProcessing || !textoOriginal.trim()}
                     variant="outline"
-                    size="sm"
-                    className="text-xs"
+                    className="flex-1 min-w-[140px] text-sm h-9"
                   >
                     {isProcessing ? (
                       <>
-                        <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                         Convertendo...
                       </>
                     ) : (
                       <>
-                        <Sparkles className="w-3 h-3 mr-1" />
+                        <Sparkles className="w-4 h-4 mr-2" />
                         Converter Modelo
                       </>
                     )}
@@ -492,7 +489,7 @@ ${soapData.plano}`;
                       onValueChange={setSelectedTemplate}
                       disabled={isProcessing}
                     >
-                      <SelectTrigger className="w-[120px] h-8 text-xs">
+                      <SelectTrigger className="flex-1 min-w-[140px] h-9 text-sm">
                         <SelectValue placeholder="Modelo" />
                       </SelectTrigger>
                       <SelectContent>
@@ -509,12 +506,11 @@ ${soapData.plano}`;
                     onClick={finalizeAnamnesis}
                     disabled={isSaving || !textoOriginal.trim() || !selectedPatient || !cidText.trim()}
                     variant="outline"
-                    size="sm"
-                    className="text-xs"
+                    className="flex-1 min-w-[140px] text-sm h-9"
                   >
                     {isSaving ? (
                       <>
-                        <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                         Finalizando...
                       </>
                     ) : (
@@ -531,15 +527,14 @@ ${soapData.plano}`;
               <Card className="shadow-lg border-none bg-gradient-to-br from-amber-50 to-orange-50">
                 <CardHeader>
                   <div className="flex items-center justify-between">
-                    <CardTitle className="flex items-center gap-2">
+                    <CardTitle className="flex items-center gap-2 text-base">
                       <FileText className="w-5 h-5 text-orange-600" />
                       Prontuário - IA
                     </CardTitle>
                     <Button
                       onClick={copySOAPText}
                       variant="outline"
-                      size="sm"
-                      className="gap-2"
+                      className="gap-2 text-sm h-9"
                     >
                       {copied ? (
                         <>
@@ -598,7 +593,7 @@ ${soapData.plano}`;
               {isFinalized && (
                 <Button
                   onClick={addDetails}
-                  className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                  className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-sm h-9"
                 >
                   Saída de Atendimento
                 </Button>
@@ -612,25 +607,25 @@ ${soapData.plano}`;
       <Dialog open={showCidDialog} onOpenChange={setShowCidDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Incluir CID</DialogTitle>
+            <DialogTitle className="text-base">Incluir CID</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div>
-              <Label htmlFor="cid">CID da Consulta</Label>
+              <Label htmlFor="cid" className="text-sm">CID da Consulta</Label>
               <Input
                 id="cid"
                 value={cidText}
                 onChange={(e) => setCidText(e.target.value)}
                 placeholder="Ex: CID 10 - J06.9 (Infecção das vias aéreas superiores)"
-                className="mt-2"
+                className="mt-2 text-sm h-9"
               />
             </div>
           </div>
           <div className="flex justify-end gap-3">
-            <Button variant="outline" onClick={() => setShowCidDialog(false)}>
+            <Button variant="outline" onClick={() => setShowCidDialog(false)} className="text-sm h-9">
               Cancelar
             </Button>
-            <Button onClick={() => setShowCidDialog(false)}>
+            <Button onClick={() => setShowCidDialog(false)} className="text-sm h-9">
               Confirmar
             </Button>
           </div>
