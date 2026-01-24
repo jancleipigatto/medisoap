@@ -503,7 +503,12 @@ ${anamnesis.plano || "Não informado"}`;
               <h1 className="text-3xl font-bold text-gray-900">{anamnesis.patient_name}</h1>
               <div className="flex items-center gap-2 mt-1 text-gray-600">
                 <Calendar className="w-4 h-4" />
-                {format(parseISO(anamnesis.data_consulta), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                {new Date(anamnesis.data_consulta + 'T12:00:00').toLocaleString("pt-BR", {
+                  timeZone: "America/Sao_Paulo",
+                  day: "2-digit",
+                  month: "long",
+                  year: "numeric"
+                })}
               </div>
             </div>
             <div className="flex items-center gap-2">
