@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { FileText, Search, Calendar, User as UserIcon, ArrowLeft, Copy as CopyIcon, Trash2, FileCheck } from "lucide-react";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Skeleton } from "@/components/ui/skeleton";
 import PermissionGuard from "../components/PermissionGuard";
@@ -217,7 +217,7 @@ export default function History() {
                             </div>
                             <div className={`flex items-center gap-2 mt-1 text-sm ${anamnesis.is_cancelled ? 'text-gray-400' : 'text-gray-500'}`}>
                               <Calendar className="w-4 h-4" />
-                              {format(new Date(anamnesis.data_consulta), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                              {format(parseISO(anamnesis.data_consulta), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
                             </div>
                           </div>
                         </div>

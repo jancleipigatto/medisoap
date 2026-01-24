@@ -8,6 +8,7 @@ import EncaminhamentoTemplates from './pages/EncaminhamentoTemplates';
 import ExameTemplates from './pages/ExameTemplates';
 import History from './pages/History';
 import Home from './pages/Home';
+import MedicamentosDatabase from './pages/MedicamentosDatabase';
 import NewAnamnesis from './pages/NewAnamnesis';
 import NovaOrientacao from './pages/NovaOrientacao';
 import NovaReceita from './pages/NovaReceita';
@@ -24,7 +25,6 @@ import Templates from './pages/Templates';
 import Tools from './pages/Tools';
 import UserManagement from './pages/UserManagement';
 import UserProfile from './pages/UserProfile';
-import MedicamentosDatabase from './pages/MedicamentosDatabase';
 import __Layout from './Layout.jsx';
 
 
@@ -39,6 +39,7 @@ export const PAGES = {
     "ExameTemplates": ExameTemplates,
     "History": History,
     "Home": Home,
+    "MedicamentosDatabase": MedicamentosDatabase,
     "NewAnamnesis": NewAnamnesis,
     "NovaOrientacao": NovaOrientacao,
     "NovaReceita": NovaReceita,
@@ -55,7 +56,6 @@ export const PAGES = {
     "Tools": Tools,
     "UserManagement": UserManagement,
     "UserProfile": UserProfile,
-    "MedicamentosDatabase": MedicamentosDatabase,
 }
 
 export const pagesConfig = {
