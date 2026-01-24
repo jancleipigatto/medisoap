@@ -21,6 +21,8 @@ export default function ReceitaTemplates() {
   const [editingTemplate, setEditingTemplate] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [medicamentos, setMedicamentos] = useState([]);
+  const [showMedicamentos, setShowMedicamentos] = useState(false);
   const [formData, setFormData] = useState({
     nome: "",
     template_texto: "",
@@ -32,11 +34,30 @@ export default function ReceitaTemplates() {
 
   useEffect(() => {
     loadTemplates();
+    loadMedicamentos();
   }, []);
 
   const loadTemplates = async () => {
     const data = await ReceitaTemplate.list("-created_date");
     setTemplates(data);
+  };
+
+  const loadMedicamentos = async () => {
+    try {
+      const { Medicamento } = await import("@/entities/Medicamento");
+      const data = await Medicamento.list("-created_date");
+      setMedicamentos(data);
+    } catch (error) {
+      console.error("Erro ao carregar medicamentos:", error);
+    }
+  };
+
+  const addMedicamentoToText = (med) => {
+    const medText = `${med.nome}${med.apresentacao ? ' - ' + med.apresentacao : ''}
+${med.posologia || ''}${med.indicacao ? ' ' + med.indicacao : ''}
+
+`;
+    setFormData({ ...formData, template_texto: formData.template_texto + medText });
   };
 
   const handleEdit = (template) => {
@@ -217,7 +238,71 @@ export default function ReceitaTemplates() {
             </div>
 
             <div>
-              <Label htmlFor="texto">Texto da Receita *</Label>
+              <div className="flex items-center justify-between mb-2">
+                <Label htmlFor="texto">Texto da Receita *</Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowMedicamentos(!showMedicamentos)}
+                  className="gap-2"
+                >
+                  <Pill className="w-4 h-4" />
+                  {showMedicamentos ? "Ocultar" : "Consultar"} Medicamentos
+                </Button>
+              </div>
+              
+              {showMedicamentos && (
+                <Card className="mb-3 border-pink-200">
+                  <CardContent className="p-3 max-h-64 overflow-y-auto">
+                    {medicamentos.length === 0 ? (
+                      <p className="text-sm text-gray-500 text-center py-4">
+                        Nenhum medicamento cadastrado. 
+                        <Button
+                          variant="link"
+                          size="sm"
+                          onClick={() => navigate(createPageUrl("MedicamentosDatabase"))}
+                          className="px-1"
+                        >
+                          Cadastrar medicamentos
+                        </Button>
+                      </p>
+                    ) : (
+                      <div className="space-y-2">
+                        {medicamentos.map((med) => (
+                          <button
+                            key={med.id}
+                            type="button"
+                            onClick={() => addMedicamentoToText(med)}
+                            className="w-full text-left p-2 hover:bg-pink-50 rounded-lg transition-colors border border-gray-200"
+                          >
+                            <div className="flex items-start gap-2">
+                              <Pill className="w-4 h-4 text-pink-600 mt-0.5 flex-shrink-0" />
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <p className="font-semibold text-sm text-gray-900">
+                                    {med.nome}
+                                  </p>
+                                  {med.uso_frequente && (
+                                    <Star className="w-3 h-3 fill-yellow-400 text-yellow-400 flex-shrink-0" />
+                                  )}
+                                </div>
+                                {med.apresentacao && (
+                                  <p className="text-xs text-gray-600">{med.apresentacao}</p>
+                                )}
+                                {med.posologia && (
+                                  <p className="text-xs text-gray-700 mt-1">{med.posologia}</p>
+                                )}
+                              </div>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+              
               <Textarea
                 id="texto"
                 value={formData.template_texto}
