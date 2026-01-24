@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Calendar, FileText, ClipboardList, FileCheck, Send, Copy, Check, Printer, Trash2, Pill, Save, Edit2, Download } from "lucide-react";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -305,7 +305,7 @@ ${anamnesis.plano || "Não informado"}`;
     }
     
     // Formatar nome do arquivo: Nome do paciente_data da consulta_nome do atendente
-    const dataFormatada = format(new Date(anamnesis.data_consulta), "dd-MM-yyyy");
+    const dataFormatada = format(parseISO(anamnesis.data_consulta), "dd-MM-yyyy");
     const fileName = `${anamnesis.patient_name}_${dataFormatada}_${currentUser.full_name}.pdf`;
     
     // Criar PDF usando texto vetorial
@@ -358,7 +358,7 @@ ${anamnesis.plano || "Não informado"}`;
       pdf.setFont(undefined, 'normal');
       pdf.text(`Paciente: ${anamnesis.patient_name}`, margin, yPos);
       yPos += 6;
-      pdf.text(`Data: ${format(new Date(anamnesis.data_consulta), "dd/MM/yyyy")}`, margin, yPos);
+      pdf.text(`Data: ${format(parseISO(anamnesis.data_consulta), "dd/MM/yyyy")}`, margin, yPos);
       yPos += 10;
       
       // Conteúdo do documento
@@ -503,7 +503,7 @@ ${anamnesis.plano || "Não informado"}`;
               <h1 className="text-3xl font-bold text-gray-900">{anamnesis.patient_name}</h1>
               <div className="flex items-center gap-2 mt-1 text-gray-600">
                 <Calendar className="w-4 h-4" />
-                {format(new Date(anamnesis.data_consulta), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                {format(parseISO(anamnesis.data_consulta), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
               </div>
             </div>
             <div className="flex items-center gap-2">
