@@ -323,7 +323,7 @@ export default function ReceitaTemplates() {
                   className="gap-2"
                 >
                   <Plus className="w-4 h-4" />
-                  Adicionar Medicamento
+                  Adicionar
                 </Button>
               </div>
 
