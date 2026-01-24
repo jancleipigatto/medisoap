@@ -60,6 +60,7 @@ export default function AnamnesisDetail() {
   const [exameTemplates, setExameTemplates] = useState([]);
   const [encaminhamentoTemplates, setEncaminhamentoTemplates] = useState([]);
   const [receitaTemplates, setReceitaTemplates] = useState([]);
+  const [orientacoesTemplates, setOrientacoesTemplates] = useState([]);
   const [showPrintPreview, setShowPrintPreview] = useState(null); // { tipo: string, conteudo: string }
   const [selectedTemplateData, setSelectedTemplateData] = useState({
     cabecalho: "",
@@ -105,20 +106,23 @@ export default function AnamnesisDetail() {
           { ExameTemplate },
           { EncaminhamentoTemplate },
           { ReceitaTemplate },
+          { OrientacoesTemplate },
           { MedicalDocument }
         ] = await Promise.all([
           import("@/entities/AtestadoTemplate"),
           import("@/entities/ExameTemplate"),
           import("@/entities/EncaminhamentoTemplate"),
           import("@/entities/ReceitaTemplate"),
+          import("@/entities/OrientacoesTemplate"),
           import("@/entities/MedicalDocument")
         ]);
         
-        const [atestados, exames, encaminhamentos, receitas, allDocs] = await Promise.all([
+        const [atestados, exames, encaminhamentos, receitas, orientacoes, allDocs] = await Promise.all([
           AtestadoTemplate.list("-created_date"),
           ExameTemplate.list("-created_date"),
           EncaminhamentoTemplate.list("-created_date"),
           ReceitaTemplate.list("-created_date"),
+          OrientacoesTemplate.list("-created_date"),
           MedicalDocument.list("-created_date")
         ]);
         
@@ -126,6 +130,7 @@ export default function AnamnesisDetail() {
         setExameTemplates(exames);
         setEncaminhamentoTemplates(encaminhamentos);
         setReceitaTemplates(receitas);
+        setOrientacoesTemplates(orientacoes);
         
         const myDocs = allDocs.filter(d => d.patient_name === found.patient_name && d.data_consulta === found.data_consulta);
         setSavedDocs(myDocs);
@@ -1058,6 +1063,18 @@ ${anamnesis.plano || "Não informado"}`;
                       Orientações ao Paciente
                     </CardTitle>
                     <div className="flex gap-2">
+                      {orientacoesTemplates.length > 0 && (
+                        <Select onValueChange={(templateId) => loadTemplateForPrint(orientacoesTemplates, templateId, 'orientacoes')}>
+                          <SelectTrigger className="w-[180px]">
+                            <SelectValue placeholder="Carregar modelo" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {orientacoesTemplates.map(t => (
+                              <SelectItem key={t.id} value={t.id}>{t.nome}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
                       {editData.orientacoes && (
                         <>
                           <Button
