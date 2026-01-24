@@ -19,7 +19,6 @@ import ReceitaTemplates from './pages/ReceitaTemplates';
 import Settings from './pages/Settings';
 import Templates from './pages/Templates';
 import Tools from './pages/Tools';
-import Trash from './pages/Trash';
 import UserManagement from './pages/UserManagement';
 import UserProfile from './pages/UserProfile';
 import OrientacoesTemplates from './pages/OrientacoesTemplates';
@@ -49,7 +48,6 @@ export const PAGES = {
     "Settings": Settings,
     "Templates": Templates,
     "Tools": Tools,
-    "Trash": Trash,
     "UserManagement": UserManagement,
     "UserProfile": UserProfile,
     "OrientacoesTemplates": OrientacoesTemplates,

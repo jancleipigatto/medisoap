@@ -127,12 +127,7 @@ export default function Layout({ children, currentPageName }) {
       icon: Info,
       permission: "can_access_templates"
     },
-    {
-      title: "Lixeira",
-      url: createPageUrl("Trash"),
-      icon: Trash2,
-      permission: "can_create_anamnesis"
-    },
+
     {
       title: "Gerenciar Perfis",
       url: createPageUrl("ProfileManagement"),
