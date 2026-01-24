@@ -131,7 +131,7 @@ export default function History() {
             </div>
             <Link to={createPageUrl("NewAnamnesis")}>
               <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg">
-                Novo Atendimento
+                Novo atendimento
               </Button>
             </Link>
           </div>
