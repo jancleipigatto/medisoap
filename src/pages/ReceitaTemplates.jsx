@@ -25,6 +25,7 @@ export default function ReceitaTemplates() {
   const [medicamentos, setMedicamentos] = useState([]);
   const [showMedicamentos, setShowMedicamentos] = useState(false);
   const [selectedMedicamentos, setSelectedMedicamentos] = useState([]);
+  const [searchMedicamento, setSearchMedicamento] = useState("");
   const [formData, setFormData] = useState({
     nome: "",
     template_texto: "",
@@ -311,7 +312,7 @@ export default function ReceitaTemplates() {
 
               {showMedicamentos && (
                 <Card className="mb-3 border-pink-200">
-                  <CardContent className="p-3 max-h-64 overflow-y-auto">
+                  <CardContent className="p-3">
                     {medicamentos.length === 0 ? (
                       <p className="text-sm text-gray-500 text-center py-4">
                         Nenhum medicamento cadastrado. 
@@ -325,39 +326,60 @@ export default function ReceitaTemplates() {
                         </Button>
                       </p>
                     ) : (
-                      <div className="space-y-2">
-                        {medicamentos.map((med) => (
-                          <button
-                            key={med.id}
-                            type="button"
-                            onClick={() => {
-                              addMedicamento(med);
-                              setShowMedicamentos(false);
-                            }}
-                            className="w-full text-left p-2 hover:bg-pink-50 rounded-lg transition-colors border border-gray-200"
-                          >
-                            <div className="flex items-start gap-2">
-                              <Pill className="w-4 h-4 text-pink-600 mt-0.5 flex-shrink-0" />
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2">
-                                  <p className="font-semibold text-sm text-gray-900">
-                                    {med.nome}
-                                  </p>
-                                  {med.uso_frequente && (
-                                    <Star className="w-3 h-3 fill-yellow-400 text-yellow-400 flex-shrink-0" />
-                                  )}
+                      <>
+                        <Input
+                          placeholder="Buscar medicamento..."
+                          value={searchMedicamento}
+                          onChange={(e) => setSearchMedicamento(e.target.value)}
+                          className="mb-3"
+                          autoFocus
+                        />
+                        <div className="space-y-2 max-h-64 overflow-y-auto">
+                          {medicamentos
+                            .filter(med => 
+                              med.nome.toLowerCase().includes(searchMedicamento.toLowerCase())
+                            )
+                            .map((med) => (
+                              <button
+                                key={med.id}
+                                type="button"
+                                onClick={() => {
+                                  addMedicamento(med);
+                                  setShowMedicamentos(false);
+                                  setSearchMedicamento("");
+                                }}
+                                className="w-full text-left p-2 hover:bg-pink-50 rounded-lg transition-colors border border-gray-200"
+                              >
+                                <div className="flex items-start gap-2">
+                                  <Pill className="w-4 h-4 text-pink-600 mt-0.5 flex-shrink-0" />
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2">
+                                      <p className="font-semibold text-sm text-gray-900">
+                                        {med.nome}
+                                      </p>
+                                      {med.uso_frequente && (
+                                        <Star className="w-3 h-3 fill-yellow-400 text-yellow-400 flex-shrink-0" />
+                                      )}
+                                    </div>
+                                    {med.apresentacao && (
+                                      <p className="text-xs text-gray-600">{med.apresentacao}</p>
+                                    )}
+                                    {med.posologia && (
+                                      <p className="text-xs text-gray-700 mt-1">{med.posologia}</p>
+                                    )}
+                                  </div>
                                 </div>
-                                {med.apresentacao && (
-                                  <p className="text-xs text-gray-600">{med.apresentacao}</p>
-                                )}
-                                {med.posologia && (
-                                  <p className="text-xs text-gray-700 mt-1">{med.posologia}</p>
-                                )}
-                              </div>
-                            </div>
-                          </button>
-                        ))}
-                      </div>
+                              </button>
+                            ))}
+                          {medicamentos.filter(med => 
+                            med.nome.toLowerCase().includes(searchMedicamento.toLowerCase())
+                          ).length === 0 && (
+                            <p className="text-sm text-gray-500 text-center py-4">
+                              Nenhum medicamento encontrado
+                            </p>
+                          )}
+                        </div>
+                      </>
                     )}
                   </CardContent>
                 </Card>
