@@ -32,7 +32,6 @@ import GestationalAgeCalculator from "../components/tools/GestationalAgeCalculat
 import BMICalculator from "../components/tools/BMICalculator";
 import { AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
-import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 
 export default function AnamnesisDetail() {
@@ -309,42 +308,84 @@ ${anamnesis.plano || "Não informado"}`;
     const dataFormatada = format(new Date(anamnesis.data_consulta), "dd-MM-yyyy");
     const fileName = `${anamnesis.patient_name}_${dataFormatada}_${currentUser.full_name}.pdf`;
     
-    // Mostrar preview temporário
-    setShowPrintPreview({ tipo: "Todos os Documentos", conteudo: allDocuments, isMultiple: true });
+    // Criar PDF usando texto vetorial
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const margin = 15;
+    const maxWidth = pageWidth - (margin * 2);
     
-    // Aguardar renderização
-    setTimeout(async () => {
-      const printArea = document.querySelector('.pdf-print-area');
-      if (!printArea) return;
-      
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      
-      for (let i = 0; i < allDocuments.length; i++) {
-        const docElement = printArea.children[i];
-        if (!docElement) continue;
-        
-        const canvas = await html2canvas(docElement, {
-          scale: 2,
-          useCORS: true,
-          logging: false
-        });
-        
-        const imgData = canvas.toDataURL('image/png');
-        const imgWidth = pageWidth;
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
-        
-        if (i > 0) {
-          pdf.addPage();
-        }
-        
-        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+    for (let i = 0; i < allDocuments.length; i++) {
+      if (i > 0) {
+        pdf.addPage();
       }
       
-      pdf.save(fileName);
-      setShowPrintPreview(null);
-    }, 500);
+      const doc = allDocuments[i];
+      let yPos = margin;
+      
+      // Cabeçalho (se existir)
+      if (selectedTemplateData.cabecalho) {
+        pdf.setFontSize(9);
+        pdf.setTextColor(100);
+        const headerLines = pdf.splitTextToSize(selectedTemplateData.cabecalho, maxWidth);
+        pdf.text(headerLines, margin, yPos);
+        yPos += headerLines.length * 4 + 5;
+      }
+      
+      // Logo (se existir)
+      if (selectedTemplateData.logo_url) {
+        try {
+          pdf.addImage(selectedTemplateData.logo_url, 'PNG', pageWidth - margin - 30, margin, 30, 30);
+        } catch (e) {
+          console.error("Erro ao adicionar logo:", e);
+        }
+      }
+      
+      // Título do documento
+      pdf.setFontSize(16);
+      pdf.setTextColor(0);
+      pdf.setFont(undefined, 'bold');
+      pdf.text(doc.tipo, margin, yPos);
+      yPos += 10;
+      
+      // Linha separadora
+      pdf.setDrawColor(200);
+      pdf.line(margin, yPos, pageWidth - margin, yPos);
+      yPos += 8;
+      
+      // Informações do paciente
+      pdf.setFontSize(10);
+      pdf.setFont(undefined, 'normal');
+      pdf.text(`Paciente: ${anamnesis.patient_name}`, margin, yPos);
+      yPos += 6;
+      pdf.text(`Data: ${format(new Date(anamnesis.data_consulta), "dd/MM/yyyy")}`, margin, yPos);
+      yPos += 10;
+      
+      // Conteúdo do documento
+      pdf.setFontSize(11);
+      const contentLines = pdf.splitTextToSize(doc.conteudo, maxWidth);
+      
+      // Verificar se precisa adicionar página
+      for (let j = 0; j < contentLines.length; j++) {
+        if (yPos > pageHeight - margin - 30) {
+          pdf.addPage();
+          yPos = margin;
+        }
+        pdf.text(contentLines[j], margin, yPos);
+        yPos += 6;
+      }
+      
+      // Rodapé (se existir)
+      if (selectedTemplateData.rodape) {
+        const footerY = pageHeight - margin - 15;
+        pdf.setFontSize(9);
+        pdf.setTextColor(100);
+        const footerLines = pdf.splitTextToSize(selectedTemplateData.rodape, maxWidth);
+        pdf.text(footerLines, margin, footerY);
+      }
+    }
+    
+    pdf.save(fileName);
   };
 
   const loadTemplateForPrint = (templates, templateId, field) => {
