@@ -427,7 +427,7 @@ ${soapData.plano}`;
                       Salvando...
                     </>
                   ) : (
-                    "Salvar Atendimento"
+                    "Salvar Rascunho"
                   )}
                 </Button>
                 <Button
@@ -447,15 +447,44 @@ ${soapData.plano}`;
                     </>
                   )}
                 </Button>
-                {currentAnamnesisId && !soapData && (
-                  <Button
-                    onClick={finalizeAnamnesis}
-                    disabled={isProcessing || isSaving || !textoOriginal.trim()}
-                    className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700"
-                  >
-                    Finalizar Atendimento
-                  </Button>
-                )}
+                <Button
+                  onClick={async () => {
+                    if (!selectedPatient) {
+                      alert("Por favor, selecione um paciente");
+                      return;
+                    }
+                    if (!textoOriginal.trim()) {
+                      alert("Por favor, digite o texto da anamnese");
+                      return;
+                    }
+                    setIsSaving(true);
+                    const numeroAtendimento = await generateAttendanceNumber(dataConsulta);
+                    const created = await base44.entities.Anamnesis.create({
+                      patient_id: selectedPatient.id,
+                      patient_name: selectedPatient.nome,
+                      data_consulta: dataConsulta,
+                      texto_original: textoOriginal,
+                      numero_atendimento: numeroAtendimento,
+                      subjetivo: "",
+                      objetivo: "",
+                      avaliacao: "",
+                      plano: ""
+                    });
+                    setIsSaving(false);
+                    window.location.href = createPageUrl("History");
+                  }}
+                  disabled={isSaving || !textoOriginal.trim() || !selectedPatient}
+                  className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                >
+                  {isSaving ? (
+                    <>
+                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                      Finalizando...
+                    </>
+                  ) : (
+                    "Finalizar Atendimento"
+                  )}
+                </Button>
               </div>
             </CardContent>
           </Card>
