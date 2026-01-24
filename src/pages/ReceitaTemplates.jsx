@@ -313,90 +313,74 @@ export default function ReceitaTemplates() {
             </div>
 
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <Label>Medicamentos</Label>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowMedicamentos(!showMedicamentos)}
-                  className="gap-2"
-                >
-                  <Plus className="w-4 h-4" />
-                  Adicionar
-                </Button>
-              </div>
-
-              {showMedicamentos && (
-                <Card className="mb-3 border-pink-200">
-                  <CardContent className="p-3">
-                    <Input
-                      placeholder="Digite para buscar medicamento..."
-                      value={searchMedicamento}
-                      onChange={(e) => setSearchMedicamento(e.target.value)}
-                      className="mb-3"
-                      autoFocus
-                    />
-                    {searchMedicamento.length < 2 ? (
-                      <p className="text-sm text-gray-500 text-center py-4">
-                        Digite ao menos 2 caracteres para buscar
-                      </p>
-                    ) : isSearching ? (
-                      <div className="flex items-center justify-center py-4">
-                        <Loader2 className="w-5 h-5 animate-spin text-pink-600" />
-                        <span className="ml-2 text-sm text-gray-500">Buscando...</span>
-                      </div>
-                    ) : medicamentos.length === 0 ? (
-                      <p className="text-sm text-gray-500 text-center py-4">
-                        Nenhum medicamento encontrado. 
-                        <Button
-                          variant="link"
-                          size="sm"
-                          onClick={() => navigate(createPageUrl("MedicamentosDatabase"))}
-                          className="px-1"
-                        >
-                          Cadastrar medicamentos
-                        </Button>
-                      </p>
-                    ) : (
-                      <div className="space-y-2 max-h-64 overflow-y-auto">
-                        {medicamentos.map((med) => (
-                          <button
-                            key={med.id}
-                            type="button"
-                            onClick={() => {
-                              addMedicamento(med);
-                              setShowMedicamentos(false);
-                              setSearchMedicamento("");
-                            }}
-                            className="w-full text-left p-2 hover:bg-pink-50 rounded-lg transition-colors border border-gray-200"
+              <Label className="mb-2 block">Medicamentos</Label>
+              
+              <div className="relative mb-3">
+                <Input
+                  placeholder="Buscar medicamento..."
+                  value={searchMedicamento}
+                  onChange={(e) => setSearchMedicamento(e.target.value)}
+                />
+                
+                {searchMedicamento.length >= 2 && (
+                  <Card className="absolute top-full left-0 right-0 mt-1 z-10 border-pink-200 shadow-lg">
+                    <CardContent className="p-3">
+                      {isSearching ? (
+                        <div className="flex items-center justify-center py-4">
+                          <Loader2 className="w-5 h-5 animate-spin text-pink-600" />
+                          <span className="ml-2 text-sm text-gray-500">Buscando...</span>
+                        </div>
+                      ) : medicamentos.length === 0 ? (
+                        <p className="text-sm text-gray-500 text-center py-4">
+                          Nenhum medicamento encontrado. 
+                          <Button
+                            variant="link"
+                            size="sm"
+                            onClick={() => navigate(createPageUrl("MedicamentosDatabase"))}
+                            className="px-1"
                           >
-                            <div className="flex items-start gap-2">
-                              <Pill className="w-4 h-4 text-pink-600 mt-0.5 flex-shrink-0" />
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2">
-                                  <p className="font-semibold text-sm text-gray-900">
-                                    {med.nome}
-                                  </p>
-                                  {med.uso_frequente && (
-                                    <Star className="w-3 h-3 fill-yellow-400 text-yellow-400 flex-shrink-0" />
+                            Cadastrar medicamentos
+                          </Button>
+                        </p>
+                      ) : (
+                        <div className="space-y-2 max-h-64 overflow-y-auto">
+                          {medicamentos.map((med) => (
+                            <button
+                              key={med.id}
+                              type="button"
+                              onClick={() => {
+                                addMedicamento(med);
+                                setSearchMedicamento("");
+                              }}
+                              className="w-full text-left p-2 hover:bg-pink-50 rounded-lg transition-colors border border-gray-200"
+                            >
+                              <div className="flex items-start gap-2">
+                                <Pill className="w-4 h-4 text-pink-600 mt-0.5 flex-shrink-0" />
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2">
+                                    <p className="font-semibold text-sm text-gray-900">
+                                      {med.nome}
+                                    </p>
+                                    {med.uso_frequente && (
+                                      <Star className="w-3 h-3 fill-yellow-400 text-yellow-400 flex-shrink-0" />
+                                    )}
+                                  </div>
+                                  {med.apresentacao && (
+                                    <p className="text-xs text-gray-600">{med.apresentacao}</p>
+                                  )}
+                                  {med.posologia && (
+                                    <p className="text-xs text-gray-700 mt-1">{med.posologia}</p>
                                   )}
                                 </div>
-                                {med.apresentacao && (
-                                  <p className="text-xs text-gray-600">{med.apresentacao}</p>
-                                )}
-                                {med.posologia && (
-                                  <p className="text-xs text-gray-700 mt-1">{med.posologia}</p>
-                                )}
                               </div>
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              )}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
 
               {selectedMedicamentos.length > 0 && (
                 <div className="space-y-3 mb-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
