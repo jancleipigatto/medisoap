@@ -8,10 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Plus, Trash2, Edit, Pill, Loader2, Image as ImageIcon, Star } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Edit, Pill, Loader2, Image as ImageIcon, Star, X } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import PermissionGuard from "../components/PermissionGuard";
 
 export default function ReceitaTemplates() {
@@ -23,13 +24,15 @@ export default function ReceitaTemplates() {
   const [isUploading, setIsUploading] = useState(false);
   const [medicamentos, setMedicamentos] = useState([]);
   const [showMedicamentos, setShowMedicamentos] = useState(false);
+  const [selectedMedicamentos, setSelectedMedicamentos] = useState([]);
   const [formData, setFormData] = useState({
     nome: "",
     template_texto: "",
     cabecalho: "",
     rodape: "",
     logo_url: "",
-    is_default: false
+    is_default: false,
+    orientacoes: ""
   });
 
   useEffect(() => {
@@ -52,17 +55,60 @@ export default function ReceitaTemplates() {
     }
   };
 
-  const addMedicamentoToText = (med) => {
-    const medText = `${med.nome}${med.apresentacao ? ' - ' + med.apresentacao : ''}
-${med.posologia || ''}${med.indicacao ? ' ' + med.indicacao : ''}
+  const addMedicamento = (med) => {
+    const newMed = {
+      id: Date.now(),
+      nome: med.nome,
+      posologia: med.posologia || '',
+      via_administracao: med.via_administracao || 'oral'
+    };
+    setSelectedMedicamentos([...selectedMedicamentos, newMed]);
+  };
 
-`;
-    setFormData({ ...formData, template_texto: formData.template_texto + medText });
+  const removeMedicamento = (id) => {
+    setSelectedMedicamentos(selectedMedicamentos.filter(m => m.id !== id));
+  };
+
+  const updateMedicamento = (id, field, value) => {
+    setSelectedMedicamentos(selectedMedicamentos.map(m => 
+      m.id === id ? { ...m, [field]: value } : m
+    ));
+  };
+
+  const generateReceitaText = () => {
+    const grouped = selectedMedicamentos.reduce((acc, med) => {
+      const via = med.via_administracao || 'oral';
+      if (!acc[via]) acc[via] = [];
+      acc[via].push(med);
+      return acc;
+    }, {});
+
+    const viaLabels = {
+      oral: 'USO ORAL',
+      injetável: 'USO INJETÁVEL',
+      tópica: 'USO TÓPICO',
+      inalatória: 'USO INALATÓRIO',
+      retal: 'USO RETAL',
+      sublingual: 'USO SUBLINGUAL',
+      outra: 'OUTROS'
+    };
+
+    let text = '';
+    Object.entries(grouped).forEach(([via, meds]) => {
+      text += `${viaLabels[via] || via.toUpperCase()}:\n\n`;
+      meds.forEach(med => {
+        text += `${med.nome}\n${med.posologia}\n\n`;
+      });
+      text += '\n';
+    });
+
+    return text.trim();
   };
 
   const handleEdit = (template) => {
     setEditingTemplate(template);
     setFormData(template);
+    setSelectedMedicamentos([]);
     setShowForm(true);
   };
 
@@ -77,7 +123,9 @@ ${med.posologia || ''}${med.indicacao ? ' ' + med.indicacao : ''}
   };
 
   const handleSubmit = async () => {
-    if (!formData.nome || !formData.template_texto) {
+    const receitaText = selectedMedicamentos.length > 0 ? generateReceitaText() : formData.template_texto;
+    
+    if (!formData.nome || (!receitaText && !formData.template_texto)) {
       alert("Preencha os campos obrigatórios");
       return;
     }
@@ -89,21 +137,28 @@ ${med.posologia || ''}${med.indicacao ? ' ' + med.indicacao : ''}
       }
     }
 
+    const dataToSave = {
+      ...formData,
+      template_texto: receitaText
+    };
+
     if (editingTemplate) {
-      await ReceitaTemplate.update(editingTemplate.id, formData);
+      await ReceitaTemplate.update(editingTemplate.id, dataToSave);
     } else {
-      await ReceitaTemplate.create(formData);
+      await ReceitaTemplate.create(dataToSave);
     }
 
     setShowForm(false);
     setEditingTemplate(null);
+    setSelectedMedicamentos([]);
     setFormData({
       nome: "",
       template_texto: "",
       cabecalho: "",
       rodape: "",
       logo_url: "",
-      is_default: false
+      is_default: false,
+      orientacoes: ""
     });
     loadTemplates();
   };
@@ -117,13 +172,15 @@ ${med.posologia || ''}${med.indicacao ? ' ' + med.indicacao : ''}
   const handleClose = () => {
     setShowForm(false);
     setEditingTemplate(null);
+    setSelectedMedicamentos([]);
     setFormData({
       nome: "",
       template_texto: "",
       cabecalho: "",
       rodape: "",
       logo_url: "",
-      is_default: false
+      is_default: false,
+      orientacoes: ""
     });
   };
 
@@ -239,7 +296,7 @@ ${med.posologia || ''}${med.indicacao ? ' ' + med.indicacao : ''}
 
             <div>
               <div className="flex items-center justify-between mb-2">
-                <Label htmlFor="texto">Texto da Receita *</Label>
+                <Label>Medicamentos da Receita</Label>
                 <Button
                   type="button"
                   variant="outline"
@@ -247,11 +304,11 @@ ${med.posologia || ''}${med.indicacao ? ' ' + med.indicacao : ''}
                   onClick={() => setShowMedicamentos(!showMedicamentos)}
                   className="gap-2"
                 >
-                  <Pill className="w-4 h-4" />
-                  {showMedicamentos ? "Ocultar" : "Consultar"} Medicamentos
+                  <Plus className="w-4 h-4" />
+                  Adicionar Medicamento
                 </Button>
               </div>
-              
+
               {showMedicamentos && (
                 <Card className="mb-3 border-pink-200">
                   <CardContent className="p-3 max-h-64 overflow-y-auto">
@@ -273,7 +330,10 @@ ${med.posologia || ''}${med.indicacao ? ' ' + med.indicacao : ''}
                           <button
                             key={med.id}
                             type="button"
-                            onClick={() => addMedicamentoToText(med)}
+                            onClick={() => {
+                              addMedicamento(med);
+                              setShowMedicamentos(false);
+                            }}
                             className="w-full text-left p-2 hover:bg-pink-50 rounded-lg transition-colors border border-gray-200"
                           >
                             <div className="flex items-start gap-2">
@@ -302,13 +362,83 @@ ${med.posologia || ''}${med.indicacao ? ' ' + med.indicacao : ''}
                   </CardContent>
                 </Card>
               )}
+
+              {selectedMedicamentos.length > 0 && (
+                <div className="space-y-3 mb-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                  <p className="text-sm font-semibold text-blue-900">Medicamentos Adicionados ({selectedMedicamentos.length})</p>
+                  {selectedMedicamentos.map((med) => (
+                    <Card key={med.id} className="p-3 bg-white">
+                      <div className="space-y-2">
+                        <div className="flex items-start justify-between gap-2">
+                          <Input
+                            value={med.nome}
+                            onChange={(e) => updateMedicamento(med.id, 'nome', e.target.value)}
+                            placeholder="Nome do medicamento"
+                            className="flex-1"
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeMedicamento(med.id)}
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
+                        <Textarea
+                          value={med.posologia}
+                          onChange={(e) => updateMedicamento(med.id, 'posologia', e.target.value)}
+                          placeholder="Posologia (ex: 1 comprimido a cada 8 horas)"
+                          rows={2}
+                        />
+                        <Select
+                          value={med.via_administracao}
+                          onValueChange={(value) => updateMedicamento(med.id, 'via_administracao', value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Via de administração" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="oral">Oral</SelectItem>
+                            <SelectItem value="injetável">Injetável</SelectItem>
+                            <SelectItem value="tópica">Tópica</SelectItem>
+                            <SelectItem value="inalatória">Inalatória</SelectItem>
+                            <SelectItem value="retal">Retal</SelectItem>
+                            <SelectItem value="sublingual">Sublingual</SelectItem>
+                            <SelectItem value="outra">Outra</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </Card>
+                  ))}
+                  <div className="mt-2 p-2 bg-white rounded border border-gray-200">
+                    <p className="text-xs font-semibold text-gray-700 mb-1">Preview da Receita:</p>
+                    <pre className="text-xs text-gray-600 whitespace-pre-wrap">{generateReceitaText()}</pre>
+                  </div>
+                </div>
+              )}
               
               <Textarea
                 id="texto"
                 value={formData.template_texto}
                 onChange={(e) => setFormData({ ...formData, template_texto: e.target.value })}
-                placeholder="Digite o texto modelo da receita..."
-                className="min-h-[200px]"
+                placeholder="Ou digite o texto livre da receita..."
+                className="min-h-[100px]"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Use os medicamentos acima OU digite texto livre. Ao salvar, medicamentos adicionados serão agrupados por via de administração.
+              </p>
+            </div>
+
+            <div>
+              <Label htmlFor="orientacoes">Orientações ao Paciente (opcional)</Label>
+              <Textarea
+                id="orientacoes"
+                value={formData.orientacoes}
+                onChange={(e) => setFormData({ ...formData, orientacoes: e.target.value })}
+                placeholder="Orientações de uso, cuidados, etc."
+                rows={3}
               />
             </div>
 
