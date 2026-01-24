@@ -187,7 +187,7 @@ export default function DocumentForm({ tipo, tipoLabel, icon: Icon, templateEnti
 
             <Card className="shadow-lg border-none">
               <CardHeader>
-                <CardTitle>Conteúdo do {tipoLabel}</CardTitle>
+                <CardTitle>Descrição</CardTitle>
               </CardHeader>
               <CardContent>
                 <Textarea
