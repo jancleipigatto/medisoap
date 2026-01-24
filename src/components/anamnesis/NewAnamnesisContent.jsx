@@ -496,7 +496,7 @@ ${soapData.plano}`;
                   <div className="flex items-center justify-between">
                     <CardTitle className="flex items-center gap-2">
                       <FileText className="w-5 h-5 text-orange-600" />
-                      Texto Convertido para Modelo
+                      Prontuário de Atendimento com Uso de IA
                     </CardTitle>
                     <Button
                       onClick={copySOAPText}
@@ -558,79 +558,7 @@ ${soapData.plano}`;
                 </CardContent>
               </Card>
 
-              <Card className="shadow-lg border-none bg-gradient-to-br from-green-50 to-emerald-50">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <FileText className="w-5 h-5 text-green-600" />
-                    Formato SOAP - Campos Editáveis
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <Label className="text-lg font-semibold text-green-700">S - Subjetivo</Label>
-                    <Textarea
-                      value={soapData.subjetivo}
-                      onChange={(e) => setSoapData({...soapData, subjetivo: e.target.value})}
-                      className="mt-2 bg-white"
-                      rows={3}
-                    />
-                  </div>
 
-                  <div>
-                    <Label className="text-lg font-semibold text-blue-700">O - Objetivo</Label>
-                    <Textarea
-                      value={soapData.objetivo}
-                      onChange={(e) => setSoapData({...soapData, objetivo: e.target.value})}
-                      className="mt-2 bg-white"
-                      rows={3}
-                    />
-                  </div>
-
-                  <div>
-                    <Label className="text-lg font-semibold text-purple-700">A - Avaliação</Label>
-                    <Textarea
-                      value={soapData.avaliacao}
-                      onChange={(e) => setSoapData({...soapData, avaliacao: e.target.value})}
-                      className="mt-2 bg-white"
-                      rows={3}
-                    />
-                  </div>
-
-                  <div>
-                    <Label className="text-lg font-semibold text-orange-700">P - Plano</Label>
-                    <Textarea
-                      value={soapData.plano}
-                      onChange={(e) => setSoapData({...soapData, plano: e.target.value})}
-                      className="mt-2 bg-white"
-                      rows={3}
-                    />
-                  </div>
-
-                  <Button
-                    onClick={finalizeAnamnesis}
-                    disabled={isSaving || isFinalized}
-                    className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700"
-                  >
-                    {isSaving ? (
-                      <>
-                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                        Finalizando...
-                      </>
-                    ) : (
-                      "Finalizar Atendimento"
-                    )}
-                  </Button>
-
-                  {isFinalized && (
-                    <Button
-                      onClick={addDetails}
-                      className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
-                    >
-                      Saída de Atendimento
-                    </Button>
-                  )}
-                </CardContent>
-              </Card>
             </>
           )}
         </div>
