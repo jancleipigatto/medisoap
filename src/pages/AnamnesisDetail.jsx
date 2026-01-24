@@ -507,9 +507,6 @@ ${anamnesis.plano || "Não informado"}`;
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Badge className="bg-green-100 text-green-700 border-green-200">
-                SOAP
-              </Badge>
               <Button
                 onClick={handlePrintAll}
                 variant="outline"
