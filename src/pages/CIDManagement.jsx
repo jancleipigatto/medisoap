@@ -24,7 +24,7 @@ export default function CIDManagement() {
 
   const loadCIDs = async () => {
     setLoading(true);
-    const data = await base44.entities.CID.list("-uso_frequente", 1000);
+    const data = await base44.entities.CID.list("-uso_frequente", 5000);
     setCids(data);
     setLoading(false);
   };
