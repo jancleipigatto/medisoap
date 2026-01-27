@@ -186,25 +186,8 @@ Retorne APENAS os 200 CIDs mais usados clinicamente.
         cid.descricao.toLowerCase().includes(searchTerm.toLowerCase())
     )
     .sort((a, b) => {
-      // Extrair letra e número do código
-      const getCodeParts = (codigo) => {
-        const match = codigo.match(/^([A-Z]+)(\d+)/);
-        if (match) {
-          return { letter: match[1], number: parseInt(match[2]) };
-        }
-        return { letter: codigo, number: 0 };
-      };
-
-      const aParts = getCodeParts(a.codigo);
-      const bParts = getCodeParts(b.codigo);
-
-      // Primeiro ordenar por letra (A-Z)
-      if (aParts.letter !== bParts.letter) {
-        return aParts.letter.localeCompare(bParts.letter);
-      }
-
-      // Depois ordenar por número decrescente
-      return bParts.number - aParts.number;
+      // Ordenar por código completo (A00, A01, A011, A02, etc)
+      return a.codigo.localeCompare(b.codigo, undefined, { numeric: true });
     });
 
   if (loading) {
