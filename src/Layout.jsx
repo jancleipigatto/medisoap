@@ -253,24 +253,16 @@ export default function Layout({ children, currentPageName }) {
         )}
 
         <main className="flex-1 flex flex-col">
-          <header className="bg-white border-b border-gray-200 px-6 py-4 shadow-sm hidden md:flex items-center">
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="hover:bg-gray-100 p-2 rounded-lg transition-colors duration-200 flex items-center gap-2 text-gray-700"
-            >
-              {sidebarOpen ? (
-                <>
-                  <PanelLeftClose className="w-5 h-5" />
-                  <span className="text-sm font-medium">Esconder Painel</span>
-                </>
-              ) : (
-                <>
-                  <PanelLeft className="w-5 h-5" />
-                  <span className="text-sm font-medium">Mostrar Painel</span>
-                </>
-              )}
-            </button>
-          </header>
+          {!sidebarOpen && (
+            <div className="fixed left-0 top-1/2 -translate-y-1/2 z-[60]">
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="bg-white shadow-lg p-3 rounded-r-lg hover:bg-gray-50 transition-colors duration-200 border-r border-t border-b border-gray-200"
+              >
+                <PanelLeft className="w-5 h-5 text-gray-700" />
+              </button>
+            </div>
+          )}
           <header className="bg-white border-b border-gray-200 px-6 py-4 md:hidden shadow-sm">
             <div className="flex items-center gap-4">
               <SidebarTrigger className="hover:bg-gray-100 p-2 rounded-lg transition-colors duration-200" />
