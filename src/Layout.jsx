@@ -134,6 +134,12 @@ export default function Layout({ children, currentPageName }) {
       permission: "can_access_templates"
     },
     {
+      title: "Banco de CIDs",
+      url: createPageUrl("CIDManagement"),
+      icon: FileText,
+      permission: "can_access_templates"
+    },
+    {
       title: "Modelos Orientações",
       url: createPageUrl("OrientacoesTemplates"),
       icon: Info,
