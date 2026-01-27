@@ -5,6 +5,7 @@ import { createPageUrl } from "@/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import RichTextEditor from "@/components/ui/rich-text-editor";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -703,11 +704,11 @@ ${anamnesis.plano || "Não informado"}`;
                       />
                     </div>
                   </div>
-                  <Textarea
+                  <RichTextEditor
                     value={editData.atestado}
-                    onChange={(e) => setEditData({...editData, atestado: e.target.value})}
+                    onChange={(value) => setEditData({...editData, atestado: value})}
                     placeholder="Digite o texto do atestado médico aqui..."
-                    className="min-h-[150px]"
+                    minHeight="150px"
                   />
                   <Button
                     onClick={() => {
@@ -819,11 +820,11 @@ ${anamnesis.plano || "Não informado"}`;
                       />
                     </div>
                   </div>
-                  <Textarea
+                  <RichTextEditor
                     value={editData.exames_solicitados}
-                    onChange={(e) => setEditData({...editData, exames_solicitados: e.target.value})}
+                    onChange={(value) => setEditData({...editData, exames_solicitados: value})}
                     placeholder="Digite os exames laboratoriais e de imagem solicitados..."
-                    className="min-h-[150px]"
+                    minHeight="150px"
                   />
                   <Button
                     onClick={() => {
@@ -935,11 +936,11 @@ ${anamnesis.plano || "Não informado"}`;
                       />
                     </div>
                   </div>
-                  <Textarea
+                  <RichTextEditor
                     value={editData.encaminhamento}
-                    onChange={(e) => setEditData({...editData, encaminhamento: e.target.value})}
+                    onChange={(value) => setEditData({...editData, encaminhamento: value})}
                     placeholder="Digite o encaminhamento para especialista..."
-                    className="min-h-[150px]"
+                    minHeight="150px"
                   />
                   <Button
                     onClick={() => {
@@ -1051,11 +1052,11 @@ ${anamnesis.plano || "Não informado"}`;
                       />
                     </div>
                   </div>
-                  <Textarea
+                  <RichTextEditor
                     value={editData.receita}
-                    onChange={(e) => setEditData({...editData, receita: e.target.value})}
+                    onChange={(value) => setEditData({...editData, receita: value})}
                     placeholder="Digite a receita médica..."
-                    className="min-h-[150px]"
+                    minHeight="150px"
                   />
                   <Button
                     onClick={() => {
@@ -1167,11 +1168,11 @@ ${anamnesis.plano || "Não informado"}`;
                       />
                     </div>
                   </div>
-                  <Textarea
+                  <RichTextEditor
                     value={editData.orientacoes}
-                    onChange={(e) => setEditData({...editData, orientacoes: e.target.value})}
+                    onChange={(value) => setEditData({...editData, orientacoes: value})}
                     placeholder="Digite as orientações ao paciente (cuidados, recomendações, sinais de alerta, etc.)..."
-                    className="min-h-[150px]"
+                    minHeight="150px"
                   />
                   <Button
                     onClick={() => {
