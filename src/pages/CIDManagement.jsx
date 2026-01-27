@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Upload, Download, RefreshCw, Search, Star, Trash2, Plus } from "lucide-react";
+import { Upload, Search, Star, Trash2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -15,8 +15,6 @@ export default function CIDManagement() {
   const [loading, setLoading] = useState(true);
   const [importing, setImporting] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [showAddDialog, setShowAddDialog] = useState(false);
-  const [formData, setFormData] = useState({ codigo: "", descricao: "", categoria: "" });
 
   useEffect(() => {
     loadCIDs();
@@ -104,69 +102,6 @@ export default function CIDManagement() {
     setImporting(false);
   };
 
-  const handleImportFromGitHub = async () => {
-    setImporting(true);
-    try {
-      const prompt = `
-Acesse o arquivo SQL em: https://raw.githubusercontent.com/erionmaia/API_CID/master/cids.sql
-
-Extraia EXATAMENTE 200 CIDs mais comuns e importantes da lista.
-Para cada CID, retorne no formato JSON:
-- codigo: código do CID (ex: "A00", "J06.9")
-- descricao: nome da doença em português
-- categoria: capítulo/categoria do CID
-
-Retorne APENAS os 200 CIDs mais usados clinicamente.
-`;
-
-      const result = await base44.integrations.Core.InvokeLLM({
-        prompt,
-        add_context_from_internet: true,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            cids: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  codigo: { type: "string" },
-                  descricao: { type: "string" },
-                  categoria: { type: "string" }
-                },
-                required: ["codigo", "descricao"]
-              }
-            }
-          },
-          required: ["cids"]
-        }
-      });
-
-      if (result?.cids && result.cids.length > 0) {
-        await base44.entities.CID.bulkCreate(result.cids);
-        await loadCIDs();
-        alert(`${result.cids.length} CIDs importados com sucesso!`);
-      } else {
-        alert("Nenhum CID foi importado. Tente novamente.");
-      }
-    } catch (error) {
-      alert("Erro ao importar: " + error.message);
-    }
-    setImporting(false);
-  };
-
-  const handleSave = async () => {
-    if (!formData.codigo || !formData.descricao) {
-      alert("Código e descrição são obrigatórios");
-      return;
-    }
-
-    await base44.entities.CID.create(formData);
-    await loadCIDs();
-    setShowAddDialog(false);
-    setFormData({ codigo: "", descricao: "", categoria: "" });
-  };
-
   const toggleFavorite = async (cid) => {
     await base44.entities.CID.update(cid.id, { uso_frequente: !cid.uso_frequente });
     await loadCIDs();
@@ -229,16 +164,6 @@ Retorne APENAS os 200 CIDs mais usados clinicamente.
                   </Button>
                 </label>
               </div>
-
-              <Button onClick={handleImportFromGitHub} disabled={importing} variant="outline">
-                <RefreshCw className="w-4 h-4 mr-2" />
-                {importing ? "Importando..." : "Importar do GitHub"}
-              </Button>
-
-              <Button onClick={() => setShowAddDialog(true)} className="ml-auto">
-                <Plus className="w-4 h-4 mr-2" />
-                Adicionar CID
-              </Button>
             </div>
 
             {importing && (
@@ -310,47 +235,6 @@ Retorne APENAS os 200 CIDs mais usados clinicamente.
             </div>
           </CardContent>
         </Card>
-
-        {/* Add Dialog */}
-        <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Adicionar Novo CID</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label>Código *</Label>
-                <Input
-                  placeholder="Ex: A00, B01.1"
-                  value={formData.codigo}
-                  onChange={(e) => setFormData({ ...formData, codigo: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label>Descrição *</Label>
-                <Input
-                  placeholder="Descrição da doença"
-                  value={formData.descricao}
-                  onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label>Categoria</Label>
-                <Input
-                  placeholder="Categoria ou capítulo"
-                  value={formData.categoria}
-                  onChange={(e) => setFormData({ ...formData, categoria: e.target.value })}
-                />
-              </div>
-              <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setShowAddDialog(false)}>
-                  Cancelar
-                </Button>
-                <Button onClick={handleSave}>Salvar</Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
       </div>
     </PermissionGuard>
   );
