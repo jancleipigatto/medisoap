@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Upload, Search, Star, Trash2 } from "lucide-react";
+import { Upload, Search, Star, Trash2, Plus } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -15,6 +15,8 @@ export default function CIDManagement() {
   const [loading, setLoading] = useState(true);
   const [importing, setImporting] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [formData, setFormData] = useState({ codigo: "", descricao: "", categoria: "" });
 
   useEffect(() => {
     loadCIDs();
@@ -102,6 +104,18 @@ export default function CIDManagement() {
     setImporting(false);
   };
 
+  const handleSave = async () => {
+    if (!formData.codigo || !formData.descricao) {
+      alert("Código e descrição são obrigatórios");
+      return;
+    }
+
+    await base44.entities.CID.create(formData);
+    await loadCIDs();
+    setShowAddDialog(false);
+    setFormData({ codigo: "", descricao: "", categoria: "" });
+  };
+
   const toggleFavorite = async (cid) => {
     await base44.entities.CID.update(cid.id, { uso_frequente: !cid.uso_frequente });
     await loadCIDs();
@@ -164,6 +178,11 @@ export default function CIDManagement() {
                   </Button>
                 </label>
               </div>
+
+              <Button onClick={() => setShowAddDialog(true)} className="ml-auto">
+                <Plus className="w-4 h-4 mr-2" />
+                Adicionar CID
+              </Button>
             </div>
 
             {importing && (
@@ -235,6 +254,47 @@ export default function CIDManagement() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Add Dialog */}
+        <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Adicionar Novo CID</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label>Código *</Label>
+                <Input
+                  placeholder="Ex: A00, B01.1"
+                  value={formData.codigo}
+                  onChange={(e) => setFormData({ ...formData, codigo: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>Descrição *</Label>
+                <Input
+                  placeholder="Descrição da doença"
+                  value={formData.descricao}
+                  onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>Categoria</Label>
+                <Input
+                  placeholder="Categoria ou capítulo"
+                  value={formData.categoria}
+                  onChange={(e) => setFormData({ ...formData, categoria: e.target.value })}
+                />
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setShowAddDialog(false)}>
+                  Cancelar
+                </Button>
+                <Button onClick={handleSave}>Salvar</Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </PermissionGuard>
   );
