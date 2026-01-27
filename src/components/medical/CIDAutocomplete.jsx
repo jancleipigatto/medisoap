@@ -56,6 +56,7 @@ export default function CIDAutocomplete({ value, onSelect, placeholder = "Buscar
             placeholder="Buscar por código ou descrição..."
             value={searchTerm}
             onValueChange={setSearchTerm}
+            autoFocus
           />
           <CommandEmpty>
             {loading ? "Carregando..." : "Nenhum CID encontrado."}
