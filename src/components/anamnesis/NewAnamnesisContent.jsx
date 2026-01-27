@@ -694,7 +694,7 @@ ${soapData.plano}`;
               )}
             </div>
           </div>
-          <div className="flex justify-end gap-3 border-t pt-4">
+          <div className="flex justify-end gap-3">
             <Button variant="outline" onClick={() => { 
               setShowCidDialog(false); 
               setCidSearchTerm(""); 
@@ -717,21 +717,26 @@ ${soapData.plano}`;
             </Button>
           </div>
           {selectedCids.length > 0 && (
-            <div className="border-t pt-4">
-              <Label className="text-sm mb-2 block">CIDs Selecionados ({selectedCids.length}/10)</Label>
-              <div className="flex flex-wrap gap-2 p-3 bg-gray-50 rounded-lg border max-h-[150px] overflow-y-auto">
+            <div className="mt-4 pt-4 border-t">
+              <Label className="text-sm mb-3 block font-semibold">CIDs Selecionados ({selectedCids.length}/10)</Label>
+              <div className="space-y-2 max-h-[200px] overflow-y-auto">
                 {selectedCids.map((cid) => (
-                  <Badge key={cid.id} variant="secondary" className="gap-2 py-1.5 px-3">
-                    <span className="font-mono font-bold">{cid.codigo}</span>
-                    <span className="text-xs">-</span>
-                    <span className="text-xs">{cid.descricao.substring(0, 30)}...</span>
+                  <div key={cid.id} className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors">
+                    <div className="flex items-center gap-3 flex-1">
+                      <span className="font-mono font-bold text-blue-700 text-sm">
+                        {cid.codigo}
+                      </span>
+                      <span className="text-sm text-gray-700">
+                        {cid.descricao}
+                      </span>
+                    </div>
                     <button
                       onClick={() => setSelectedCids(selectedCids.filter(c => c.id !== cid.id))}
-                      className="ml-1 hover:bg-gray-300 rounded-full p-0.5"
+                      className="ml-2 hover:bg-red-100 text-red-600 rounded-full p-1.5 transition-colors"
                     >
-                      <X className="w-3 h-3" />
+                      <X className="w-4 h-4" />
                     </button>
-                  </Badge>
+                  </div>
                 ))}
               </div>
             </div>
