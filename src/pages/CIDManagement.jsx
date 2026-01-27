@@ -74,10 +74,15 @@ export default function CIDManagement() {
     setImporting(true);
     try {
       const prompt = `
-Acesse este arquivo SQL do GitHub: https://github.com/erionmaia/API_CID/blob/master/cids.sql
-Extraia os dados de CIDs em formato JSON.
-Para cada CID, retorne: codigo (ex: A00), descricao (nome da doença), categoria (capítulo do CID).
-Limite aos primeiros 500 CIDs mais comuns.
+Acesse o arquivo SQL em: https://raw.githubusercontent.com/erionmaia/API_CID/master/cids.sql
+
+Extraia EXATAMENTE 200 CIDs mais comuns e importantes da lista.
+Para cada CID, retorne no formato JSON:
+- codigo: código do CID (ex: "A00", "J06.9")
+- descricao: nome da doença em português
+- categoria: capítulo/categoria do CID
+
+Retorne APENAS os 200 CIDs mais usados clinicamente.
 `;
 
       const result = await base44.integrations.Core.InvokeLLM({
@@ -86,7 +91,7 @@ Limite aos primeiros 500 CIDs mais comuns.
         response_json_schema: {
           type: "object",
           properties: {
-            items: {
+            cids: {
               type: "array",
               items: {
                 type: "object",
@@ -94,20 +99,24 @@ Limite aos primeiros 500 CIDs mais comuns.
                   codigo: { type: "string" },
                   descricao: { type: "string" },
                   categoria: { type: "string" }
-                }
+                },
+                required: ["codigo", "descricao"]
               }
             }
-          }
+          },
+          required: ["cids"]
         }
       });
 
-      if (result?.items && result.items.length > 0) {
-        await base44.entities.CID.bulkCreate(result.items);
+      if (result?.cids && result.cids.length > 0) {
+        await base44.entities.CID.bulkCreate(result.cids);
         await loadCIDs();
-        alert(`${result.items.length} CIDs importados com sucesso do GitHub!`);
+        alert(`${result.cids.length} CIDs importados com sucesso!`);
+      } else {
+        alert("Nenhum CID foi importado. Tente novamente.");
       }
     } catch (error) {
-      alert("Erro ao importar do GitHub: " + error.message);
+      alert("Erro ao importar: " + error.message);
     }
     setImporting(false);
   };
