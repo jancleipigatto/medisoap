@@ -16,7 +16,8 @@ import ToolsSidebar from "../tools/ToolsSidebar";
 import GestationalAgeCalculator from "../tools/GestationalAgeCalculator";
 import BMICalculator from "../tools/BMICalculator";
 import { AnimatePresence } from "framer-motion";
-import { Star } from "lucide-react";
+import { Star, X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 export default function NewAnamnesisContent() {
   const navigate = useNavigate();
@@ -43,6 +44,7 @@ export default function NewAnamnesisContent() {
   const [appSettings, setAppSettings] = useState(null);
   const [cids, setCids] = useState([]);
   const [cidSearchTerm, setCidSearchTerm] = useState("");
+  const [selectedCids, setSelectedCids] = useState([]);
 
   useEffect(() => {
     loadTemplates();
@@ -625,14 +627,40 @@ ${soapData.plano}`;
         </div>
       </div>
 
-      <Dialog open={showCidDialog} onOpenChange={setShowCidDialog}>
+      <Dialog open={showCidDialog} onOpenChange={(open) => {
+        setShowCidDialog(open);
+        if (!open) {
+          setCidSearchTerm("");
+          setSelectedCids([]);
+        }
+      }}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle className="text-base">Incluir CID</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
+            {selectedCids.length > 0 && (
+              <div>
+                <Label className="text-sm mb-2 block">CIDs Selecionados ({selectedCids.length}/10)</Label>
+                <div className="flex flex-wrap gap-2 p-3 bg-gray-50 rounded-lg border">
+                  {selectedCids.map((cid) => (
+                    <Badge key={cid.id} variant="secondary" className="gap-2 py-1.5 px-3">
+                      <span className="font-mono font-bold">{cid.codigo}</span>
+                      <span className="text-xs">-</span>
+                      <span className="text-xs">{cid.descricao.substring(0, 30)}...</span>
+                      <button
+                        onClick={() => setSelectedCids(selectedCids.filter(c => c.id !== cid.id))}
+                        className="ml-1 hover:bg-gray-300 rounded-full p-0.5"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
             <div>
-              <Label htmlFor="cid" className="text-sm">CID da Consulta</Label>
+              <Label htmlFor="cid" className="text-sm">Buscar CID</Label>
               <div className="mt-2">
                 <Input
                   placeholder="Buscar por código ou descrição..."
@@ -647,18 +675,21 @@ ${soapData.plano}`;
               {cids
                 .filter(
                   (cid) =>
-                    cid.codigo.toLowerCase().includes(cidSearchTerm.toLowerCase()) ||
-                    cid.descricao.toLowerCase().includes(cidSearchTerm.toLowerCase())
+                    (cid.codigo.toLowerCase().includes(cidSearchTerm.toLowerCase()) ||
+                    cid.descricao.toLowerCase().includes(cidSearchTerm.toLowerCase())) &&
+                    !selectedCids.find(s => s.id === cid.id)
                 )
                 .map((cid) => (
                   <button
                     key={cid.id}
                     onClick={() => {
-                      setCidText(cid.codigo);
-                      setShowCidDialog(false);
-                      setCidSearchTerm("");
+                      if (selectedCids.length < 10) {
+                        setSelectedCids([...selectedCids, cid]);
+                        setCidSearchTerm("");
+                      }
                     }}
-                    className="w-full text-left p-3 hover:bg-gray-50 border-b last:border-b-0 transition-colors"
+                    disabled={selectedCids.length >= 10}
+                    className="w-full text-left p-3 hover:bg-gray-50 border-b last:border-b-0 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <div className="flex items-center gap-2">
                       <span className="font-mono font-bold text-blue-600 min-w-[60px]">
@@ -673,18 +704,36 @@ ${soapData.plano}`;
                 ))}
               {cids.filter(
                 (cid) =>
-                  cid.codigo.toLowerCase().includes(cidSearchTerm.toLowerCase()) ||
-                  cid.descricao.toLowerCase().includes(cidSearchTerm.toLowerCase())
+                  (cid.codigo.toLowerCase().includes(cidSearchTerm.toLowerCase()) ||
+                  cid.descricao.toLowerCase().includes(cidSearchTerm.toLowerCase())) &&
+                  !selectedCids.find(s => s.id === cid.id)
               ).length === 0 && (
                 <div className="p-8 text-center text-gray-500 text-sm">
-                  Nenhum CID encontrado
+                  {selectedCids.length >= 10 ? "Limite máximo de 10 CIDs atingido" : "Nenhum CID encontrado"}
                 </div>
               )}
             </div>
           </div>
           <div className="flex justify-end gap-3">
-            <Button variant="outline" onClick={() => { setShowCidDialog(false); setCidSearchTerm(""); }} className="text-sm h-9">
+            <Button variant="outline" onClick={() => { 
+              setShowCidDialog(false); 
+              setCidSearchTerm(""); 
+              setSelectedCids([]);
+            }} className="text-sm h-9">
               Cancelar
+            </Button>
+            <Button 
+              onClick={() => {
+                const cidsText = selectedCids.map(c => `${c.codigo} - ${c.descricao}`).join('\n');
+                setCidText(cidText ? `${cidText}\n${cidsText}` : cidsText);
+                setShowCidDialog(false);
+                setCidSearchTerm("");
+                setSelectedCids([]);
+              }}
+              disabled={selectedCids.length === 0}
+              className="text-sm h-9"
+            >
+              Incluir ({selectedCids.length})
             </Button>
           </div>
         </DialogContent>
