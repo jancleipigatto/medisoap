@@ -5,6 +5,7 @@ import { createPageUrl } from "@/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import RichTextEditor from "@/components/ui/rich-text-editor";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -470,11 +471,11 @@ ${soapData.plano}`;
               <CardTitle className="text-base">Atendimento</CardTitle>
             </CardHeader>
             <CardContent>
-              <Textarea
-                placeholder="Digite ou cole aqui o texto da conversa com o paciente. Exemplo:&#10;&#10;Paciente relata dor de cabeça há 3 dias, pior pela manhã. Nega febre. PA: 130/80, FC: 72bpm. Paciente lúcido e orientado. Hipótese: Cefaleia tensional. Prescrever analgésico e retorno em 7 dias."
+              <RichTextEditor
+                placeholder="Digite ou cole aqui o texto da conversa com o paciente..."
                 value={textoOriginal}
-                onChange={(e) => setTextoOriginal(e.target.value)}
-                className="min-h-[200px] font-mono text-sm"
+                onChange={setTextoOriginal}
+                minHeight="200px"
               />
               <div className="mt-4">
                 <div className="flex gap-2 flex-wrap">
@@ -585,10 +586,15 @@ ${soapData.plano}`;
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <Textarea
+                  <RichTextEditor
                     value={generateSOAPText()}
-                    onChange={(e) => {
-                      const lines = e.target.value.split('\n');
+                    onChange={(newValue) => {
+                      // Parse the HTML content to extract SOAP sections
+                      const tempDiv = document.createElement('div');
+                      tempDiv.innerHTML = newValue;
+                      const text = tempDiv.textContent || tempDiv.innerText || '';
+                      
+                      const lines = text.split('\n');
                       const sections = {
                         subjetivo: [],
                         objetivo: [],
@@ -614,7 +620,7 @@ ${soapData.plano}`;
                         plano: sections.plano.join('\n')
                       });
                     }}
-                    className="min-h-[300px] font-mono text-sm bg-white"
+                    minHeight="300px"
                   />
                   <Alert className="mt-4 bg-blue-50 border-blue-200">
                     <AlertDescription>
