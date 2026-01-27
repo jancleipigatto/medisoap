@@ -15,8 +15,8 @@ import PatientSelector from "./PatientSelector";
 import ToolsSidebar from "../tools/ToolsSidebar";
 import GestationalAgeCalculator from "../tools/GestationalAgeCalculator";
 import BMICalculator from "../tools/BMICalculator";
-import CIDAutocomplete from "../medical/CIDAutocomplete";
 import { AnimatePresence } from "framer-motion";
+import { Star } from "lucide-react";
 
 export default function NewAnamnesisContent() {
   const navigate = useNavigate();
@@ -41,10 +41,13 @@ export default function NewAnamnesisContent() {
   const [showCidDialog, setShowCidDialog] = useState(false);
   const [cidText, setCidText] = useState("");
   const [appSettings, setAppSettings] = useState(null);
+  const [cids, setCids] = useState([]);
+  const [cidSearchTerm, setCidSearchTerm] = useState("");
 
   useEffect(() => {
     loadTemplates();
     loadAppSettings();
+    loadCIDs();
   }, []);
 
   const loadAppSettings = async () => {
@@ -52,6 +55,11 @@ export default function NewAnamnesisContent() {
     if (settings.length > 0) {
       setAppSettings(settings[0]);
     }
+  };
+
+  const loadCIDs = async () => {
+    const data = await base44.entities.CID.list("-uso_frequente", 500);
+    setCids(data);
   };
 
   const loadTemplates = async () => {
@@ -618,7 +626,7 @@ ${soapData.plano}`;
       </div>
 
       <Dialog open={showCidDialog} onOpenChange={setShowCidDialog}>
-        <DialogContent>
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle className="text-base">Incluir CID</DialogTitle>
           </DialogHeader>
@@ -626,20 +634,57 @@ ${soapData.plano}`;
             <div>
               <Label htmlFor="cid" className="text-sm">CID da Consulta</Label>
               <div className="mt-2">
-                <CIDAutocomplete
-                  value={cidText}
-                  onSelect={setCidText}
-                  placeholder="Buscar CID por código ou descrição..."
+                <Input
+                  placeholder="Buscar por código ou descrição..."
+                  value={cidSearchTerm}
+                  onChange={(e) => setCidSearchTerm(e.target.value)}
+                  autoFocus
+                  className="text-sm"
                 />
               </div>
             </div>
+            <div className="max-h-[300px] overflow-y-auto border rounded-lg">
+              {cids
+                .filter(
+                  (cid) =>
+                    cid.codigo.toLowerCase().includes(cidSearchTerm.toLowerCase()) ||
+                    cid.descricao.toLowerCase().includes(cidSearchTerm.toLowerCase())
+                )
+                .map((cid) => (
+                  <button
+                    key={cid.id}
+                    onClick={() => {
+                      setCidText(cid.codigo);
+                      setShowCidDialog(false);
+                      setCidSearchTerm("");
+                    }}
+                    className="w-full text-left p-3 hover:bg-gray-50 border-b last:border-b-0 transition-colors"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono font-bold text-blue-600 min-w-[60px]">
+                        {cid.codigo}
+                      </span>
+                      <span className="text-sm flex-1">{cid.descricao}</span>
+                      {cid.uso_frequente && (
+                        <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                      )}
+                    </div>
+                  </button>
+                ))}
+              {cids.filter(
+                (cid) =>
+                  cid.codigo.toLowerCase().includes(cidSearchTerm.toLowerCase()) ||
+                  cid.descricao.toLowerCase().includes(cidSearchTerm.toLowerCase())
+              ).length === 0 && (
+                <div className="p-8 text-center text-gray-500 text-sm">
+                  Nenhum CID encontrado
+                </div>
+              )}
+            </div>
           </div>
           <div className="flex justify-end gap-3">
-            <Button variant="outline" onClick={() => setShowCidDialog(false)} className="text-sm h-9">
+            <Button variant="outline" onClick={() => { setShowCidDialog(false); setCidSearchTerm(""); }} className="text-sm h-9">
               Cancelar
-            </Button>
-            <Button onClick={() => setShowCidDialog(false)} className="text-sm h-9">
-              Confirmar
             </Button>
           </div>
         </DialogContent>
