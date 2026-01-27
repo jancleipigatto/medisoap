@@ -179,11 +179,33 @@ Retorne APENAS os 200 CIDs mais usados clinicamente.
     }
   };
 
-  const filteredCIDs = cids.filter(
-    (cid) =>
-      cid.codigo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      cid.descricao.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredCIDs = cids
+    .filter(
+      (cid) =>
+        cid.codigo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        cid.descricao.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => {
+      // Extrair letra e número do código
+      const getCodeParts = (codigo) => {
+        const match = codigo.match(/^([A-Z]+)(\d+)/);
+        if (match) {
+          return { letter: match[1], number: parseInt(match[2]) };
+        }
+        return { letter: codigo, number: 0 };
+      };
+
+      const aParts = getCodeParts(a.codigo);
+      const bParts = getCodeParts(b.codigo);
+
+      // Primeiro ordenar por letra (A-Z)
+      if (aParts.letter !== bParts.letter) {
+        return aParts.letter.localeCompare(bParts.letter);
+      }
+
+      // Depois ordenar por número decrescente
+      return bParts.number - aParts.number;
+    });
 
   if (loading) {
     return (
