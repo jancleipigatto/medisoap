@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { User } from "@/entities/User";
-import { Stethoscope, Home, Plus, Users, FileText, LayoutTemplate, Shield, ClipboardList, FileCheck, Send, Trash2, PanelLeftClose, PanelLeft, Calculator, Pill, LogOut, UserCircle, Edit, Settings, Building2, Info, Calendar } from "lucide-react";
+import { Stethoscope, Home, Plus, Users, FileText, LayoutTemplate, Shield, ClipboardList, FileCheck, Send, Trash2, PanelLeftClose, PanelLeft, Calculator, Pill, LogOut, UserCircle, Edit, Settings, Building2, Info, Calendar, X } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -180,6 +180,15 @@ export default function Layout({ children, currentPageName }) {
         {sidebarOpen && (
           <Sidebar className="border-r border-gray-200 bg-white">
           <SidebarHeader className="border-b border-gray-200 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex-1" />
+              <button
+                onClick={() => setSidebarOpen(false)}
+                className="hover:bg-gray-100 p-1.5 rounded transition-colors duration-200"
+              >
+                <PanelLeftClose className="w-4 h-4 text-gray-600" />
+              </button>
+            </div>
             <div className="flex flex-col items-center mb-4">
               <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg mb-2">
                 <Stethoscope className="w-6 h-6 text-white" />
