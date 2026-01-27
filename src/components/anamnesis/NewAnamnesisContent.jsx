@@ -639,26 +639,6 @@ ${soapData.plano}`;
             <DialogTitle className="text-base">Incluir CID</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            {selectedCids.length > 0 && (
-              <div>
-                <Label className="text-sm mb-2 block">CIDs Selecionados ({selectedCids.length}/10)</Label>
-                <div className="flex flex-wrap gap-2 p-3 bg-gray-50 rounded-lg border">
-                  {selectedCids.map((cid) => (
-                    <Badge key={cid.id} variant="secondary" className="gap-2 py-1.5 px-3">
-                      <span className="font-mono font-bold">{cid.codigo}</span>
-                      <span className="text-xs">-</span>
-                      <span className="text-xs">{cid.descricao.substring(0, 30)}...</span>
-                      <button
-                        onClick={() => setSelectedCids(selectedCids.filter(c => c.id !== cid.id))}
-                        className="ml-1 hover:bg-gray-300 rounded-full p-0.5"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            )}
             <div>
               <Label htmlFor="cid" className="text-sm">Buscar CID</Label>
               <div className="mt-2">
@@ -714,7 +694,7 @@ ${soapData.plano}`;
               )}
             </div>
           </div>
-          <div className="flex justify-end gap-3">
+          <div className="flex justify-end gap-3 border-t pt-4">
             <Button variant="outline" onClick={() => { 
               setShowCidDialog(false); 
               setCidSearchTerm(""); 
@@ -736,6 +716,26 @@ ${soapData.plano}`;
               Incluir ({selectedCids.length})
             </Button>
           </div>
+          {selectedCids.length > 0 && (
+            <div className="border-t pt-4">
+              <Label className="text-sm mb-2 block">CIDs Selecionados ({selectedCids.length}/10)</Label>
+              <div className="flex flex-wrap gap-2 p-3 bg-gray-50 rounded-lg border max-h-[150px] overflow-y-auto">
+                {selectedCids.map((cid) => (
+                  <Badge key={cid.id} variant="secondary" className="gap-2 py-1.5 px-3">
+                    <span className="font-mono font-bold">{cid.codigo}</span>
+                    <span className="text-xs">-</span>
+                    <span className="text-xs">{cid.descricao.substring(0, 30)}...</span>
+                    <button
+                      onClick={() => setSelectedCids(selectedCids.filter(c => c.id !== cid.id))}
+                      className="ml-1 hover:bg-gray-300 rounded-full p-0.5"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </>
