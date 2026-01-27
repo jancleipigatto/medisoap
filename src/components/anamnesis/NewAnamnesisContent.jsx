@@ -13,8 +13,10 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import PatientSelector from "./PatientSelector";
 import ToolsSidebar from "../tools/ToolsSidebar";
+import DocumentsSidebar from "../medical/DocumentsSidebar";
 import GestationalAgeCalculator from "../tools/GestationalAgeCalculator";
 import BMICalculator from "../tools/BMICalculator";
+import FloatingDocument from "../medical/FloatingDocument";
 import { AnimatePresence } from "framer-motion";
 import { Star, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -45,6 +47,7 @@ export default function NewAnamnesisContent() {
   const [cids, setCids] = useState([]);
   const [cidSearchTerm, setCidSearchTerm] = useState("");
   const [selectedCids, setSelectedCids] = useState([]);
+  const [activeDocument, setActiveDocument] = useState(null);
 
   useEffect(() => {
     loadTemplates();
@@ -319,9 +322,18 @@ ${soapData.plano}`;
     }
   };
 
+  const documents = {
+    receita: { name: "Receita", component: () => <div className="text-sm text-gray-600">Funcionalidade de Receita em desenvolvimento</div> },
+    atestado: { name: "Atestado", component: () => <div className="text-sm text-gray-600">Funcionalidade de Atestado em desenvolvimento</div> },
+    exame: { name: "Exame", component: () => <div className="text-sm text-gray-600">Funcionalidade de Exame em desenvolvimento</div> },
+    encaminhamento: { name: "Encaminhamento", component: () => <div className="text-sm text-gray-600">Funcionalidade de Encaminhamento em desenvolvimento</div> },
+    orientacao: { name: "Orientação", component: () => <div className="text-sm text-gray-600">Funcionalidade de Orientação em desenvolvimento</div> }
+  };
+
   return (
     <>
       <ToolsSidebar onToolOpen={setActiveTool} />
+      <DocumentsSidebar onDocumentOpen={setActiveDocument} />
       
       <AnimatePresence>
         {activeTool === 'gestational_age' && (
@@ -335,6 +347,14 @@ ${soapData.plano}`;
             onClose={() => setActiveTool(null)}
             onSave={handleToolSave}
           />
+        )}
+        {activeDocument && documents[activeDocument] && (
+          <FloatingDocument
+            document={documents[activeDocument]}
+            onClose={() => setActiveDocument(null)}
+          >
+            {documents[activeDocument].component()}
+          </FloatingDocument>
         )}
       </AnimatePresence>
 
