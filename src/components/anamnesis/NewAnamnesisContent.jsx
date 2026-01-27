@@ -15,6 +15,7 @@ import PatientSelector from "./PatientSelector";
 import ToolsSidebar from "../tools/ToolsSidebar";
 import GestationalAgeCalculator from "../tools/GestationalAgeCalculator";
 import BMICalculator from "../tools/BMICalculator";
+import CIDAutocomplete from "../medical/CIDAutocomplete";
 import { AnimatePresence } from "framer-motion";
 
 export default function NewAnamnesisContent() {
@@ -624,13 +625,13 @@ ${soapData.plano}`;
           <div className="space-y-4 py-4">
             <div>
               <Label htmlFor="cid" className="text-sm">CID da Consulta</Label>
-              <Input
-                id="cid"
-                value={cidText}
-                onChange={(e) => setCidText(e.target.value)}
-                placeholder="Ex: CID 10 - J06.9 (Infecção das vias aéreas superiores)"
-                className="mt-2 text-sm h-9"
-              />
+              <div className="mt-2">
+                <CIDAutocomplete
+                  value={cidText}
+                  onSelect={setCidText}
+                  placeholder="Buscar CID por código ou descrição..."
+                />
+              </div>
             </div>
           </div>
           <div className="flex justify-end gap-3">

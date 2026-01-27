@@ -129,6 +129,13 @@ export default function Home() {
       color: "from-pink-500 to-rose-600",
       permission: "can_access_templates"
     },
+    cid_management: {
+      title: "Banco de CIDs",
+      icon: FileText,
+      url: createPageUrl("CIDManagement"),
+      color: "from-indigo-500 to-blue-600",
+      permission: "can_access_templates"
+    },
     orientacoes: {
       title: "Orientações",
       description: "Criar orientação ao paciente",
