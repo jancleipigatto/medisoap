@@ -35,34 +35,68 @@ export default function CIDManagement() {
 
     setImporting(true);
     try {
-      // Upload file
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      const fileExtension = file.name.split('.').pop().toLowerCase();
+      
+      // Se for arquivo .txt, fazer parse manual
+      if (fileExtension === 'txt') {
+        const text = await file.text();
+        const lines = text.split('\n');
+        const cidsToImport = [];
 
-      // Extract data from file
-      const result = await base44.integrations.Core.ExtractDataFromUploadedFile({
-        file_url,
-        json_schema: {
-          type: "object",
-          properties: {
-            items: {
-              type: "array",
+        // Parse do formato: "code"; "description"
+        for (let line of lines) {
+          line = line.trim();
+          if (!line || line.startsWith('"code"')) continue; // Pula header e linhas vazias
+          
+          // Separa por ponto e vírgula
+          const parts = line.split(';').map(p => p.trim().replace(/^"|"$/g, ''));
+          
+          if (parts.length >= 2) {
+            const codigo = parts[0].trim();
+            const descricao = parts[1].trim();
+            
+            if (codigo && descricao) {
+              cidsToImport.push({ codigo, descricao });
+            }
+          }
+        }
+
+        if (cidsToImport.length > 0) {
+          await base44.entities.CID.bulkCreate(cidsToImport);
+          await loadCIDs();
+          alert(`${cidsToImport.length} CIDs importados com sucesso!`);
+        } else {
+          alert("Nenhum CID válido encontrado no arquivo");
+        }
+      } else {
+        // Para CSV/XLSX usar a integração
+        const { file_url } = await base44.integrations.Core.UploadFile({ file });
+
+        const result = await base44.integrations.Core.ExtractDataFromUploadedFile({
+          file_url,
+          json_schema: {
+            type: "object",
+            properties: {
               items: {
-                type: "object",
-                properties: {
-                  codigo: { type: "string" },
-                  descricao: { type: "string" },
-                  categoria: { type: "string" }
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    codigo: { type: "string" },
+                    descricao: { type: "string" },
+                    categoria: { type: "string" }
+                  }
                 }
               }
             }
           }
-        }
-      });
+        });
 
-      if (result.status === "success" && result.output?.items) {
-        await base44.entities.CID.bulkCreate(result.output.items);
-        await loadCIDs();
-        alert("CIDs importados com sucesso!");
+        if (result.status === "success" && result.output?.items) {
+          await base44.entities.CID.bulkCreate(result.output.items);
+          await loadCIDs();
+          alert("CIDs importados com sucesso!");
+        }
       }
     } catch (error) {
       alert("Erro ao importar arquivo: " + error.message);
@@ -175,7 +209,7 @@ Retorne APENAS os 200 CIDs mais usados clinicamente.
               <div>
                 <input
                   type="file"
-                  accept=".csv,.xlsx"
+                  accept=".csv,.xlsx,.txt"
                   onChange={handleFileImport}
                   className="hidden"
                   id="file-upload"

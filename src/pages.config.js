@@ -1,6 +1,7 @@
 import Agenda from './pages/Agenda';
 import AnamnesisDetail from './pages/AnamnesisDetail';
 import AtestadoTemplates from './pages/AtestadoTemplates';
+import CIDManagement from './pages/CIDManagement';
 import CompletarPerfil from './pages/CompletarPerfil';
 import ConvenioManagement from './pages/ConvenioManagement';
 import DashboardSettings from './pages/DashboardSettings';
@@ -25,7 +26,6 @@ import Templates from './pages/Templates';
 import Tools from './pages/Tools';
 import UserManagement from './pages/UserManagement';
 import UserProfile from './pages/UserProfile';
-import CIDManagement from './pages/CIDManagement';
 import __Layout from './Layout.jsx';
 
 
@@ -33,6 +33,7 @@ export const PAGES = {
     "Agenda": Agenda,
     "AnamnesisDetail": AnamnesisDetail,
     "AtestadoTemplates": AtestadoTemplates,
+    "CIDManagement": CIDManagement,
     "CompletarPerfil": CompletarPerfil,
     "ConvenioManagement": ConvenioManagement,
     "DashboardSettings": DashboardSettings,
@@ -57,7 +58,6 @@ export const PAGES = {
     "Tools": Tools,
     "UserManagement": UserManagement,
     "UserProfile": UserProfile,
-    "CIDManagement": CIDManagement,
 }
 
 export const pagesConfig = {
