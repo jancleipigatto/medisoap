@@ -487,6 +487,7 @@ export default function ReceitaFormAdvanced() {
                 Imprimir / Salvar PDF
               </Button>
             </div>
+      </div>
     </>
   );
 }

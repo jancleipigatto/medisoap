@@ -200,6 +200,8 @@ export default function DocumentForm({ tipo, tipoLabel, icon: Icon, templateEnti
                 Imprimir / Salvar PDF
               </Button>
             </div>
+          </div>
+      </div>
     </>
   );
 }
