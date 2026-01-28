@@ -40,7 +40,7 @@ export default function DocumentsSidebar({ onDocumentOpen, isToolsOpen }) {
 
   if (!isOpen) {
     return (
-      <div className="fixed top-1/2 translate-y-12 z-[60]" style={{ right: isToolsOpen ? '120px' : '0' }}>
+      <div className="fixed top-1/2 z-[70]" style={{ right: isToolsOpen ? '120px' : '0', transform: 'translateY(calc(-50% + 22px))' }}>
         <button
           onClick={() => setIsOpen(true)}
           title="Saída de Atendimentos"
