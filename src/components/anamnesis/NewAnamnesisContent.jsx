@@ -34,6 +34,12 @@ export default function NewAnamnesisContent() {
     const day = String(now.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   });
+  const [horarioConsulta, setHorarioConsulta] = useState(() => {
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
+  });
   const [textoOriginal, setTextoOriginal] = useState("");
   const [soapData, setSoapData] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -197,11 +203,17 @@ ${soapData.plano}`;
 
     if (currentAnamnesisId) {
       // Atualizar anamnese existente
+      // Adicionar histórico de edição
+      const existingAnamnesis = await base44.entities.Anamnesis.list();
+      const current = existingAnamnesis.find(a => a.id === currentAnamnesisId);
+      const historicoLine = `\n\n--- Atualizado em ${new Date().toLocaleString('pt-BR')} ---\n\n`;
+      
       await base44.entities.Anamnesis.update(currentAnamnesisId, {
         patient_id: selectedPatient.id,
         patient_name: selectedPatient.nome,
         data_consulta: dataConsulta,
-        texto_original: textoOriginal
+        horario_consulta: horarioConsulta,
+        texto_original: current?.texto_original ? current.texto_original + historicoLine + textoOriginal : textoOriginal
       });
     } else {
       // Criar nova anamnese com número de atendimento
@@ -210,6 +222,7 @@ ${soapData.plano}`;
         patient_id: selectedPatient.id,
         patient_name: selectedPatient.nome,
         data_consulta: dataConsulta,
+        horario_consulta: horarioConsulta,
         texto_original: textoOriginal,
         numero_atendimento: numeroAtendimento,
         subjetivo: "",
@@ -242,11 +255,21 @@ ${soapData.plano}`;
 
     setIsSaving(true);
 
+    // Adicionar histórico se estiver atualizando
+    let finalTextoOriginal = textoOriginal;
+    if (currentAnamnesisId) {
+      const existingAnamnesis = await base44.entities.Anamnesis.list();
+      const current = existingAnamnesis.find(a => a.id === currentAnamnesisId);
+      const historicoLine = `\n\n--- Finalizado em ${new Date().toLocaleString('pt-BR')} ---\n\n`;
+      finalTextoOriginal = current?.texto_original ? current.texto_original + historicoLine + textoOriginal : textoOriginal;
+    }
+
     const anamnesisData = {
       patient_id: selectedPatient.id,
       patient_name: selectedPatient.nome,
       data_consulta: dataConsulta,
-      texto_original: textoOriginal,
+      horario_consulta: horarioConsulta,
+      texto_original: finalTextoOriginal,
       subjetivo: soapData?.subjetivo || "",
       objetivo: soapData?.objetivo || "",
       avaliacao: (soapData?.avaliacao || "") + (cidText ? `\n\nCID: ${cidText}` : ""),
@@ -270,8 +293,7 @@ ${soapData.plano}`;
     setIsSaving(false);
     setIsFinalized(true);
     
-    // Redirecionar para saída de atendimento
-    window.location.href = createPageUrl(`AnamnesisDetail?id=${savedId}`);
+    alert("Atendimento finalizado com sucesso!");
   };
 
   const addDetails = () => {
@@ -310,6 +332,7 @@ ${soapData.plano}`;
       setCurrentAnamnesisId(id);
       setSelectedPatient({ id: anamnesis.patient_id, nome: anamnesis.patient_name });
       setDataConsulta(anamnesis.data_consulta);
+      setHorarioConsulta(anamnesis.horario_consulta || "");
       setTextoOriginal(anamnesis.texto_original || "");
       
       if (anamnesis.subjetivo || anamnesis.objetivo || anamnesis.avaliacao || anamnesis.plano) {
@@ -431,15 +454,27 @@ ${soapData.plano}`;
                 </Button>
               )}
 
-              <div>
-                <Label htmlFor="data" className="text-sm">Data da Consulta</Label>
-                <Input
-                  id="data"
-                  type="date"
-                  value={dataConsulta}
-                  onChange={(e) => setDataConsulta(e.target.value)}
-                  className="text-sm h-9"
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="data" className="text-sm">Data da Consulta</Label>
+                  <Input
+                    id="data"
+                    type="date"
+                    value={dataConsulta}
+                    onChange={(e) => setDataConsulta(e.target.value)}
+                    className="text-sm h-9"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="horario" className="text-sm">Horário</Label>
+                  <Input
+                    id="horario"
+                    type="time"
+                    value={horarioConsulta}
+                    onChange={(e) => setHorarioConsulta(e.target.value)}
+                    className="text-sm h-9"
+                  />
+                </div>
               </div>
 
               {templates.length > 0 && (
