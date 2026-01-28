@@ -19,7 +19,7 @@ import GestationalAgeCalculator from "../tools/GestationalAgeCalculator";
 import BMICalculator from "../tools/BMICalculator";
 import FloatingDocument from "../medical/FloatingDocument";
 import { AnimatePresence } from "framer-motion";
-import { Star, X } from "lucide-react";
+import { Star, X, Activity } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 export default function NewAnamnesisContent() {
@@ -55,6 +55,7 @@ export default function NewAnamnesisContent() {
   const [cidSearchTerm, setCidSearchTerm] = useState("");
   const [selectedCids, setSelectedCids] = useState([]);
   const [activeDocument, setActiveDocument] = useState(null);
+  const [anamnesis, setAnamnesis] = useState(null);
 
   useEffect(() => {
     loadTemplates();
@@ -326,21 +327,22 @@ ${soapData.plano}`;
 
   const loadExistingAnamnesis = async (id) => {
     const data = await base44.entities.Anamnesis.list();
-    const anamnesis = data.find(a => a.id === id);
+    const foundAnamnesis = data.find(a => a.id === id);
     
-    if (anamnesis) {
+    if (foundAnamnesis) {
+      setAnamnesis(foundAnamnesis);
       setCurrentAnamnesisId(id);
-      setSelectedPatient({ id: anamnesis.patient_id, nome: anamnesis.patient_name });
-      setDataConsulta(anamnesis.data_consulta);
-      setHorarioConsulta(anamnesis.horario_consulta || "");
-      setTextoOriginal(anamnesis.texto_original || "");
+      setSelectedPatient({ id: foundAnamnesis.patient_id, nome: foundAnamnesis.patient_name });
+      setDataConsulta(foundAnamnesis.data_consulta);
+      setHorarioConsulta(foundAnamnesis.horario_consulta || "");
+      setTextoOriginal(foundAnamnesis.texto_original || "");
       
-      if (anamnesis.subjetivo || anamnesis.objetivo || anamnesis.avaliacao || anamnesis.plano) {
+      if (foundAnamnesis.subjetivo || foundAnamnesis.objetivo || foundAnamnesis.avaliacao || foundAnamnesis.plano) {
         setSoapData({
-          subjetivo: anamnesis.subjetivo || "",
-          objetivo: anamnesis.objetivo || "",
-          avaliacao: anamnesis.avaliacao || "",
-          plano: anamnesis.plano || ""
+          subjetivo: foundAnamnesis.subjetivo || "",
+          objetivo: foundAnamnesis.objetivo || "",
+          avaliacao: foundAnamnesis.avaliacao || "",
+          plano: foundAnamnesis.plano || ""
         });
       }
     }
@@ -500,6 +502,62 @@ ${soapData.plano}`;
               )}
             </CardContent>
           </Card>
+
+          {/* Mostrar dados da triagem se existirem */}
+          {(soapData || textoOriginal) && (anamnesis?.triagem_pa || anamnesis?.triagem_temperatura || anamnesis?.triagem_peso || anamnesis?.triagem_altura || anamnesis?.triagem_queixa) && (
+            <Card className="shadow-lg border-none bg-gradient-to-br from-green-50 to-emerald-50">
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Activity className="w-5 h-5 text-green-600" />
+                  Dados da Triagem
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  {anamnesis?.triagem_pa && (
+                    <div className="bg-white p-3 rounded-lg">
+                      <span className="text-gray-600 font-medium">PA:</span>
+                      <span className="ml-2 text-gray-900">{anamnesis.triagem_pa}</span>
+                    </div>
+                  )}
+                  {anamnesis?.triagem_temperatura && (
+                    <div className="bg-white p-3 rounded-lg">
+                      <span className="text-gray-600 font-medium">Temp:</span>
+                      <span className="ml-2 text-gray-900">{anamnesis.triagem_temperatura}</span>
+                    </div>
+                  )}
+                  {anamnesis?.triagem_peso && (
+                    <div className="bg-white p-3 rounded-lg">
+                      <span className="text-gray-600 font-medium">Peso:</span>
+                      <span className="ml-2 text-gray-900">{anamnesis.triagem_peso}</span>
+                    </div>
+                  )}
+                  {anamnesis?.triagem_altura && (
+                    <div className="bg-white p-3 rounded-lg">
+                      <span className="text-gray-600 font-medium">Altura:</span>
+                      <span className="ml-2 text-gray-900">{anamnesis.triagem_altura}</span>
+                    </div>
+                  )}
+                </div>
+                {anamnesis?.triagem_queixa && (
+                  <div className="mt-3 bg-white p-3 rounded-lg">
+                    <span className="text-gray-600 font-medium block mb-1">Queixa:</span>
+                    <p className="text-gray-900">{anamnesis.triagem_queixa}</p>
+                  </div>
+                )}
+                {anamnesis?.triagem_observacoes && (
+                  <div className="mt-3 bg-white p-3 rounded-lg">
+                    <span className="text-gray-600 font-medium block mb-1">Observações:</span>
+                    <p className="text-gray-900">{anamnesis.triagem_observacoes}</p>
+                  </div>
+                )}
+                <div className="mt-3 text-xs text-gray-600">
+                  Triagem realizada por: {anamnesis?.triagem_realizada_por || "Não informado"}
+                  {anamnesis?.triagem_data_hora && ` em ${new Date(anamnesis.triagem_data_hora).toLocaleString('pt-BR')}`}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           <Card className="shadow-lg border-none">
             <CardHeader>

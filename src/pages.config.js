@@ -26,6 +26,7 @@ import Templates from './pages/Templates';
 import Tools from './pages/Tools';
 import UserManagement from './pages/UserManagement';
 import UserProfile from './pages/UserProfile';
+import Triagem from './pages/Triagem';
 import __Layout from './Layout.jsx';
 
 
@@ -58,6 +59,7 @@ export const PAGES = {
     "Tools": Tools,
     "UserManagement": UserManagement,
     "UserProfile": UserProfile,
+    "Triagem": Triagem,
 }
 
 export const pagesConfig = {

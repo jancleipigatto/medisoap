@@ -279,7 +279,15 @@ export default function Agenda() {
                                 </div>
                               )}
                             </div>
-                            <div className="flex gap-2">
+                            <div className="flex gap-2 flex-wrap">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => navigate(createPageUrl("Triagem"))}
+                                className="text-green-600 hover:text-green-700"
+                              >
+                                Iniciar Triagem
+                              </Button>
                               <Button
                                 variant="outline"
                                 size="sm"
