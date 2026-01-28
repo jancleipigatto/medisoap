@@ -478,13 +478,36 @@ ${soapData.plano}`;
                 minHeight="200px"
               />
               <div className="mt-4">
+                {/* Lista de CIDs adicionados */}
+                {cidText && (
+                  <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <Label className="text-sm font-semibold text-blue-900">CIDs Incluídos:</Label>
+                      <button
+                        onClick={() => setCidText("")}
+                        className="text-xs text-red-600 hover:text-red-800 hover:underline"
+                      >
+                        Limpar todos
+                      </button>
+                    </div>
+                    <div className="space-y-1">
+                      {cidText.split('\n').map((line, idx) => (
+                        <div key={idx} className="text-sm text-gray-700 flex items-start gap-2">
+                          <span className="text-blue-600 font-mono font-semibold">•</span>
+                          <span className="flex-1">{line}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
                 <div className="flex gap-2 flex-wrap">
                   <Button
                     onClick={() => setShowCidDialog(true)}
                     variant="outline"
                     className="flex-1 min-w-[140px] text-sm h-9"
                   >
-                    {cidText ? `CID: ${cidText}` : "Incluir CID"}
+                    Incluir CID
                   </Button>
                   <Button
                     onClick={saveAnamnesisWithoutSOAP}
