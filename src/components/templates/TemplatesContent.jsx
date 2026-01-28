@@ -141,6 +141,7 @@ export default function TemplatesContent() {
             size="icon"
             onClick={() => navigate(createPageUrl("Home"))}
             className="shadow-sm"
+            title="Voltar ao Início"
           >
             <ArrowLeft className="w-4 h-4" />
           </Button>
