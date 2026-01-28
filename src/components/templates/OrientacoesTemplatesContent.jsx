@@ -220,7 +220,7 @@ export default function OrientacoesTemplatesContent() {
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
-                {editingTemplate ? "Editar Modelo" : "Novo Modelo"}
+                {editingTemplate ? "Editar Modelo de orientações" : "Novo Modelo"}
               </DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
