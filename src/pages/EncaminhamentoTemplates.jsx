@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { EncaminhamentoTemplate } from "@/entities/EncaminhamentoTemplate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import RichTextEditor from "@/components/ui/rich-text-editor";
 import { Plus, Send, Edit, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -273,35 +273,31 @@ export default function EncaminhamentoTemplates() {
 
                 <div>
                   <Label htmlFor="cabecalho">Cabeçalho</Label>
-                  <Textarea
-                    id="cabecalho"
+                  <RichTextEditor
                     value={formData.cabecalho}
-                    onChange={(e) => setFormData({...formData, cabecalho: e.target.value})}
+                    onChange={(value) => setFormData({...formData, cabecalho: value})}
                     placeholder="Nome do médico, especialidade, CRM, endereço, telefone..."
-                    rows={3}
+                    minHeight="100px"
                   />
                 </div>
 
                 <div>
                   <Label htmlFor="template_texto">Texto do Modelo *</Label>
-                  <Textarea
-                    id="template_texto"
+                  <RichTextEditor
                     value={formData.template_texto}
-                    onChange={(e) => setFormData({...formData, template_texto: e.target.value})}
+                    onChange={(value) => setFormData({...formData, template_texto: value})}
                     placeholder="Digite o texto do encaminhamento..."
-                    className="min-h-[200px] font-mono text-sm"
-                    required
+                    minHeight="200px"
                   />
                 </div>
 
                 <div>
                   <Label htmlFor="rodape">Rodapé</Label>
-                  <Textarea
-                    id="rodape"
+                  <RichTextEditor
                     value={formData.rodape}
-                    onChange={(e) => setFormData({...formData, rodape: e.target.value})}
+                    onChange={(value) => setFormData({...formData, rodape: value})}
                     placeholder="Assinatura, carimbo, informações adicionais..."
-                    rows={3}
+                    minHeight="100px"
                   />
                 </div>
 
