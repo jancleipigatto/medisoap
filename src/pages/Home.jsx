@@ -17,7 +17,8 @@ import {
   Settings,
   Calculator,
   Pill,
-  Info
+  Info,
+  Activity
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import PermissionGuard from "../components/PermissionGuard";
@@ -38,6 +39,13 @@ export default function Home() {
   };
 
   const allMenuItems = {
+    triagem: {
+      title: "Triagem",
+      icon: Activity,
+      url: createPageUrl("Triagem"),
+      color: "from-green-500 to-emerald-600",
+      permission: "can_create_anamnesis"
+    },
     new_anamnesis: {
       title: "Novo Atendimento",
       icon: Plus,
