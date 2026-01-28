@@ -481,7 +481,7 @@ ${soapData.plano}`;
 
               {templates.length > 0 && (
                 <div>
-                  <Label htmlFor="template" className="text-sm">Usar Modelo (Opcional)</Label>
+                  <Label htmlFor="template" className="text-sm">Usar Modelo ao Carregar (Opcional)</Label>
                   <Select
                     value={selectedTemplate}
                     onValueChange={handleTemplateSelect}
@@ -494,6 +494,8 @@ ${soapData.plano}`;
                       {templates.map((template) => (
                         <SelectItem key={template.id} value={template.id}>
                           {template.nome}
+                          {template.is_medisoap_public && " 🌐"}
+                          {template.is_public_org && !template.is_medisoap_public && " 👥"}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -642,13 +644,15 @@ ${soapData.plano}`;
                       disabled={isProcessing}
                     >
                       <SelectTrigger className="flex-1 min-w-[140px] h-9 text-sm">
-                        <SelectValue placeholder="Modelo" />
+                        <SelectValue placeholder="Modelo para IA" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="none">Nenhum</SelectItem>
+                        <SelectItem value="none">Sem modelo</SelectItem>
                         {templates.map((template) => (
                           <SelectItem key={template.id} value={template.id}>
                             {template.nome}
+                            {template.is_medisoap_public && " 🌐"}
+                            {template.is_public_org && !template.is_medisoap_public && " 👥"}
                           </SelectItem>
                         ))}
                       </SelectContent>
