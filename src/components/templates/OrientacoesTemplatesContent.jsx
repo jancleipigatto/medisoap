@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import RichTextEditor from "@/components/ui/rich-text-editor";
 import { Plus, Info, Edit, Trash2, ArrowLeft, Upload } from "lucide-react";
 import {
   Dialog,
@@ -249,35 +250,31 @@ export default function OrientacoesTemplatesContent() {
 
               <div>
                 <Label htmlFor="template_texto">Texto das Orientações *</Label>
-                <Textarea
-                  id="template_texto"
+                <RichTextEditor
                   value={formData.template_texto}
-                  onChange={(e) => setFormData({...formData, template_texto: e.target.value})}
+                  onChange={(value) => setFormData({...formData, template_texto: value})}
                   placeholder="Digite as orientações ao paciente..."
-                  className="min-h-[200px]"
-                  required
+                  minHeight="200px"
                 />
               </div>
 
               <div>
                 <Label htmlFor="cabecalho">Cabeçalho (opcional)</Label>
-                <Textarea
-                  id="cabecalho"
+                <RichTextEditor
                   value={formData.cabecalho}
-                  onChange={(e) => setFormData({...formData, cabecalho: e.target.value})}
+                  onChange={(value) => setFormData({...formData, cabecalho: value})}
                   placeholder="Nome, endereço, contato do médico/clínica"
-                  className="min-h-[80px]"
+                  minHeight="80px"
                 />
               </div>
 
               <div>
                 <Label htmlFor="rodape">Rodapé (opcional)</Label>
-                <Textarea
-                  id="rodape"
+                <RichTextEditor
                   value={formData.rodape}
-                  onChange={(e) => setFormData({...formData, rodape: e.target.value})}
+                  onChange={(value) => setFormData({...formData, rodape: value})}
                   placeholder="Assinatura, CRM, etc"
-                  className="min-h-[80px]"
+                  minHeight="80px"
                 />
               </div>
 

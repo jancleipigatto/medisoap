@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import RichTextEditor from "@/components/ui/rich-text-editor";
 import { Plus, LayoutTemplate, Edit, Trash2, ArrowLeft } from "lucide-react";
 import {
   Dialog,
@@ -250,13 +251,11 @@ export default function TemplatesContent() {
 
               <div>
                 <Label htmlFor="template_texto">Texto do Modelo *</Label>
-                <Textarea
-                  id="template_texto"
+                <RichTextEditor
                   value={formData.template_texto}
-                  onChange={(e) => setFormData({...formData, template_texto: e.target.value})}
+                  onChange={(value) => setFormData({...formData, template_texto: value})}
                   placeholder="Digite a estrutura do modelo de anamnese..."
-                  className="min-h-[300px] font-mono text-sm"
-                  required
+                  minHeight="300px"
                 />
               </div>
 
