@@ -25,7 +25,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge"; // Added import for Badge
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { User } from "@/entities/User";
 
 export default function TemplatesContent() {
   const navigate = useNavigate();
@@ -33,20 +35,37 @@ export default function TemplatesContent() {
   const [showForm, setShowForm] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState(null);
   const [deleteTemplate, setDeleteTemplate] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
   const [formData, setFormData] = useState({
     nome: "",
     descricao: "",
     template_texto: "",
-    is_default: false // Added new field
+    is_default: false,
+    is_public_org: false
   });
 
   useEffect(() => {
+    loadUser();
     loadTemplates();
   }, []);
 
+  const loadUser = async () => {
+    const user = await User.me();
+    setCurrentUser(user);
+  };
+
   const loadTemplates = async () => {
-    const data = await AnamnesisTemplate.list("-created_date");
-    setTemplates(data);
+    const allData = await AnamnesisTemplate.list("-created_date");
+    const user = await User.me();
+    
+    // Filtrar templates: MediSOAP públicos + organização públicos + próprios
+    const filtered = allData.filter(t => 
+      t.is_medisoap_public || 
+      t.is_public_org || 
+      t.created_by === user.email
+    );
+    
+    setTemplates(filtered);
   };
 
   const handleEdit = (template) => {
@@ -55,7 +74,8 @@ export default function TemplatesContent() {
       nome: template.nome || "",
       descricao: template.descricao || "",
       template_texto: template.template_texto || "",
-      is_default: template.is_default || false // Populate new field
+      is_default: template.is_default || false,
+      is_public_org: template.is_public_org || false
     });
     setShowForm(true);
   };
@@ -84,7 +104,8 @@ export default function TemplatesContent() {
       nome: "",
       descricao: "",
       template_texto: "",
-      is_default: false // Reset new field
+      is_default: false,
+      is_public_org: false
     });
     setEditingTemplate(null);
     setShowForm(false);
@@ -106,7 +127,8 @@ export default function TemplatesContent() {
       nome: "",
       descricao: "",
       template_texto: "",
-      is_default: false // Reset new field
+      is_default: false,
+      is_public_org: false
     });
   };
 
@@ -147,10 +169,19 @@ export default function TemplatesContent() {
                     <LayoutTemplate className="w-6 h-6 text-purple-600" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <CardTitle className="text-lg truncate">{template.nome}</CardTitle>
                       {template.is_default && (
                         <Badge className="bg-green-100 text-green-700 text-xs">Padrão</Badge>
+                      )}
+                      {template.is_medisoap_public && (
+                        <Badge className="bg-blue-100 text-blue-700 text-xs">MediSOAP</Badge>
+                      )}
+                      {template.is_public_org && !template.is_medisoap_public && (
+                        <Badge className="bg-purple-100 text-purple-700 text-xs">Organização</Badge>
+                      )}
+                      {!template.is_public_org && !template.is_medisoap_public && (
+                        <Badge className="bg-gray-100 text-gray-700 text-xs">Privado</Badge>
                       )}
                     </div>
                     {template.descricao && (
@@ -236,17 +267,35 @@ export default function TemplatesContent() {
                 />
               </div>
 
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="is_default"
-                  checked={formData.is_default}
-                  onChange={(e) => setFormData({...formData, is_default: e.target.checked})}
-                  className="w-4 h-4 text-blue-600 rounded"
-                />
-                <Label htmlFor="is_default" className="font-normal cursor-pointer">
-                  Definir como modelo padrão
-                </Label>
+              <div className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="is_default"
+                    checked={formData.is_default}
+                    onChange={(e) => setFormData({...formData, is_default: e.target.checked})}
+                    className="w-4 h-4 text-blue-600 rounded"
+                  />
+                  <Label htmlFor="is_default" className="font-normal cursor-pointer">
+                    Definir como modelo padrão
+                  </Label>
+                </div>
+
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="flex-1">
+                    <Label htmlFor="is_public_org" className="font-semibold cursor-pointer">
+                      Compartilhar com a organização
+                    </Label>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Quando ativado, todos os usuários da organização poderão usar este modelo
+                    </p>
+                  </div>
+                  <Switch
+                    id="is_public_org"
+                    checked={formData.is_public_org}
+                    onCheckedChange={(checked) => setFormData({...formData, is_public_org: checked})}
+                  />
+                </div>
               </div>
 
               <div>
