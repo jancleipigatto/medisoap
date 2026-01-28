@@ -285,7 +285,7 @@ export default function TemplatesContent() {
                 <div className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="flex-1">
                     <Label htmlFor="is_public_org" className="font-semibold cursor-pointer">
-                      Compartilhar com a organização
+                      Compartilhar
                     </Label>
                     <p className="text-sm text-gray-500 mt-1">
                       Quando ativado, todos os usuários da organização poderão usar este modelo
