@@ -561,9 +561,10 @@ ${anamnesis.plano || "Não informado"}`;
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="bg-gray-50 rounded-lg p-4 font-mono text-sm whitespace-pre-wrap">
-                      {anamnesis.texto_original}
-                    </div>
+                    <div 
+                      className="bg-gray-50 rounded-lg p-4 text-sm prose prose-sm max-w-none"
+                      dangerouslySetInnerHTML={{ __html: anamnesis.texto_original }}
+                    />
                   </CardContent>
                 </Card>
               )}
