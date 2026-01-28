@@ -18,9 +18,14 @@ import DocumentsSidebar from "../medical/DocumentsSidebar";
 import GestationalAgeCalculator from "../tools/GestationalAgeCalculator";
 import BMICalculator from "../tools/BMICalculator";
 import FloatingDocument from "../medical/FloatingDocument";
+import DocumentForm from "../medical/DocumentForm";
+import ReceitaFormAdvanced from "../medical/ReceitaFormAdvanced";
 import { AnimatePresence } from "framer-motion";
-import { Star, X, Activity } from "lucide-react";
+import { Star, X, Activity, ClipboardList, FileCheck, Send, Info, Pill } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { AtestadoTemplate } from "@/entities/AtestadoTemplate";
+import { ExameTemplate } from "@/entities/ExameTemplate";
+import { EncaminhamentoTemplate } from "@/entities/EncaminhamentoTemplate";
 
 export default function NewAnamnesisContent() {
   const navigate = useNavigate();
@@ -378,7 +383,7 @@ ${soapData.plano}`;
             document={{ name: "Receita" }}
             onClose={() => { setActiveDocument(null); setActiveDocType(null); }}
           >
-            {React.createElement(require("../medical/ReceitaFormAdvanced").default)}
+            <ReceitaFormAdvanced />
           </FloatingDocument>
         )}
         {activeDocument === 'atestado' && (
@@ -386,13 +391,12 @@ ${soapData.plano}`;
             document={{ name: "Atestado" }}
             onClose={() => { setActiveDocument(null); setActiveDocType(null); }}
           >
-            {React.createElement(require("../medical/DocumentForm").default, {
-              tipo: "atestado",
-              tipoLabel: "Atestado Médico",
-              icon: require("lucide-react").ClipboardList,
-              templateEntity: require("@/entities/AtestadoTemplate").AtestadoTemplate,
-              embedded: true
-            })}
+            <DocumentForm
+              tipo="atestado"
+              tipoLabel="Atestado Médico"
+              icon={ClipboardList}
+              templateEntity={AtestadoTemplate}
+            />
           </FloatingDocument>
         )}
         {activeDocument === 'exame' && (
@@ -400,13 +404,12 @@ ${soapData.plano}`;
             document={{ name: "Exame" }}
             onClose={() => { setActiveDocument(null); setActiveDocType(null); }}
           >
-            {React.createElement(require("../medical/DocumentForm").default, {
-              tipo: "exame",
-              tipoLabel: "Solicitação de Exames",
-              icon: require("lucide-react").FileCheck,
-              templateEntity: require("@/entities/ExameTemplate").ExameTemplate,
-              embedded: true
-            })}
+            <DocumentForm
+              tipo="exame"
+              tipoLabel="Solicitação de Exames"
+              icon={FileCheck}
+              templateEntity={ExameTemplate}
+            />
           </FloatingDocument>
         )}
         {activeDocument === 'encaminhamento' && (
@@ -414,13 +417,12 @@ ${soapData.plano}`;
             document={{ name: "Encaminhamento" }}
             onClose={() => { setActiveDocument(null); setActiveDocType(null); }}
           >
-            {React.createElement(require("../medical/DocumentForm").default, {
-              tipo: "encaminhamento",
-              tipoLabel: "Encaminhamento Médico",
-              icon: require("lucide-react").Send,
-              templateEntity: require("@/entities/EncaminhamentoTemplate").EncaminhamentoTemplate,
-              embedded: true
-            })}
+            <DocumentForm
+              tipo="encaminhamento"
+              tipoLabel="Encaminhamento Médico"
+              icon={Send}
+              templateEntity={EncaminhamentoTemplate}
+            />
           </FloatingDocument>
         )}
         {activeDocument === 'orientacao' && (
@@ -428,13 +430,12 @@ ${soapData.plano}`;
             document={{ name: "Orientação" }}
             onClose={() => { setActiveDocument(null); setActiveDocType(null); }}
           >
-            {React.createElement(require("../medical/DocumentForm").default, {
-              tipo: "orientacoes",
-              tipoLabel: "Orientação",
-              icon: require("lucide-react").Info,
-              templateEntity: base44.entities.OrientacoesTemplate,
-              embedded: true
-            })}
+            <DocumentForm
+              tipo="orientacoes"
+              tipoLabel="Orientação"
+              icon={Info}
+              templateEntity={base44.entities.OrientacoesTemplate}
+            />
           </FloatingDocument>
         )}
       </AnimatePresence>

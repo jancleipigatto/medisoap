@@ -323,27 +323,7 @@ export default function ReceitaFormAdvanced() {
         </DialogContent>
       </Dialog>
 
-      <div className="p-4 md:p-8 bg-gradient-to-br from-blue-50 to-indigo-50 min-h-screen">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center gap-4 mb-6">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => navigate(createPageUrl("Home"))}
-              className="shadow-sm"
-            >
-              <ArrowLeft className="w-4 h-4" />
-            </Button>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-                <Pill className="w-8 h-8" />
-                Nova Receita Médica
-              </h1>
-              <p className="text-gray-600 mt-1">Preencha as informações do documento</p>
-            </div>
-          </div>
-
-          <div className="space-y-6">
+      <div className="space-y-4">
             <Card className="shadow-lg border-none">
               <CardHeader>
                 <CardTitle>Atendimento</CardTitle>
@@ -507,9 +487,6 @@ export default function ReceitaFormAdvanced() {
                 Imprimir / Salvar PDF
               </Button>
             </div>
-          </div>
-        </div>
-      </div>
     </>
   );
 }
