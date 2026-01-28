@@ -1,17 +1,17 @@
 import React from "react";
 import PermissionGuard from "../components/PermissionGuard";
 import DocumentForm from "../components/medical/DocumentForm";
+import { Info } from "lucide-react";
+import { base44 } from "@/api/base44Client";
 
 export default function NovaOrientacao() {
   return (
     <PermissionGuard permission="can_access_templates">
       <DocumentForm 
-        entityName="OrientacoesTemplate"
-        documentType="orientacoes"
-        title="Nova Orientação ao Paciente"
-        description="Crie orientações ao paciente usando modelos pré-configurados"
-        fieldLabel="Orientações"
-        placeholder="Digite as orientações ao paciente (cuidados, recomendações, sinais de alerta, etc.)..."
+        tipo="orientacoes"
+        tipoLabel="Orientação"
+        icon={Info}
+        templateEntity={base44.entities.OrientacoesTemplate}
       />
     </PermissionGuard>
   );
