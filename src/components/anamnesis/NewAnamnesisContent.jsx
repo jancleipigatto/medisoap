@@ -348,18 +348,17 @@ ${soapData.plano}`;
     }
   };
 
-  const documents = {
-    receita: { name: "Receita", component: () => <div className="text-sm text-gray-600">Funcionalidade de Receita em desenvolvimento</div> },
-    atestado: { name: "Atestado", component: () => <div className="text-sm text-gray-600">Funcionalidade de Atestado em desenvolvimento</div> },
-    exame: { name: "Exame", component: () => <div className="text-sm text-gray-600">Funcionalidade de Exame em desenvolvimento</div> },
-    encaminhamento: { name: "Encaminhamento", component: () => <div className="text-sm text-gray-600">Funcionalidade de Encaminhamento em desenvolvimento</div> },
-    orientacao: { name: "Orientação", component: () => <div className="text-sm text-gray-600">Funcionalidade de Orientação em desenvolvimento</div> }
+  const [activeDocType, setActiveDocType] = useState(null);
+
+  const handleDocumentOpen = (docType) => {
+    setActiveDocType(docType);
+    setActiveDocument(docType);
   };
 
   return (
     <>
-      <ToolsSidebar onToolOpen={setActiveTool} />
-      <DocumentsSidebar onDocumentOpen={setActiveDocument} />
+      <ToolsSidebar onToolOpen={setActiveTool} isDocumentsOpen={!!activeDocument} />
+      <DocumentsSidebar onDocumentOpen={handleDocumentOpen} isToolsOpen={!!activeTool} />
       
       <AnimatePresence>
         {activeTool === 'gestational_age' && (
@@ -374,12 +373,68 @@ ${soapData.plano}`;
             onSave={handleToolSave}
           />
         )}
-        {activeDocument && documents[activeDocument] && (
+        {activeDocument === 'receita' && (
           <FloatingDocument
-            document={documents[activeDocument]}
-            onClose={() => setActiveDocument(null)}
+            document={{ name: "Receita" }}
+            onClose={() => { setActiveDocument(null); setActiveDocType(null); }}
           >
-            {documents[activeDocument].component()}
+            {React.createElement(require("../medical/ReceitaFormAdvanced").default)}
+          </FloatingDocument>
+        )}
+        {activeDocument === 'atestado' && (
+          <FloatingDocument
+            document={{ name: "Atestado" }}
+            onClose={() => { setActiveDocument(null); setActiveDocType(null); }}
+          >
+            {React.createElement(require("../medical/DocumentForm").default, {
+              tipo: "atestado",
+              tipoLabel: "Atestado Médico",
+              icon: require("lucide-react").ClipboardList,
+              templateEntity: require("@/entities/AtestadoTemplate").AtestadoTemplate,
+              embedded: true
+            })}
+          </FloatingDocument>
+        )}
+        {activeDocument === 'exame' && (
+          <FloatingDocument
+            document={{ name: "Exame" }}
+            onClose={() => { setActiveDocument(null); setActiveDocType(null); }}
+          >
+            {React.createElement(require("../medical/DocumentForm").default, {
+              tipo: "exame",
+              tipoLabel: "Solicitação de Exames",
+              icon: require("lucide-react").FileCheck,
+              templateEntity: require("@/entities/ExameTemplate").ExameTemplate,
+              embedded: true
+            })}
+          </FloatingDocument>
+        )}
+        {activeDocument === 'encaminhamento' && (
+          <FloatingDocument
+            document={{ name: "Encaminhamento" }}
+            onClose={() => { setActiveDocument(null); setActiveDocType(null); }}
+          >
+            {React.createElement(require("../medical/DocumentForm").default, {
+              tipo: "encaminhamento",
+              tipoLabel: "Encaminhamento Médico",
+              icon: require("lucide-react").Send,
+              templateEntity: require("@/entities/EncaminhamentoTemplate").EncaminhamentoTemplate,
+              embedded: true
+            })}
+          </FloatingDocument>
+        )}
+        {activeDocument === 'orientacao' && (
+          <FloatingDocument
+            document={{ name: "Orientação" }}
+            onClose={() => { setActiveDocument(null); setActiveDocType(null); }}
+          >
+            {React.createElement(require("../medical/DocumentForm").default, {
+              tipo: "orientacoes",
+              tipoLabel: "Orientação",
+              icon: require("lucide-react").Info,
+              templateEntity: base44.entities.OrientacoesTemplate,
+              embedded: true
+            })}
           </FloatingDocument>
         )}
       </AnimatePresence>
@@ -396,7 +451,7 @@ ${soapData.plano}`;
             <ArrowLeft className="w-4 h-4" />
           </Button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Novo Atendimento</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Atendimento</h1>
             <p className="text-sm text-gray-600 mt-1">Digite ou cole o texto da consulta</p>
           </div>
         </div>

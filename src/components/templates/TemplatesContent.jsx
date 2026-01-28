@@ -145,7 +145,7 @@ export default function TemplatesContent() {
             <ArrowLeft className="w-4 h-4" />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Modelos de Anamnese</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Modelos de Prontuários</h1>
             <p className="text-gray-600 mt-1">Crie modelos reutilizáveis para diferentes situações</p>
           </div>
         </div>
@@ -211,8 +211,8 @@ export default function TemplatesContent() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="bg-gray-50 rounded-lg p-3">
-                  <p className="text-sm text-gray-600 line-clamp-4 whitespace-pre-wrap font-mono">
+                <div className="bg-white border border-gray-200 rounded-lg p-3">
+                  <p className="text-sm text-gray-700 line-clamp-3 whitespace-pre-wrap">
                     {template.template_texto}
                   </p>
                 </div>

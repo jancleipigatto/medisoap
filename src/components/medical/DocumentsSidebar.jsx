@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { PanelRightClose, PanelRight, Pill, ClipboardList, FileCheck, Send, Info } from "lucide-react";
 
-export default function DocumentsSidebar({ onDocumentOpen }) {
+export default function DocumentsSidebar({ onDocumentOpen, isToolsOpen }) {
   const [isOpen, setIsOpen] = useState(false);
   const [width, setWidth] = useState(120);
 
@@ -40,9 +40,10 @@ export default function DocumentsSidebar({ onDocumentOpen }) {
 
   if (!isOpen) {
     return (
-      <div className="fixed right-0 top-1/2 translate-y-12 z-[60]">
+      <div className="fixed top-1/2 translate-y-12 z-[60]" style={{ right: isToolsOpen ? '120px' : '0' }}>
         <button
           onClick={() => setIsOpen(true)}
+          title="Saída de Atendimentos"
           className="bg-white shadow-lg p-3 rounded-l-lg hover:bg-gray-50 transition-colors duration-200 border-l border-t border-b border-gray-200"
         >
           <PanelRight className="w-5 h-5 text-gray-700" />
@@ -52,7 +53,7 @@ export default function DocumentsSidebar({ onDocumentOpen }) {
   }
 
   return (
-    <div className="fixed right-0 top-0 h-screen bg-white border-l border-gray-200 shadow-2xl z-[60]" style={{ width: `${width}px`, minWidth: '100px', maxWidth: '300px' }}>
+    <div className="fixed top-0 h-screen bg-white border-l border-gray-200 shadow-2xl z-[60]" style={{ right: isToolsOpen ? '120px' : '0', width: `${width}px`, minWidth: '100px', maxWidth: '300px' }}>
       <div className="flex h-full">
         <div 
           className="w-1 hover:w-2 bg-gray-200 hover:bg-blue-400 cursor-col-resize transition-all duration-150"
@@ -88,7 +89,7 @@ export default function DocumentsSidebar({ onDocumentOpen }) {
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-2 space-y-2">
+          <div className="flex-1 overflow-y-auto p-2" style={{ display: 'flex', flexDirection: 'column', gap: '2mm' }}>
             {documents.map((doc) => (
               <button
                 key={doc.id}
