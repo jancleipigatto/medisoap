@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Anamnesis } from "@/entities/Anamnesis";
+// import { Anamnesis } from "@/entities/Anamnesis"; // Removido para usar base44 SDK
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -83,7 +83,7 @@ export default function AnamnesisDetail() {
           return;
         }
 
-        const data = await Anamnesis.list();
+        const data = await base44.entities.Anamnesis.list();
         const found = data.find(a => a.id === id);
         
         if (!found) {
@@ -100,30 +100,14 @@ export default function AnamnesisDetail() {
           orientacoes: found.orientacoes || ""
         });
         
-        // Carregar templates e documentos
-        const [
-          { AtestadoTemplate },
-          { ExameTemplate },
-          { EncaminhamentoTemplate },
-          { ReceitaTemplate },
-          { OrientacoesTemplate },
-          { MedicalDocument }
-        ] = await Promise.all([
-          import("@/entities/AtestadoTemplate"),
-          import("@/entities/ExameTemplate"),
-          import("@/entities/EncaminhamentoTemplate"),
-          import("@/entities/ReceitaTemplate"),
-          import("@/entities/OrientacoesTemplate"),
-          import("@/entities/MedicalDocument")
-        ]);
-        
+        // Carregar templates e documentos usando base44 SDK
         const [atestados, exames, encaminhamentos, receitas, orientacoes, allDocs] = await Promise.all([
-          AtestadoTemplate.list("-created_date"),
-          ExameTemplate.list("-created_date"),
-          EncaminhamentoTemplate.list("-created_date"),
-          ReceitaTemplate.list("-created_date"),
-          OrientacoesTemplate.list("-created_date"),
-          MedicalDocument.list("-created_date")
+          base44.entities.AtestadoTemplate.list("-created_date"),
+          base44.entities.ExameTemplate.list("-created_date"),
+          base44.entities.EncaminhamentoTemplate.list("-created_date"),
+          base44.entities.ReceitaTemplate.list("-created_date"),
+          base44.entities.OrientacoesTemplate.list("-created_date"),
+          base44.entities.MedicalDocument.list("-created_date")
         ]);
         
         setAtestadoTemplates(atestados);
@@ -148,14 +132,12 @@ export default function AnamnesisDetail() {
 
   const handleSave = async () => {
     setIsSaving(true);
-    await Anamnesis.update(anamnesis.id, editData);
+    await base44.entities.Anamnesis.update(anamnesis.id, editData);
     setAnamnesis({...anamnesis, ...editData});
     setIsSaving(false);
   };
 
   const saveDocument = async (tipo, conteudo, horario = "") => {
-    const { MedicalDocument } = await import("@/entities/MedicalDocument");
-    
     const docData = {
       tipo,
       patient_name: anamnesis.patient_name,
@@ -167,7 +149,7 @@ export default function AnamnesisDetail() {
       logo_url: selectedTemplateData.logo_url
     };
     
-    const created = await MedicalDocument.create(docData);
+    const created = await base44.entities.MedicalDocument.create(docData);
     setSavedDocs([...savedDocs, created]);
     alert(`${tipo.charAt(0).toUpperCase() + tipo.slice(1)} salvo com sucesso!`);
   };
@@ -175,8 +157,7 @@ export default function AnamnesisDetail() {
   const deleteDocument = async (docId) => {
     if (!confirm("Tem certeza que deseja excluir este documento?")) return;
     
-    const { MedicalDocument } = await import("@/entities/MedicalDocument");
-    await MedicalDocument.delete(docId);
+    await base44.entities.MedicalDocument.delete(docId);
     setSavedDocs(savedDocs.filter(d => d.id !== docId));
   };
 
@@ -200,7 +181,7 @@ export default function AnamnesisDetail() {
     }
 
     setIsDeleting(true);
-    await Anamnesis.update(anamnesis.id, {
+    await base44.entities.Anamnesis.update(anamnesis.id, {
       is_deleted: true,
       deleted_at: new Date().toISOString(),
       deletion_reason: deletionReason
@@ -410,7 +391,7 @@ ${anamnesis.plano || "Não informado"}`;
     setAnamnesis({...anamnesis, objetivo: updatedObjectivo});
     
     // Salvar automaticamente
-    Anamnesis.update(anamnesis.id, { objetivo: updatedObjectivo });
+    base44.entities.Anamnesis.update(anamnesis.id, { objetivo: updatedObjectivo });
     
     // Fechar ferramenta
     setActiveTool(null);
