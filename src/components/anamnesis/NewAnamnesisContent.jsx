@@ -110,7 +110,8 @@ export default function NewAnamnesisContent() {
 
     setIsProcessing(true);
     
-    let prompt = appSettings?.prompt_prontuario || `Você é um assistente médico especializado. Analise o seguinte texto de um atendimento médico e organize-o no formato SOAP (Subjetivo, Objetivo, Avaliação, Plano).
+    try {
+      let prompt = appSettings?.prompt_prontuario || `Você é um assistente médico especializado. Analise o seguinte texto de um atendimento médico e organize-o no formato SOAP (Subjetivo, Objetivo, Avaliação, Plano).
 
 IMPORTANTE: Preserve TODA a formatação original do texto, incluindo quebras de linha, espaçamentos, bullets, hífens e estruturas. NÃO consolide tudo em uma única linha.
 
@@ -126,29 +127,34 @@ Organize as informações nos seguintes campos, mantendo a formatação exata do
 Mantenha quebras de linha, bullets (- ou •), e toda estrutura de formatação presente no texto original.
 Se alguma seção não tiver informação no texto, deixe em branco ou indique "Não informado".`;
 
-    // Se está usando template, adicionar o template ao prompt
-    if (useTemplate && selectedTemplate && selectedTemplate !== "none") {
-      const template = templates.find(t => t.id === selectedTemplate);
-      if (template) {
-        prompt = `${prompt}\n\nUse o seguinte modelo como referência para estruturar a resposta:\n${template.template_texto}`;
-      }
-    }
-
-    const result = await base44.integrations.Core.InvokeLLM({
-      prompt: prompt,
-      response_json_schema: {
-        type: "object",
-        properties: {
-          subjetivo: { type: "string" },
-          objetivo: { type: "string" },
-          avaliacao: { type: "string" },
-          plano: { type: "string" }
+      // Se está usando template, adicionar o template ao prompt
+      if (useTemplate && selectedTemplate && selectedTemplate !== "none") {
+        const template = templates.find(t => t.id === selectedTemplate);
+        if (template) {
+          prompt = `${prompt}\n\nUse o seguinte modelo como referência para estruturar a resposta:\n${template.template_texto}`;
         }
       }
-    });
 
-    setSoapData(result);
-    setIsProcessing(false);
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: prompt,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            subjetivo: { type: "string" },
+            objetivo: { type: "string" },
+            avaliacao: { type: "string" },
+            plano: { type: "string" }
+          }
+        }
+      });
+
+      setSoapData(result);
+    } catch (error) {
+      console.error("Erro ao converter para SOAP:", error);
+      alert("Erro ao converter o texto. Por favor, tente novamente.");
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const generateSOAPText = () => {
