@@ -111,11 +111,28 @@ export default function NewAnamnesisContent() {
     setIsProcessing(true);
     
     try {
-      let prompt = appSettings?.prompt_prontuario || `Você é um assistente médico especializado. Analise o seguinte texto de um atendimento médico e organize-o no formato SOAP (Subjetivo, Objetivo, Avaliação, Plano).
+      // Buscar o template selecionado se estiver usando modelo
+      let templateTexto = "";
+      if (useTemplate && selectedTemplate && selectedTemplate !== "none") {
+        const template = templates.find(t => t.id === selectedTemplate);
+        if (template) {
+          templateTexto = template.template_texto;
+        }
+      }
+
+      // Construir o prompt - usar APENAS o prompt das configurações se existir
+      let prompt;
+      if (appSettings?.prompt_prontuario && appSettings.prompt_prontuario.trim()) {
+        // Usar prompt personalizado das configurações
+        prompt = appSettings.prompt_prontuario;
+        prompt += `\n\n${templateTexto ? `MODELO DE REFERÊNCIA:\n${templateTexto}\n\n` : ''}TEXTO DO ATENDIMENTO:\n${textoOriginal}`;
+      } else {
+        // Usar prompt padrão se não houver nas configurações
+        prompt = `Você é um assistente médico especializado. Analise o seguinte texto de um atendimento médico e organize-o no formato SOAP (Subjetivo, Objetivo, Avaliação, Plano).
 
 IMPORTANTE: Preserve TODA a formatação original do texto, incluindo quebras de linha, espaçamentos, bullets, hífens e estruturas. NÃO consolide tudo em uma única linha.
 
-Texto do atendimento:
+${templateTexto ? `MODELO DE REFERÊNCIA:\n${templateTexto}\n\n` : ''}TEXTO DO ATENDIMENTO:
 ${textoOriginal}
 
 Organize as informações nos seguintes campos, mantendo a formatação exata do texto original:
@@ -126,14 +143,14 @@ Organize as informações nos seguintes campos, mantendo a formatação exata do
 
 Mantenha quebras de linha, bullets (- ou •), e toda estrutura de formatação presente no texto original.
 Se alguma seção não tiver informação no texto, deixe em branco ou indique "Não informado".`;
-
-      // Se está usando template, adicionar o template ao prompt
-      if (useTemplate && selectedTemplate && selectedTemplate !== "none") {
-        const template = templates.find(t => t.id === selectedTemplate);
-        if (template) {
-          prompt = `${prompt}\n\nUse o seguinte modelo como referência para estruturar a resposta:\n${template.template_texto}`;
-        }
       }
+
+      console.log("=== DADOS DA CONVERSÃO ===");
+      console.log("Prompt das Configurações:", appSettings?.prompt_prontuario || "Nenhum");
+      console.log("Modelo Selecionado:", selectedTemplate);
+      console.log("Modelo Texto:", templateTexto ? "Sim" : "Não");
+      console.log("Tamanho do texto:", textoOriginal.length, "caracteres");
+      console.log("Prompt Final (primeiros 500 chars):", prompt.substring(0, 500));
 
       const result = await base44.integrations.Core.InvokeLLM({
         prompt: prompt,
@@ -148,10 +165,11 @@ Se alguma seção não tiver informação no texto, deixe em branco ou indique "
         }
       });
 
+      console.log("Conversão concluída com sucesso");
       setSoapData(result);
     } catch (error) {
       console.error("Erro ao converter para SOAP:", error);
-      alert("Erro ao converter o texto. Por favor, tente novamente.");
+      alert(`Erro ao converter o texto: ${error.message || 'Erro desconhecido'}. Por favor, tente novamente.`);
     } finally {
       setIsProcessing(false);
     }
