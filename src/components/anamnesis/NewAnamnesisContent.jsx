@@ -47,6 +47,7 @@ export default function NewAnamnesisContent() {
   });
   const [textoOriginal, setTextoOriginal] = useState("");
   const [soapData, setSoapData] = useState(null);
+  const [soapTextContent, setSoapTextContent] = useState(""); // Estado para o texto do editor do SOAP
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -102,6 +103,38 @@ export default function NewAnamnesisContent() {
     }
   };
 
+  // Função auxiliar para parsear o texto SOAP de volta para objeto
+  const parseSOAPFromText = (text) => {
+    if (!text) return { subjetivo: "", objetivo: "", avaliacao: "", plano: "" };
+    
+    // Remover tags HTML básicas
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = text;
+    const cleanText = tempDiv.textContent || tempDiv.innerText || '';
+    
+    const lines = cleanText.split('\n');
+    const sections = { subjetivo: [], objetivo: [], avaliacao: [], plano: [] };
+    let currentSection = null;
+    
+    lines.forEach(line => {
+      const upper = line.toUpperCase().trim();
+      if (upper.includes('S - SUBJETIVO') || upper.includes('SUBJETIVO:')) currentSection = 'subjetivo';
+      else if (upper.includes('O - OBJETIVO') || upper.includes('OBJETIVO:')) currentSection = 'objetivo';
+      else if (upper.includes('A - AVALIAÇÃO') || upper.includes('AVALIAÇÃO:') || upper.includes('AVALIACAO:')) currentSection = 'avaliacao';
+      else if (upper.includes('P - PLANO') || upper.includes('PLANO:')) currentSection = 'plano';
+      else if (currentSection && line.trim()) {
+        sections[currentSection].push(line);
+      }
+    });
+    
+    return {
+      subjetivo: sections.subjetivo.join('\n'),
+      objetivo: sections.objetivo.join('\n'),
+      avaliacao: sections.avaliacao.join('\n'),
+      plano: sections.plano.join('\n')
+    };
+  };
+
   const convertToSOAP = async (useTemplate = false) => {
     if (!textoOriginal.trim()) {
       alert("Por favor, digite o texto do atendimento");
@@ -111,49 +144,30 @@ export default function NewAnamnesisContent() {
     setIsProcessing(true);
     
     try {
-      // Buscar o template selecionado se estiver usando modelo
-      let templateTexto = "";
+      // 1. Preparar Prompt
+      let systemPrompt = appSettings?.prompt_prontuario || `Você é um assistente médico especializado. Analise o seguinte texto de um atendimento médico e organize-o no formato SOAP.`;
+      
+      // Construir o conteúdo do usuário
+      let userContent = `TEXTO DO ATENDIMENTO:\n${textoOriginal}`;
+
+      // Adicionar template se selecionado
       if (useTemplate && selectedTemplate && selectedTemplate !== "none") {
         const template = templates.find(t => t.id === selectedTemplate);
         if (template) {
-          templateTexto = template.template_texto;
+          userContent = `MODELO DE REFERÊNCIA:\n${template.template_texto}\n\n${userContent}`;
         }
       }
 
-      // Construir o prompt - usar APENAS o prompt das configurações se existir
-      let prompt;
-      if (appSettings?.prompt_prontuario && appSettings.prompt_prontuario.trim()) {
-        // Usar prompt personalizado das configurações
-        prompt = appSettings.prompt_prontuario;
-        prompt += `\n\n${templateTexto ? `MODELO DE REFERÊNCIA:\n${templateTexto}\n\n` : ''}TEXTO DO ATENDIMENTO:\n${textoOriginal}`;
-      } else {
-        // Usar prompt padrão se não houver nas configurações
-        prompt = `Você é um assistente médico especializado. Analise o seguinte texto de um atendimento médico e organize-o no formato SOAP (Subjetivo, Objetivo, Avaliação, Plano).
-
-IMPORTANTE: Preserve TODA a formatação original do texto, incluindo quebras de linha, espaçamentos, bullets, hífens e estruturas. NÃO consolide tudo em uma única linha.
-
-${templateTexto ? `MODELO DE REFERÊNCIA:\n${templateTexto}\n\n` : ''}TEXTO DO ATENDIMENTO:
-${textoOriginal}
-
-Organize as informações nos seguintes campos, mantendo a formatação exata do texto original:
-- Subjetivo (S): Queixas, sintomas e história relatada pelo paciente
-- Objetivo (O): Sinais vitais, exame físico, dados mensuráveis e observáveis  
-- Avaliação (A): Diagnóstico, hipóteses diagnósticas, impressão clínica
-- Plano (P): Tratamento proposto, medicações, exames solicitados, orientações
-
-Mantenha quebras de linha, bullets (- ou •), e toda estrutura de formatação presente no texto original.
-Se alguma seção não tiver informação no texto, deixe em branco ou indique "Não informado".`;
+      // Adicionar instrução de formatação JSON se não houver no prompt personalizado
+      if (!systemPrompt.includes("JSON")) {
+          systemPrompt += `\n\nResponda ESTRITAMENTE com um objeto JSON válido contendo os campos: subjetivo, objetivo, avaliacao, plano. Mantenha a formatação original do texto.`;
       }
 
-      console.log("=== DADOS DA CONVERSÃO ===");
-      console.log("Prompt das Configurações:", appSettings?.prompt_prontuario || "Nenhum");
-      console.log("Modelo Selecionado:", selectedTemplate);
-      console.log("Modelo Texto:", templateTexto ? "Sim" : "Não");
-      console.log("Tamanho do texto:", textoOriginal.length, "caracteres");
-      console.log("Prompt Final (primeiros 500 chars):", prompt.substring(0, 500));
+      const fullPrompt = `${systemPrompt}\n\n${userContent}`;
 
+      // 2. Chamar LLM
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: prompt,
+        prompt: fullPrompt,
         response_json_schema: {
           type: "object",
           properties: {
@@ -165,32 +179,32 @@ Se alguma seção não tiver informação no texto, deixe em branco ou indique "
         }
       });
 
-      console.log("Conversão concluída com sucesso");
+      // 3. Atualizar Estados
       setSoapData(result);
+      
+      // Gerar texto formatado inicial
+      const formattedText = `ATENDIMENTO - FORMATO SOAP
+
+S - SUBJETIVO:
+${result.subjetivo || ''}
+
+O - OBJETIVO:
+${result.objetivo || ''}
+
+A - AVALIAÇÃO:
+${result.avaliacao || ''}
+
+P - PLANO:
+${result.plano || ''}`;
+
+      setSoapTextContent(formattedText);
+
     } catch (error) {
-      console.error("Erro ao converter para SOAP:", error);
-      alert(`Erro ao converter o texto: ${error.message || 'Erro desconhecido'}. Por favor, tente novamente.`);
+      console.error("Erro na conversão:", error);
+      alert("Ocorreu um erro ao processar o texto. Tente simplificar ou reduzir o tamanho do texto.");
     } finally {
       setIsProcessing(false);
     }
-  };
-
-  const generateSOAPText = () => {
-    if (!soapData) return "";
-    
-    return `ATENDIMENTO - FORMATO SOAP
-
-S - SUBJETIVO:
-${soapData.subjetivo}
-
-O - OBJETIVO:
-${soapData.objetivo}
-
-A - AVALIAÇÃO:
-${soapData.avaliacao}
-
-P - PLANO:
-${soapData.plano}`;
   };
 
   const copySOAPText = async () => {
@@ -294,16 +308,25 @@ ${soapData.plano}`;
       finalTextoOriginal = current?.texto_original ? current.texto_original + historicoLine + textoOriginal : textoOriginal;
     }
 
+    // Se o usuário editou o texto do SOAP, parsear novamente para salvar atualizado
+    let finalSoapData = soapData;
+    if (soapTextContent) {
+      const parsed = parseSOAPFromText(soapTextContent);
+      if (parsed.subjetivo || parsed.objetivo || parsed.avaliacao || parsed.plano) {
+        finalSoapData = parsed;
+      }
+    }
+
     const anamnesisData = {
       patient_id: selectedPatient.id,
       patient_name: selectedPatient.nome,
       data_consulta: dataConsulta,
       horario_consulta: horarioConsulta,
       texto_original: finalTextoOriginal,
-      subjetivo: soapData?.subjetivo || "",
-      objetivo: soapData?.objetivo || "",
-      avaliacao: (soapData?.avaliacao || "") + (cidText ? `\n\nCID: ${cidText}` : ""),
-      plano: soapData?.plano || ""
+      subjetivo: finalSoapData?.subjetivo || "",
+      objetivo: finalSoapData?.objetivo || "",
+      avaliacao: (finalSoapData?.avaliacao || "") + (cidText ? `\n\nCID: ${cidText}` : ""),
+      plano: finalSoapData?.plano || ""
     };
 
     let savedId = currentAnamnesisId;
@@ -788,39 +811,8 @@ ${soapData.plano}`;
                 </CardHeader>
                 <CardContent>
                   <RichTextEditor
-                    value={generateSOAPText()}
-                    onChange={(newValue) => {
-                      // Parse the HTML content to extract SOAP sections
-                      const tempDiv = document.createElement('div');
-                      tempDiv.innerHTML = newValue;
-                      const text = tempDiv.textContent || tempDiv.innerText || '';
-                      
-                      const lines = text.split('\n');
-                      const sections = {
-                        subjetivo: [],
-                        objetivo: [],
-                        avaliacao: [],
-                        plano: []
-                      };
-                      let currentSection = null;
-                      
-                      lines.forEach(line => {
-                        if (line.includes('S - SUBJETIVO:')) currentSection = 'subjetivo';
-                        else if (line.includes('O - OBJETIVO:')) currentSection = 'objetivo';
-                        else if (line.includes('A - AVALIAÇÃO:')) currentSection = 'avaliacao';
-                        else if (line.includes('P - PLANO:')) currentSection = 'plano';
-                        else if (currentSection && line.trim()) {
-                          sections[currentSection].push(line);
-                        }
-                      });
-                      
-                      setSoapData({
-                        subjetivo: sections.subjetivo.join('\n'),
-                        objetivo: sections.objetivo.join('\n'),
-                        avaliacao: sections.avaliacao.join('\n'),
-                        plano: sections.plano.join('\n')
-                      });
-                    }}
+                    value={soapTextContent}
+                    onChange={setSoapTextContent}
                     minHeight="300px"
                   />
                   <Alert className="mt-4 bg-blue-50 border-blue-200">
