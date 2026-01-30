@@ -115,6 +115,8 @@ export default function ProfileManagement() {
       can_access_patients: false,
       can_create_anamnesis: false,
       can_view_all_anamnesis: false,
+      can_access_reception: false,
+      can_perform_triage: false,
       is_default: false
     });
     setEditingProfile(null);
@@ -140,6 +142,8 @@ export default function ProfileManagement() {
       can_access_patients: false,
       can_create_anamnesis: false,
       can_view_all_anamnesis: false,
+      can_access_reception: false,
+      can_perform_triage: false,
       is_default: false
     });
   };
