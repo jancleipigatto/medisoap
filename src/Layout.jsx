@@ -62,10 +62,16 @@ export default function Layout({ children, currentPageName }) {
       permission: "can_create_anamnesis"
     },
     {
+      title: "Recepção",
+      url: createPageUrl("Recepcao"),
+      icon: Users,
+      permission: "can_access_reception"
+    },
+    {
       title: "Triagem",
       url: createPageUrl("Triagem"),
       icon: Activity,
-      permission: "can_create_anamnesis"
+      permission: "can_perform_triage"
     },
     {
       title: "Novo Atendimento",

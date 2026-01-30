@@ -9,6 +9,47 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Save, Activity, Thermometer, Weight, Ruler } from "lucide-react";
 import PatientSelector from "../anamnesis/PatientSelector";
+import { format, isSameDay, parseISO } from "date-fns";
+
+const PatientQueueList = ({ onSelect }) => {
+  const [queue, setQueue] = useState([]);
+
+  useEffect(() => {
+    const loadQueue = async () => {
+      const today = new Date();
+      const allAgendamentos = await base44.entities.Agendamento.list("-horario_inicio");
+      const filtered = allAgendamentos.filter(ag => 
+        isSameDay(parseISO(ag.data_agendamento), today) && 
+        (ag.status === 'recepcionado' || ag.status === 'aguardando_triagem')
+      );
+      setQueue(filtered);
+    };
+    loadQueue();
+    // Poll for updates every 30 seconds
+    const interval = setInterval(loadQueue, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  if (queue.length === 0) return <p className="text-sm text-gray-500">Nenhum paciente aguardando triagem no momento.</p>;
+
+  return (
+    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {queue.map(ag => (
+        <div 
+          key={ag.id} 
+          onClick={() => onSelect({ id: ag.patient_id, nome: ag.patient_name })}
+          className="bg-white p-3 rounded-lg shadow-sm border border-blue-100 cursor-pointer hover:bg-blue-50 transition-colors"
+        >
+          <div className="font-semibold text-gray-900">{ag.patient_name}</div>
+          <div className="text-xs text-gray-500 mt-1 flex justify-between">
+            <span>{ag.horario_inicio}</span>
+            <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-[10px] uppercase">{ag.status}</span>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
 
 export default function TriagemContent() {
   const navigate = useNavigate();
@@ -185,6 +226,19 @@ export default function TriagemContent() {
         </div>
 
         <div className="space-y-6">
+          {/* Lista de Pacientes Aguardando Triagem */}
+          <Card className="shadow-lg border-none bg-blue-50 border-l-4 border-blue-500 mb-6">
+            <CardHeader className="pb-2">
+               <CardTitle className="text-base text-blue-800">Fila de Triagem (Pacientes Recepcionados)</CardTitle>
+            </CardHeader>
+            <CardContent>
+               <PatientQueueList onSelect={(patient) => {
+                 setSelectedPatient(patient);
+                 // Opcional: Auto-preencher dados se vierem do agendamento
+               }} />
+            </CardContent>
+          </Card>
+
           <Card className="shadow-lg border-none">
             <CardHeader>
               <CardTitle className="text-base">Informações do Paciente</CardTitle>
