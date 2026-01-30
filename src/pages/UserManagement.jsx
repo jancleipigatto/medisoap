@@ -31,7 +31,9 @@ export default function UserManagement() {
     can_access_templates: false,
     can_access_patients: false,
     can_create_anamnesis: false,
-    can_view_all_anamnesis: false
+    can_view_all_anamnesis: false,
+    can_access_reception: false,
+    can_perform_triage: false
   });
 
   const profilePresets = {
@@ -39,13 +41,17 @@ export default function UserManagement() {
       can_access_templates: false,
       can_access_patients: true,
       can_create_anamnesis: true,
-      can_view_all_anamnesis: false
+      can_view_all_anamnesis: false,
+      can_access_reception: true,
+      can_perform_triage: true
     },
     expert: {
       can_access_templates: true,
       can_access_patients: true,
       can_create_anamnesis: true,
-      can_view_all_anamnesis: true
+      can_view_all_anamnesis: true,
+      can_access_reception: true,
+      can_perform_triage: true
     }
   };
 
@@ -75,7 +81,9 @@ export default function UserManagement() {
       can_access_templates: user.can_access_templates || false,
       can_access_patients: user.can_access_patients || false,
       can_create_anamnesis: user.can_create_anamnesis || false,
-      can_view_all_anamnesis: user.can_view_all_anamnesis || false
+      can_view_all_anamnesis: user.can_view_all_anamnesis || false,
+      can_access_reception: user.can_access_reception || false,
+      can_perform_triage: user.can_perform_triage || false
     });
   };
 
@@ -215,6 +223,18 @@ export default function UserManagement() {
                           {user.can_view_all_anamnesis ? 'Permitido' : 'Bloqueado'}
                         </p>
                       </div>
+                      <div className={`p-3 rounded-lg ${user.can_access_reception ? 'bg-green-50 border border-green-200' : 'bg-gray-50 border border-gray-200'}`}>
+                        <p className="text-xs text-gray-600">Recepção</p>
+                        <p className={`text-sm font-medium ${user.can_access_reception ? 'text-green-700' : 'text-gray-400'}`}>
+                          {user.can_access_reception ? 'Permitido' : 'Bloqueado'}
+                        </p>
+                      </div>
+                      <div className={`p-3 rounded-lg ${user.can_perform_triage ? 'bg-green-50 border border-green-200' : 'bg-gray-50 border border-gray-200'}`}>
+                        <p className="text-xs text-gray-600">Triagem</p>
+                        <p className={`text-sm font-medium ${user.can_perform_triage ? 'text-green-700' : 'text-gray-400'}`}>
+                          {user.can_perform_triage ? 'Permitido' : 'Bloqueado'}
+                        </p>
+                      </div>
                     </div>
                   </CardContent>
                 )}
@@ -300,6 +320,30 @@ export default function UserManagement() {
                     id="viewall"
                     checked={permissions.can_view_all_anamnesis}
                     onCheckedChange={(checked) => setPermissions({...permissions, can_view_all_anamnesis: checked})}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between mb-4">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="reception">Acessar Recepção</Label>
+                    <p className="text-sm text-gray-500">Realizar recepção de pacientes</p>
+                  </div>
+                  <Switch
+                    id="reception"
+                    checked={permissions.can_access_reception}
+                    onCheckedChange={(checked) => setPermissions({...permissions, can_access_reception: checked})}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="triage">Realizar Triagem</Label>
+                    <p className="text-sm text-gray-500">Realizar triagem de pacientes</p>
+                  </div>
+                  <Switch
+                    id="triage"
+                    checked={permissions.can_perform_triage}
+                    onCheckedChange={(checked) => setPermissions({...permissions, can_perform_triage: checked})}
                   />
                 </div>
               </div>

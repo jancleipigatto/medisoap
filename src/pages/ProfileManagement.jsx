@@ -42,6 +42,8 @@ export default function ProfileManagement() {
     can_access_patients: false,
     can_create_anamnesis: false,
     can_view_all_anamnesis: false,
+    can_access_reception: false,
+    can_perform_triage: false,
     is_default: false
   });
 
@@ -80,6 +82,8 @@ export default function ProfileManagement() {
       can_access_patients: profile.can_access_patients || false,
       can_create_anamnesis: profile.can_create_anamnesis || false,
       can_view_all_anamnesis: profile.can_view_all_anamnesis || false,
+      can_access_reception: profile.can_access_reception || false,
+      can_perform_triage: profile.can_perform_triage || false,
       is_default: profile.is_default || false
     });
     setShowForm(true);
@@ -267,6 +271,18 @@ export default function ProfileManagement() {
                         <span className="text-gray-700">Ver Todas Anamneses</span>
                       </div>
                     )}
+                    {profile.can_access_reception && (
+                      <div className="flex items-center gap-2 text-xs">
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                        <span className="text-gray-700">Acessar Recepção</span>
+                      </div>
+                    )}
+                    {profile.can_perform_triage && (
+                      <div className="flex items-center gap-2 text-xs">
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                        <span className="text-gray-700">Realizar Triagem</span>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -370,6 +386,30 @@ export default function ProfileManagement() {
                       id="viewall"
                       checked={formData.can_view_all_anamnesis}
                       onCheckedChange={(checked) => setFormData({...formData, can_view_all_anamnesis: checked})}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div>
+                      <Label htmlFor="reception" className="font-medium">Acessar Recepção</Label>
+                      <p className="text-sm text-gray-500">Realizar recepção de pacientes</p>
+                    </div>
+                    <Switch
+                      id="reception"
+                      checked={formData.can_access_reception}
+                      onCheckedChange={(checked) => setFormData({...formData, can_access_reception: checked})}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div>
+                      <Label htmlFor="triage" className="font-medium">Realizar Triagem</Label>
+                      <p className="text-sm text-gray-500">Realizar triagem de pacientes</p>
+                    </div>
+                    <Switch
+                      id="triage"
+                      checked={formData.can_perform_triage}
+                      onCheckedChange={(checked) => setFormData({...formData, can_perform_triage: checked})}
                     />
                   </div>
                 </div>
