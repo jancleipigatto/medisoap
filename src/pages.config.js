@@ -70,13 +70,13 @@ import PatientHistory from './pages/PatientHistory';
 import Patients from './pages/Patients';
 import ProfileManagement from './pages/ProfileManagement';
 import ReceitaTemplates from './pages/ReceitaTemplates';
+import Recepcao from './pages/Recepcao';
 import Settings from './pages/Settings';
 import Templates from './pages/Templates';
 import Tools from './pages/Tools';
 import Triagem from './pages/Triagem';
 import UserManagement from './pages/UserManagement';
 import UserProfile from './pages/UserProfile';
-import Recepcao from './pages/Recepcao';
 import __Layout from './Layout.jsx';
 
 
@@ -104,13 +104,13 @@ export const PAGES = {
     "Patients": Patients,
     "ProfileManagement": ProfileManagement,
     "ReceitaTemplates": ReceitaTemplates,
+    "Recepcao": Recepcao,
     "Settings": Settings,
     "Templates": Templates,
     "Tools": Tools,
     "Triagem": Triagem,
     "UserManagement": UserManagement,
     "UserProfile": UserProfile,
-    "Recepcao": Recepcao,
 }
 
 export const pagesConfig = {

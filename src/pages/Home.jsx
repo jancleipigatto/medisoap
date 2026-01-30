@@ -5,21 +5,10 @@ import { createPageUrl } from "@/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
-  Plus, 
-  Users, 
-  LayoutTemplate, 
-  ClipboardList, 
-  FileCheck, 
-  Send, 
-  Trash2,
-  FileText,
   Stethoscope,
   Settings,
-  Calculator,
-  Pill,
-  Info,
-  Activity
 } from "lucide-react";
+import { ALL_DASHBOARD_ITEMS } from "@/components/dashboard/dashboardItems";
 import { Skeleton } from "@/components/ui/skeleton";
 import PermissionGuard from "../components/PermissionGuard";
 
@@ -38,136 +27,7 @@ export default function Home() {
     setIsLoading(false);
   };
 
-  const allMenuItems = {
-    triagem: {
-      title: "Triagem",
-      icon: Activity,
-      url: createPageUrl("Triagem"),
-      color: "from-green-500 to-emerald-600",
-      permission: "can_create_anamnesis"
-    },
-    new_anamnesis: {
-      title: "Novo Atendimento",
-      icon: Plus,
-      url: createPageUrl("NewAnamnesis"),
-      color: "from-blue-500 to-indigo-600",
-      permission: "can_create_anamnesis"
-    },
-    history: {
-      title: "Histórico de Consultas",
-      icon: FileText,
-      url: createPageUrl("History"),
-      color: "from-green-500 to-emerald-600",
-      permission: "can_create_anamnesis"
-    },
-    tools: {
-      title: "Ferramentas",
-      icon: Calculator,
-      url: createPageUrl("Tools"),
-      color: "from-cyan-500 to-blue-600",
-      permission: "can_create_anamnesis"
-    },
-    atestados: {
-      title: "Atestados",
-      icon: ClipboardList,
-      url: createPageUrl("NovoAtestado"),
-      color: "from-amber-500 to-orange-600",
-      permission: "can_access_templates"
-    },
-    exames_models: {
-      title: "Exames",
-      icon: FileCheck,
-      url: createPageUrl("NovoExame"),
-      color: "from-emerald-500 to-teal-600",
-      permission: "can_access_templates"
-    },
-    encaminhamentos: {
-      title: "Encaminhamentos",
-      icon: Send,
-      url: createPageUrl("NovoEncaminhamento"),
-      color: "from-violet-500 to-purple-600",
-      permission: "can_access_templates"
-    },
-    receitas: {
-      title: "Receitas",
-      icon: Pill,
-      url: createPageUrl("NovaReceita"),
-      color: "from-pink-500 to-rose-600",
-      permission: "can_access_templates"
-    },
-    patients: {
-      title: "Pacientes",
-      icon: Users,
-      url: createPageUrl("Patients"),
-      color: "from-purple-500 to-pink-600",
-      permission: "can_access_patients"
-    },
-    templates: {
-      title: "Modelos Anamnese",
-      icon: LayoutTemplate,
-      url: createPageUrl("Templates"),
-      color: "from-indigo-500 to-purple-600",
-      permission: "can_access_templates"
-    },
-    atestado: {
-      title: "Modelos Atestado",
-      icon: ClipboardList,
-      url: createPageUrl("AtestadoTemplates"),
-      color: "from-blue-500 to-cyan-600",
-      permission: "can_access_templates"
-    },
-    exames: {
-      title: "Modelos Exames",
-      icon: FileCheck,
-      url: createPageUrl("ExameTemplates"),
-      color: "from-teal-500 to-green-600",
-      permission: "can_access_templates"
-    },
-    encaminhamento: {
-      title: "Modelos Encaminhamento",
-      icon: Send,
-      url: createPageUrl("EncaminhamentoTemplates"),
-      color: "from-green-500 to-lime-600",
-      permission: "can_access_templates"
-    },
-    receita_models: {
-      title: "Modelos Receita",
-      icon: Pill,
-      url: createPageUrl("ReceitaTemplates"),
-      color: "from-pink-500 to-rose-600",
-      permission: "can_access_templates"
-    },
-    cid_management: {
-      title: "Banco de CIDs",
-      icon: FileText,
-      url: createPageUrl("CIDManagement"),
-      color: "from-indigo-500 to-blue-600",
-      permission: "can_access_templates"
-    },
-    orientacoes: {
-      title: "Orientações",
-      description: "Criar orientação ao paciente",
-      icon: Info,
-      url: createPageUrl("NovaOrientacao"),
-      color: "from-cyan-500 to-teal-600",
-      permission: "can_access_templates"
-    },
-    orientacoes_models: {
-      title: "Modelos Orientações",
-      icon: Info,
-      url: createPageUrl("OrientacoesTemplates"),
-      color: "from-teal-500 to-cyan-600",
-      permission: "can_access_templates"
-    },
-    orientacoes: {
-      title: "Orientações",
-      description: "Criar orientação ao paciente",
-      icon: Info,
-      url: createPageUrl("NovaOrientacao"),
-      color: "from-cyan-500 to-teal-600",
-      permission: "can_access_templates"
-    }
-    };
+  const allMenuItems = ALL_DASHBOARD_ITEMS;
 
   const hasPermission = (item) => {
     if (!user) return false;

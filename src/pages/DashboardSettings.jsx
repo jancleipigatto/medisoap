@@ -8,20 +8,11 @@ import { Badge } from "@/components/ui/badge";
 import { 
   ArrowLeft,
   GripVertical,
-  Plus,
-  Users,
-  LayoutTemplate,
-  ClipboardList,
-  FileCheck,
-  Send,
-  FileText,
   Settings,
   Eye,
-  EyeOff,
-  Calculator,
-  Pill,
-  Info
+  EyeOff
 } from "lucide-react";
+import { ALL_DASHBOARD_ITEMS } from "@/components/dashboard/dashboardItems";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { Skeleton } from "@/components/ui/skeleton";
 import PermissionGuard from "../components/PermissionGuard";
@@ -34,128 +25,7 @@ export default function DashboardSettings() {
   const [dashboardItems, setDashboardItems] = useState([]);
   const [hiddenItems, setHiddenItems] = useState([]);
 
-  const allMenuItems = {
-    new_anamnesis: {
-      id: "new_anamnesis",
-      title: "Nova Anamnese",
-      description: "Criar nova consulta",
-      icon: Plus,
-      color: "from-blue-500 to-indigo-600",
-      permission: "can_create_anamnesis"
-    },
-    history: {
-      id: "history",
-      title: "Histórico",
-      description: "Ver anamneses anteriores",
-      icon: FileText,
-      color: "from-green-500 to-emerald-600",
-      permission: "can_create_anamnesis"
-    },
-    tools: {
-      id: "tools",
-      title: "Ferramentas",
-      description: "Calculadoras médicas",
-      icon: Calculator,
-      color: "from-cyan-500 to-blue-600",
-      permission: "can_create_anamnesis"
-    },
-    atestados: {
-      id: "atestados",
-      title: "Atestados",
-      description: "Criar modelos de atestados",
-      icon: ClipboardList,
-      color: "from-amber-500 to-orange-600",
-      permission: "can_access_templates"
-    },
-    exames_models: {
-      id: "exames_models",
-      title: "Exames",
-      description: "Criar modelos de exames",
-      icon: FileCheck,
-      color: "from-emerald-500 to-teal-600",
-      permission: "can_access_templates"
-    },
-    encaminhamentos: {
-      id: "encaminhamentos",
-      title: "Encaminhamentos",
-      description: "Criar modelos de encaminhamento",
-      icon: Send,
-      color: "from-violet-500 to-purple-600",
-      permission: "can_access_templates"
-    },
-    patients: {
-      id: "patients",
-      title: "Pacientes",
-      description: "Gerenciar pacientes",
-      icon: Users,
-      color: "from-purple-500 to-pink-600",
-      permission: "can_access_patients"
-    },
-    templates: {
-      id: "templates",
-      title: "Modelos Anamnese",
-      description: "Templates de consulta",
-      icon: LayoutTemplate,
-      color: "from-indigo-500 to-purple-600",
-      permission: "can_access_templates"
-    },
-    atestado: {
-      id: "atestado",
-      title: "Modelos Atestado",
-      description: "Templates de atestado",
-      icon: ClipboardList,
-      color: "from-blue-500 to-cyan-600",
-      permission: "can_access_templates"
-    },
-    exames: {
-      id: "exames",
-      title: "Modelos Exames",
-      description: "Templates de exames",
-      icon: FileCheck,
-      color: "from-teal-500 to-green-600",
-      permission: "can_access_templates"
-    },
-    encaminhamento: {
-      id: "encaminhamento",
-      title: "Modelos Encaminhamento",
-      description: "Templates de encaminhamento",
-      icon: Send,
-      color: "from-green-500 to-lime-600",
-      permission: "can_access_templates"
-    },
-    receita_models: {
-      id: "receita_models",
-      title: "Modelos Receita",
-      description: "Templates de receita",
-      icon: Pill,
-      color: "from-pink-500 to-rose-600",
-      permission: "can_access_templates"
-    },
-    receitas: {
-      id: "receitas",
-      title: "Receitas",
-      description: "Criar receita médica",
-      icon: Pill,
-      color: "from-pink-500 to-rose-600",
-      permission: "can_access_templates"
-    },
-    orientacoes_models: {
-      id: "orientacoes_models",
-      title: "Modelos Orientações",
-      description: "Templates de orientações",
-      icon: Info,
-      color: "from-teal-500 to-cyan-600",
-      permission: "can_access_templates"
-    },
-    orientacoes: {
-      id: "orientacoes",
-      title: "Orientações",
-      description: "Criar orientação ao paciente",
-      icon: Info,
-      color: "from-cyan-500 to-teal-600",
-      permission: "can_access_templates"
-    }
-  };
+  const allMenuItems = ALL_DASHBOARD_ITEMS;
 
   useEffect(() => {
     loadUser();
