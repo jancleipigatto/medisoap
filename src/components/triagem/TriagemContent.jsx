@@ -37,7 +37,7 @@ const PatientQueueList = ({ onSelect }) => {
       {queue.map(ag => (
         <div 
           key={ag.id} 
-          onClick={() => onSelect({ id: ag.patient_id, nome: ag.patient_name })}
+          onClick={() => onSelect({ id: ag.patient_id, nome: ag.patient_name }, ag.id)}
           className="bg-white p-3 rounded-lg shadow-sm border border-blue-100 cursor-pointer hover:bg-blue-50 transition-colors"
         >
           <div className="font-semibold text-gray-900">{ag.patient_name}</div>
@@ -54,6 +54,7 @@ const PatientQueueList = ({ onSelect }) => {
 export default function TriagemContent() {
   const navigate = useNavigate();
   const [selectedPatient, setSelectedPatient] = useState(null);
+  const [currentAgendamentoId, setCurrentAgendamentoId] = useState(null);
   const [dataConsulta, setDataConsulta] = useState(() => {
     const now = new Date();
     const year = now.getFullYear();
@@ -181,11 +182,22 @@ export default function TriagemContent() {
           avaliacao: "",
           plano: ""
         });
+        
+        // Atualizar status do agendamento se existir
+        if (currentAgendamentoId) {
+          try {
+            await base44.entities.Agendamento.update(currentAgendamentoId, { status: "aguardando_atendimento" });
+          } catch (e) {
+            console.error("Erro ao atualizar status do agendamento", e);
+          }
+        }
+
         alert("Triagem registrada com sucesso!");
       }
 
       // Limpar formulário
       setSelectedPatient(null);
+      setCurrentAgendamentoId(null);
       setTriagem({
         pa: "",
         temperatura: "",
@@ -232,9 +244,9 @@ export default function TriagemContent() {
                <CardTitle className="text-base text-blue-800">Fila de Triagem (Pacientes Recepcionados)</CardTitle>
             </CardHeader>
             <CardContent>
-               <PatientQueueList onSelect={(patient) => {
+               <PatientQueueList onSelect={(patient, agendamentoId) => {
                  setSelectedPatient(patient);
-                 // Opcional: Auto-preencher dados se vierem do agendamento
+                 setCurrentAgendamentoId(agendamentoId);
                }} />
             </CardContent>
           </Card>
