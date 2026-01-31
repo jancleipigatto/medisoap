@@ -4,7 +4,7 @@ import TriagemContent from "../components/triagem/TriagemContent";
 
 export default function Triagem() {
   return (
-    <PermissionGuard permission="can_create_anamnesis">
+    <PermissionGuard permission="can_perform_triage">
       <TriagemContent />
     </PermissionGuard>
   );
