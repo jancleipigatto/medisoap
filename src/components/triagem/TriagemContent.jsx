@@ -184,21 +184,6 @@ export default function TriagemContent() {
         alert("Triagem atualizada com sucesso!");
       } else {
         // Criar nova anamnese com triagem
-        const numeroAtendimento = await generateAttendanceNumber(dataConsulta);
-        await base44.entities.Anamnesis.create({
-          patient_id: selectedPatient.id,
-          patient_name: selectedPatient.nome,
-          appointment_id: appointmentIdToLink,
-          data_consulta: dataConsulta,
-          horario_consulta: horarioConsulta,
-          numero_atendimento: numeroAtendimento,
-          ...triagemData,
-          texto_original: "",
-          subjetivo: "",
-          objetivo: "",
-          avaliacao: "",
-          plano: ""
-        });
         
         // Atualizar status do agendamento se existir, ou criar um novo se não existir
         let appointmentIdToLink = currentAgendamentoId;
@@ -227,6 +212,22 @@ export default function TriagemContent() {
             console.error("Erro ao criar agendamento automático pós-triagem", e);
           }
         }
+
+        const numeroAtendimento = await generateAttendanceNumber(dataConsulta);
+        await base44.entities.Anamnesis.create({
+          patient_id: selectedPatient.id,
+          patient_name: selectedPatient.nome,
+          appointment_id: appointmentIdToLink,
+          data_consulta: dataConsulta,
+          horario_consulta: horarioConsulta,
+          numero_atendimento: numeroAtendimento,
+          ...triagemData,
+          texto_original: "",
+          subjetivo: "",
+          objetivo: "",
+          avaliacao: "",
+          plano: ""
+        });
 
         alert("Triagem registrada com sucesso!");
       }
