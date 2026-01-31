@@ -62,6 +62,11 @@ export default function DashboardSettings() {
   const hasPermission = (item, userData = user) => {
     if (!userData) return false;
     if (item.adminOnly) return userData.role === 'admin';
+    
+    if (item.permission === "can_access_agenda") {
+      return userData.can_manage_schedule === true || userData.can_create_anamnesis === true;
+    }
+
     if (!item.permission) return true;
     return userData[item.permission] === true;
   };
