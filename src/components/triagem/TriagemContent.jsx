@@ -198,12 +198,28 @@ export default function TriagemContent() {
           plano: ""
         });
         
-        // Atualizar status do agendamento se existir
+        // Atualizar status do agendamento se existir, ou criar um novo se não existir
         if (currentAgendamentoId) {
           try {
             await base44.entities.Agendamento.update(currentAgendamentoId, { status: "aguardando_atendimento" });
           } catch (e) {
             console.error("Erro ao atualizar status do agendamento", e);
+          }
+        } else {
+          try {
+            // Criar agendamento automático para aparecer na fila de consulta
+            await base44.entities.Agendamento.create({
+              patient_id: selectedPatient.id,
+              patient_name: selectedPatient.nome,
+              data_agendamento: dataConsulta,
+              horario_inicio: horarioConsulta,
+              horario_fim: horarioConsulta, // Estimativa
+              status: "aguardando_atendimento",
+              tipo: "primeira_consulta",
+              observacoes: "Não recepcionado"
+            });
+          } catch (e) {
+            console.error("Erro ao criar agendamento automático pós-triagem", e);
           }
         }
 
