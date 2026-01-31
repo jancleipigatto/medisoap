@@ -121,6 +121,8 @@ export default function ProfileManagement() {
       can_view_all_anamnesis: false,
       can_access_reception: false,
       can_perform_triage: false,
+      can_manage_schedule: false,
+      roles: [],
       is_default: false
     });
     setEditingProfile(null);
@@ -148,6 +150,8 @@ export default function ProfileManagement() {
       can_view_all_anamnesis: false,
       can_access_reception: false,
       can_perform_triage: false,
+      can_manage_schedule: false,
+      roles: [],
       is_default: false
     });
   };
