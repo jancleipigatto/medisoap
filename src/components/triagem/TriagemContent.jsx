@@ -73,6 +73,11 @@ export default function TriagemContent() {
     temperatura: "",
     peso: "",
     altura: "",
+    spo2: "",
+    fc: "",
+    fr: "",
+    hgt: "",
+    hgt_tipo: "",
     queixa: "",
     observacoes: ""
   });
@@ -110,6 +115,11 @@ export default function TriagemContent() {
           temperatura: anamnesis.triagem_temperatura || "",
           peso: anamnesis.triagem_peso || "",
           altura: anamnesis.triagem_altura || "",
+          spo2: anamnesis.triagem_spo2 || "",
+          fc: anamnesis.triagem_fc || "",
+          fr: anamnesis.triagem_fr || "",
+          hgt: anamnesis.triagem_hgt || "",
+          hgt_tipo: anamnesis.triagem_hgt_tipo || "",
           queixa: anamnesis.triagem_queixa || "",
           observacoes: anamnesis.triagem_observacoes || ""
         });
@@ -156,6 +166,11 @@ export default function TriagemContent() {
         triagem_temperatura: triagem.temperatura,
         triagem_peso: triagem.peso,
         triagem_altura: triagem.altura,
+        triagem_spo2: triagem.spo2,
+        triagem_fc: triagem.fc,
+        triagem_fr: triagem.fr,
+        triagem_hgt: triagem.hgt,
+        triagem_hgt_tipo: triagem.hgt_tipo,
         triagem_queixa: triagem.queixa,
         triagem_observacoes: triagem.observacoes,
         triagem_realizada_por: currentUser?.full_name || "Não identificado",
@@ -203,6 +218,11 @@ export default function TriagemContent() {
         temperatura: "",
         peso: "",
         altura: "",
+        spo2: "",
+        fc: "",
+        fr: "",
+        hgt: "",
+        hgt_tipo: "",
         queixa: "",
         observacoes: ""
       });
@@ -349,6 +369,86 @@ export default function TriagemContent() {
                     onChange={(e) => setTriagem({...triagem, altura: e.target.value})}
                     className="text-sm h-9"
                   />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="spo2" className="text-sm flex items-center gap-2">
+                    Sp02%
+                  </Label>
+                  <Input
+                    id="spo2"
+                    placeholder="Ex: 98%"
+                    value={triagem.spo2}
+                    onChange={(e) => setTriagem({...triagem, spo2: e.target.value})}
+                    className="text-sm h-9"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="fc" className="text-sm flex items-center gap-2">
+                    Fc (BPM)
+                  </Label>
+                  <Input
+                    id="fc"
+                    placeholder="Ex: 80 bpm"
+                    value={triagem.fc}
+                    onChange={(e) => setTriagem({...triagem, fc: e.target.value})}
+                    className="text-sm h-9"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="fr" className="text-sm flex items-center gap-2">
+                    Fr (IRPM)
+                  </Label>
+                  <Input
+                    id="fr"
+                    placeholder="Ex: 18 irpm"
+                    value={triagem.fr}
+                    onChange={(e) => setTriagem({...triagem, fr: e.target.value})}
+                    className="text-sm h-9"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="hgt" className="text-sm flex items-center gap-2">
+                    Hgt (mg/dL)
+                  </Label>
+                  <div className="space-y-2">
+                    <Input
+                      id="hgt"
+                      placeholder="Ex: 90 mg/dL"
+                      value={triagem.hgt}
+                      onChange={(e) => setTriagem({...triagem, hgt: e.target.value})}
+                      className="text-sm h-9"
+                    />
+                    <div className="flex gap-4">
+                      <label className="flex items-center space-x-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="hgt_tipo"
+                          value="pos_prandial"
+                          checked={triagem.hgt_tipo === 'pos_prandial'}
+                          onChange={(e) => setTriagem({...triagem, hgt_tipo: e.target.value})}
+                          className="text-blue-600 focus:ring-blue-500"
+                        />
+                        <span className="text-xs text-gray-700">Pós-prandial</span>
+                      </label>
+                      <label className="flex items-center space-x-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="hgt_tipo"
+                          value="jejum"
+                          checked={triagem.hgt_tipo === 'jejum'}
+                          onChange={(e) => setTriagem({...triagem, hgt_tipo: e.target.value})}
+                          className="text-blue-600 focus:ring-blue-500"
+                        />
+                        <span className="text-xs text-gray-700">Jejum</span>
+                      </label>
+                    </div>
+                  </div>
                 </div>
               </div>
             </CardContent>
