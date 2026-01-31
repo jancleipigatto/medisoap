@@ -180,9 +180,9 @@ export default function Layout({ children, currentPageName }) {
 
   const hasPermission = (item) => {
     if (loading) return false;
+    if (user?.is_master === true) return true;
     if (item.masterOnly) return user?.is_master === true;
     if (!item.permission) return true;
-    // Apenas verificar permissão específica, não dar acesso automático para admin
     return user?.[item.permission] === true;
   };
 

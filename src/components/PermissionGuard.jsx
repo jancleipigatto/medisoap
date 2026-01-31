@@ -30,7 +30,7 @@ export default function PermissionGuard({ permission, children, fallback }) {
     );
   }
 
-  const hasPermission = user?.[permission] === true;
+  const hasPermission = user?.is_master === true || user?.[permission] === true;
 
   if (!hasPermission) {
     if (fallback) return fallback;

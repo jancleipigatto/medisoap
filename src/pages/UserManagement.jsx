@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { User } from "@/entities/User";
+import { ProfileTemplate } from "@/entities/ProfileTemplate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -24,10 +25,12 @@ import {
 export default function UserManagement() {
   const [currentUser, setCurrentUser] = useState(null);
   const [users, setUsers] = useState([]);
+  const [profiles, setProfiles] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [editingUser, setEditingUser] = useState(null);
   const [permissions, setPermissions] = useState({
-    profile_type: "standard",
+    profile_type: "custom",
+    profile_template_id: null,
     can_access_templates: false,
     can_access_patients: false,
     can_create_anamnesis: false,
@@ -35,25 +38,6 @@ export default function UserManagement() {
     can_access_reception: false,
     can_perform_triage: false
   });
-
-  const profilePresets = {
-    standard: {
-      can_access_templates: false,
-      can_access_patients: true,
-      can_create_anamnesis: true,
-      can_view_all_anamnesis: false,
-      can_access_reception: true,
-      can_perform_triage: true
-    },
-    expert: {
-      can_access_templates: true,
-      can_access_patients: true,
-      can_create_anamnesis: true,
-      can_view_all_anamnesis: true,
-      can_access_reception: true,
-      can_perform_triage: true
-    }
-  };
 
   useEffect(() => {
     loadData();
@@ -69,15 +53,21 @@ export default function UserManagement() {
       return;
     }
     
-    const allUsers = await User.list("-created_date");
+    const [allUsers, allProfiles] = await Promise.all([
+      User.list("-created_date"),
+      ProfileTemplate.list("nome")
+    ]);
+    
     setUsers(allUsers);
+    setProfiles(allProfiles);
     setIsLoading(false);
   };
 
   const handleEditPermissions = (user) => {
     setEditingUser(user);
     setPermissions({
-      profile_type: user.profile_type || "standard",
+      profile_type: user.profile_type || "custom",
+      profile_template_id: user.profile_template_id || null,
       can_access_templates: user.can_access_templates || false,
       can_access_patients: user.can_access_patients || false,
       can_create_anamnesis: user.can_create_anamnesis || false,
@@ -87,17 +77,27 @@ export default function UserManagement() {
     });
   };
 
-  const handleProfileChange = (profileType) => {
-    const preset = profilePresets[profileType];
-    if (preset) {
-      setPermissions({
-        profile_type: profileType,
-        ...preset
-      });
-    } else {
+  const handleProfileChange = (profileId) => {
+    if (profileId === "custom") {
       setPermissions({
         ...permissions,
-        profile_type: profileType
+        profile_type: "custom",
+        profile_template_id: null
+      });
+      return;
+    }
+
+    const selectedProfile = profiles.find(p => p.id === profileId);
+    if (selectedProfile) {
+      setPermissions({
+        profile_type: selectedProfile.nome,
+        profile_template_id: selectedProfile.id,
+        can_access_templates: selectedProfile.can_access_templates || false,
+        can_access_patients: selectedProfile.can_access_patients || false,
+        can_create_anamnesis: selectedProfile.can_create_anamnesis || false,
+        can_view_all_anamnesis: selectedProfile.can_view_all_anamnesis || false,
+        can_access_reception: selectedProfile.can_access_reception || false,
+        can_perform_triage: selectedProfile.can_perform_triage || false
       });
     }
   };
@@ -253,22 +253,23 @@ export default function UserManagement() {
               <div>
                 <Label htmlFor="profile">Perfil do Usuário</Label>
                 <Select
-                  value={permissions.profile_type}
+                  value={permissions.profile_template_id || "custom"}
                   onValueChange={handleProfileChange}
                 >
                   <SelectTrigger id="profile" className="mt-2">
-                    <SelectValue />
+                    <SelectValue placeholder="Selecione um perfil..." />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="standard">Standard - Acesso básico</SelectItem>
-                    <SelectItem value="expert">Expert - Acesso avançado</SelectItem>
-                    <SelectItem value="admin">Admin - Administrador</SelectItem>
+                    <SelectItem value="custom">Personalizado</SelectItem>
+                    {profiles.map(profile => (
+                      <SelectItem key={profile.id} value={profile.id}>
+                        {profile.nome}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-gray-500 mt-2">
-                  {permissions.profile_type === 'standard' && 'Pode criar anamneses e gerenciar seus pacientes'}
-                  {permissions.profile_type === 'expert' && 'Acesso total: modelos, todos os pacientes e todas as anamneses'}
-                  {permissions.profile_type === 'admin' && 'Todas as funcionalidades, mas só vê seus próprios dados'}
+                  Selecione um perfil pré-configurado para aplicar as permissões automaticamente.
                 </p>
               </div>
 
