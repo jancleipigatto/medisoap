@@ -455,7 +455,6 @@ export default function Agenda() {
                 </div>
 
                 <div className="col-span-2">
-                  <Label>Paciente *</Label>
                   <PatientSelector
                     selectedPatient={formData.patient_name ? { nome: formData.patient_name, id: formData.patient_id } : null}
                     onSelect={(patient) => {
