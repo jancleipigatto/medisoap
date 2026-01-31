@@ -421,6 +421,24 @@ ${result.plano || ''}`;
           plano: foundAnamnesis.plano || ""
         });
       }
+
+      if (foundAnamnesis.appointment_id) {
+          try {
+             const apps = await base44.entities.Agendamento.list();
+             const appointment = apps.find(a => a.id === foundAnamnesis.appointment_id);
+             if (appointment) setLinkedAppointment(appointment);
+          } catch(e) { console.error(e); }
+      } else {
+          // Try to find by patient/date
+          try {
+            const agendamentos = await base44.entities.Agendamento.list();
+            const match = agendamentos.find(ag => 
+                ag.patient_id === foundAnamnesis.patient_id && 
+                ag.data_agendamento === foundAnamnesis.data_consulta
+            );
+            if (match) setLinkedAppointment(match);
+          } catch(e) { console.error(e); }
+      }
     }
   };
 
