@@ -97,14 +97,14 @@ export default function Agenda() {
       await base44.entities.Agendamento.create(formData);
     }
 
-    await loadAgendamentos();
+    await loadData();
     handleCloseDialog();
   };
 
   const handleDelete = async (id) => {
     if (!confirm("Deseja excluir este agendamento?")) return;
     await base44.entities.Agendamento.delete(id);
-    await loadAgendamentos();
+    await loadData();
   };
 
   const handleEdit = (agendamento) => {
