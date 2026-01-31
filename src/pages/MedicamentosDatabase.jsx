@@ -51,20 +51,17 @@ export default function MedicamentosDatabase() {
 
   const loadMedicamentos = async () => {
     setIsLoading(true);
-    const { Medicamento } = await import("@/entities/Medicamento");
-    const data = await Medicamento.list("-created_date");
+    const data = await base44.entities.Medicamento.list("-created_date");
     setMedicamentos(data);
     setFilteredMedicamentos(data);
     setIsLoading(false);
   };
 
   const handleSave = async () => {
-    const { Medicamento } = await import("@/entities/Medicamento");
-    
     if (editingMed) {
-      await Medicamento.update(editingMed.id, formData);
+      await base44.entities.Medicamento.update(editingMed.id, formData);
     } else {
-      await Medicamento.create(formData);
+      await base44.entities.Medicamento.create(formData);
     }
     
     setShowDialog(false);
@@ -98,8 +95,7 @@ export default function MedicamentosDatabase() {
   const handleDelete = async (id) => {
     if (!confirm("Tem certeza que deseja excluir este medicamento?")) return;
     
-    const { Medicamento } = await import("@/entities/Medicamento");
-    await Medicamento.delete(id);
+    await base44.entities.Medicamento.delete(id);
     loadMedicamentos();
   };
 
