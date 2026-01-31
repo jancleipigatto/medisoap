@@ -52,6 +52,7 @@ import AnamnesisDetail from './pages/AnamnesisDetail';
 import AtestadoTemplates from './pages/AtestadoTemplates';
 import CIDManagement from './pages/CIDManagement';
 import CompletarPerfil from './pages/CompletarPerfil';
+import Consulta from './pages/Consulta';
 import ConvenioManagement from './pages/ConvenioManagement';
 import DashboardSettings from './pages/DashboardSettings';
 import EncaminhamentoTemplates from './pages/EncaminhamentoTemplates';
@@ -77,7 +78,6 @@ import Tools from './pages/Tools';
 import Triagem from './pages/Triagem';
 import UserManagement from './pages/UserManagement';
 import UserProfile from './pages/UserProfile';
-import Consulta from './pages/Consulta';
 import __Layout from './Layout.jsx';
 
 
@@ -87,6 +87,7 @@ export const PAGES = {
     "AtestadoTemplates": AtestadoTemplates,
     "CIDManagement": CIDManagement,
     "CompletarPerfil": CompletarPerfil,
+    "Consulta": Consulta,
     "ConvenioManagement": ConvenioManagement,
     "DashboardSettings": DashboardSettings,
     "EncaminhamentoTemplates": EncaminhamentoTemplates,
@@ -112,7 +113,6 @@ export const PAGES = {
     "Triagem": Triagem,
     "UserManagement": UserManagement,
     "UserProfile": UserProfile,
-    "Consulta": Consulta,
 }
 
 export const pagesConfig = {

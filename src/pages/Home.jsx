@@ -32,6 +32,11 @@ export default function Home() {
   const hasPermission = (item) => {
     if (!user) return false;
     if (item.adminOnly) return user.role === 'admin';
+
+    if (item.permission === "can_access_agenda") {
+      return user?.can_manage_schedule === true || user?.can_create_anamnesis === true;
+    }
+
     if (!item.permission) return true;
     return user[item.permission] === true;
   };

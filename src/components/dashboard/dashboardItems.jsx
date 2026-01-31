@@ -11,7 +11,8 @@ import {
   Pill, 
   Info, 
   Activity,
-  Stethoscope
+  Stethoscope,
+  Calendar
 } from "lucide-react";
 import { createPageUrl } from "@/utils";
 
@@ -51,6 +52,15 @@ export const ALL_DASHBOARD_ITEMS = {
     url: createPageUrl("NewAnamnesis"),
     color: "from-blue-500 to-indigo-600",
     permission: "can_create_anamnesis"
+  },
+  agenda: {
+    id: "agenda",
+    title: "Agenda",
+    description: "Gerenciar agendamentos e horários",
+    icon: Calendar,
+    url: createPageUrl("Agenda"),
+    color: "from-orange-500 to-amber-600",
+    permission: "can_access_agenda"
   },
   history: {
     id: "history",
