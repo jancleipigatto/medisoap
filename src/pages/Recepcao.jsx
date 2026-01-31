@@ -220,6 +220,7 @@ export default function Recepcao() {
                           <TableCell>
                             <div className="flex flex-col">
                               <span className="font-medium">{ag.patient_name}</span>
+                              <span className="text-xs text-indigo-600 font-medium">Dr(a). {ag.professional_name || "N/A"}</span>
                               {ag.telefone_contato && <span className="text-xs text-gray-500">{ag.telefone_contato}</span>}
                             </div>
                           </TableCell>

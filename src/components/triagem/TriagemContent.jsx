@@ -41,6 +41,7 @@ const PatientQueueList = ({ onSelect }) => {
           className="bg-white p-3 rounded-lg shadow-sm border border-blue-100 cursor-pointer hover:bg-blue-50 transition-colors"
         >
           <div className="font-semibold text-gray-900">{ag.patient_name}</div>
+          <div className="text-xs text-indigo-600 font-medium mt-0.5">Dr(a). {ag.professional_name || "N/A"}</div>
           <div className="text-xs text-gray-500 mt-1 flex justify-between">
             <span>{ag.horario_inicio}</span>
             <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-[10px] uppercase">{ag.status}</span>
