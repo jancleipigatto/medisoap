@@ -187,6 +187,7 @@ export default function TriagemContent() {
         await base44.entities.Anamnesis.create({
           patient_id: selectedPatient.id,
           patient_name: selectedPatient.nome,
+          appointment_id: appointmentIdToLink,
           data_consulta: dataConsulta,
           horario_consulta: horarioConsulta,
           numero_atendimento: numeroAtendimento,
@@ -199,6 +200,8 @@ export default function TriagemContent() {
         });
         
         // Atualizar status do agendamento se existir, ou criar um novo se não existir
+        let appointmentIdToLink = currentAgendamentoId;
+
         if (currentAgendamentoId) {
           try {
             await base44.entities.Agendamento.update(currentAgendamentoId, { status: "aguardando_atendimento" });
@@ -208,7 +211,7 @@ export default function TriagemContent() {
         } else {
           try {
             // Criar agendamento automático para aparecer na fila de consulta
-            await base44.entities.Agendamento.create({
+            const newApp = await base44.entities.Agendamento.create({
               patient_id: selectedPatient.id,
               patient_name: selectedPatient.nome,
               data_agendamento: dataConsulta,
@@ -218,6 +221,7 @@ export default function TriagemContent() {
               tipo: "primeira_consulta",
               observacoes: "Não recepcionado"
             });
+            appointmentIdToLink = newApp.id;
           } catch (e) {
             console.error("Erro ao criar agendamento automático pós-triagem", e);
           }

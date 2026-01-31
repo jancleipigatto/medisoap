@@ -104,9 +104,15 @@ export default function Recepcao() {
 
   const handleConfirmRecepcao = async () => {
     try {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const horarioRecepcao = `${hours}:${minutes}`;
+
       await base44.entities.Agendamento.update(selectedAgendamento.id, {
         status: "recepcionado",
-        foto_url: recepcaoPhoto
+        foto_url: recepcaoPhoto,
+        horario_recepcao: horarioRecepcao
       });
       setShowRecepcaoModal(false);
       loadAgendamentos();

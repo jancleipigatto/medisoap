@@ -62,6 +62,7 @@ export default function NewAnamnesisContent() {
   const [selectedCids, setSelectedCids] = useState([]);
   const [activeDocument, setActiveDocument] = useState(null);
   const [anamnesis, setAnamnesis] = useState(null);
+  const [linkedAppointment, setLinkedAppointment] = useState(null);
 
   useEffect(() => {
     loadTemplates();
@@ -320,6 +321,7 @@ ${result.plano || ''}`;
     const anamnesisData = {
       patient_id: selectedPatient.id,
       patient_name: selectedPatient.nome,
+      appointment_id: linkedAppointment?.id || null,
       data_consulta: dataConsulta,
       horario_consulta: horarioConsulta,
       texto_original: finalTextoOriginal,
@@ -375,7 +377,29 @@ ${result.plano || ''}`;
     } else if (copyText) {
       setTextoOriginal(decodeURIComponent(copyText));
     }
+
+    // Check for appointment_id passed for NEW anamnesis
+    const appointmentId = urlParams.get('appointment_id');
+    if (appointmentId && !continueId) {
+        loadAppointmentData(appointmentId);
+    }
   }, []);
+
+  const loadAppointmentData = async (id) => {
+      try {
+          const apps = await base44.entities.Agendamento.list();
+          const app = apps.find(a => a.id === id);
+          if (app) {
+              setLinkedAppointment(app);
+              // Also update status to em_atendimento if new
+              if (app.status !== 'em_atendimento' && app.status !== 'realizado') {
+                  base44.entities.Agendamento.update(app.id, { status: "em_atendimento" });
+              }
+          }
+      } catch (e) {
+          console.error("Error loading appointment", e);
+      }
+  };
 
   const loadExistingAnamnesis = async (id) => {
     const data = await base44.entities.Anamnesis.list();
@@ -582,6 +606,19 @@ ${result.plano || ''}`;
                   />
                 </div>
               </div>
+
+              {linkedAppointment && (
+                <div className="bg-blue-50 p-3 rounded-md border border-blue-100 grid grid-cols-2 gap-4">
+                    <div>
+                        <span className="text-xs text-gray-500 block">Horário Agendado</span>
+                        <span className="text-sm font-medium text-blue-900">{linkedAppointment.horario_inicio}</span>
+                    </div>
+                    <div>
+                        <span className="text-xs text-gray-500 block">Horário Recepcionado</span>
+                        <span className="text-sm font-medium text-blue-900">{linkedAppointment.horario_recepcao || "-"}</span>
+                    </div>
+                </div>
+              )}
 
               {templates.length > 0 && (
                 <div>

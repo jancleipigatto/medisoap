@@ -36,12 +36,38 @@ export default function Consulta() {
     }
   };
 
-  const handleAttend = (agendamento) => {
-    // Navigate to NewAnamnesis with patient/appointment data
-    // Assuming NewAnamnesis can take query params or state
-    // We'll pass it via URL params for simplicity as `NewAnamnesis` likely uses `PatientSelector`
-    // We can simulate selecting a patient by passing patient_id
-    navigate(`${createPageUrl("NewAnamnesis")}?patient_id=${agendamento.patient_id}&appointment_id=${agendamento.id}`);
+  const handleAttend = async (agendamento) => {
+    // Check if there is an existing Anamnesis for this patient today (e.g. from Triage)
+    try {
+      const anamneses = await base44.entities.Anamnesis.list();
+      // Filter manually for efficiency if needed, or rely on sorting
+      // Logic: Same patient, same day, not cancelled
+      const today = new Date();
+      const existing = anamneses.find(a => 
+        a.patient_id === agendamento.patient_id && 
+        isSameDay(parseISO(a.data_consulta), selectedDate) &&
+        !a.is_cancelled
+      );
+
+      if (existing) {
+        // Update appointment status to em_atendimento if not already
+        if (agendamento.status !== 'em_atendimento' && agendamento.status !== 'realizado') {
+             await base44.entities.Agendamento.update(agendamento.id, { status: "em_atendimento" });
+             // Also link appointment if not linked
+             if (!existing.appointment_id) {
+                 await base44.entities.Anamnesis.update(existing.id, { appointment_id: agendamento.id });
+             }
+        }
+        navigate(`${createPageUrl("NewAnamnesis")}?continue=${existing.id}`);
+      } else {
+        // Start new
+        navigate(`${createPageUrl("NewAnamnesis")}?patient_id=${agendamento.patient_id}&appointment_id=${agendamento.id}`);
+      }
+    } catch (e) {
+      console.error("Error checking existing anamnesis", e);
+      // Fallback
+      navigate(`${createPageUrl("NewAnamnesis")}?patient_id=${agendamento.patient_id}&appointment_id=${agendamento.id}`);
+    }
   };
 
   const getStatusColor = (status) => {
@@ -98,6 +124,7 @@ export default function Consulta() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Horário</TableHead>
+                      <TableHead>Recepção</TableHead>
                       <TableHead>Paciente</TableHead>
                       <TableHead>Tipo</TableHead>
                       <TableHead>Status</TableHead>
@@ -115,6 +142,9 @@ export default function Consulta() {
                       agendamentos.map((ag) => (
                         <TableRow key={ag.id} className={getStatusColor(ag.status)}>
                           <TableCell className="font-medium">{ag.horario_inicio}</TableCell>
+                          <TableCell className="text-sm text-gray-600">
+                            {ag.horario_recepcao || "-"}
+                          </TableCell>
                           <TableCell>
                             <div className="flex flex-col">
                               <span className="font-medium">{ag.patient_name}</span>
