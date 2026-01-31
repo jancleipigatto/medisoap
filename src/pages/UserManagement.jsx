@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Users, Shield, AlertCircle } from "lucide-react";
+import { Users, Shield, AlertCircle, ArrowLeft } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
@@ -21,8 +21,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useNavigate } from "react-router-dom";
+import { createPageUrl } from "@/utils";
 
 export default function UserManagement() {
+  const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState(null);
   const [users, setUsers] = useState([]);
   const [profiles, setProfiles] = useState([]);
@@ -158,6 +161,14 @@ export default function UserManagement() {
     <div className="p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center gap-4 mb-8">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => navigate(createPageUrl("Home"))}
+            className="shadow-sm"
+          >
+            <ArrowLeft className="w-4 h-4" />
+          </Button>
           <div className="w-12 h-12 bg-gradient-to-br from-purple-100 to-indigo-100 rounded-full flex items-center justify-center">
             <Shield className="w-6 h-6 text-purple-600" />
           </div>

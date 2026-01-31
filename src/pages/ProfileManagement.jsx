@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Shield, Edit, Trash2, Users, AlertCircle } from "lucide-react";
+import { Plus, Shield, Edit, Trash2, Users, AlertCircle, ArrowLeft } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
@@ -26,8 +26,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useNavigate } from "react-router-dom";
+import { createPageUrl } from "@/utils";
 
 export default function ProfileManagement() {
+  const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState(null);
   const [profiles, setProfiles] = useState([]);
   const [users, setUsers] = useState([]);
@@ -192,6 +195,14 @@ export default function ProfileManagement() {
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-start mb-8">
           <div className="flex items-center gap-4">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => navigate(createPageUrl("Home"))}
+              className="shadow-sm"
+            >
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
             <div className="w-12 h-12 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-full flex items-center justify-center">
               <Shield className="w-6 h-6 text-indigo-600" />
             </div>

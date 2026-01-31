@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Stethoscope, Calendar, ArrowRight, CheckCircle, Plus } from "lucide-react";
+import { Stethoscope, Calendar, ArrowRight, CheckCircle, Plus, ArrowLeft } from "lucide-react";
 import { format, isSameDay, parseISO } from "date-fns";
 import PermissionGuard from "../components/PermissionGuard";
 
@@ -94,12 +94,22 @@ export default function Consulta() {
       <div className="p-4 md:p-8 bg-gradient-to-br from-indigo-50 to-purple-50 min-h-screen">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-                <Stethoscope className="w-8 h-8 text-indigo-600" />
-                Consulta
-              </h1>
-              <p className="text-gray-600 mt-1">Gerencie os atendimentos do dia</p>
+            <div className="flex items-center gap-4">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => navigate(createPageUrl("Home"))}
+                className="shadow-sm"
+              >
+                <ArrowLeft className="w-4 h-4" />
+              </Button>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+                  <Stethoscope className="w-8 h-8 text-indigo-600" />
+                  Consulta
+                </h1>
+                <p className="text-gray-600 mt-1">Gerencie os atendimentos do dia</p>
+              </div>
             </div>
             
             <div className="flex gap-2">

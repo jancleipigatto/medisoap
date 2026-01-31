@@ -4,13 +4,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Upload, Search, Star, Trash2, Plus } from "lucide-react";
+import { Upload, Search, Star, Trash2, Plus, ArrowLeft } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import PermissionGuard from "../components/PermissionGuard";
+import { useNavigate } from "react-router-dom";
+import { createPageUrl } from "@/utils";
 
 export default function CIDManagement() {
+  const navigate = useNavigate();
   const [cids, setCids] = useState([]);
   const [loading, setLoading] = useState(true);
   const [importing, setImporting] = useState(false);
@@ -153,10 +156,22 @@ export default function CIDManagement() {
   return (
     <PermissionGuard permission="can_access_templates">
       <div className="p-8 max-w-7xl mx-auto">
+        <div className="flex items-center gap-4 mb-6">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => navigate(createPageUrl("Home"))}
+            className="shadow-sm"
+          >
+            <ArrowLeft className="w-4 h-4" />
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Banco de CIDs</h1>
+            <p className="text-gray-600 mt-1">Consulte e gerencie a base de dados CID-10</p>
+          </div>
+        </div>
+
         <Card className="shadow-lg">
-          <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
-            <CardTitle className="text-2xl">Banco de CIDs</CardTitle>
-          </CardHeader>
           <CardContent className="p-6">
             {/* Import Actions */}
             <div className="flex flex-wrap gap-4 mb-6">

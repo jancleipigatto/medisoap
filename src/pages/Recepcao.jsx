@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { User, Calendar, Plus, Clock, Search, Edit, ArrowRight, Camera, Upload, CheckCircle } from "lucide-react";
+import { User, Calendar, Plus, Clock, Search, Edit, ArrowRight, Camera, Upload, CheckCircle, ArrowLeft } from "lucide-react";
 import { format, isSameDay, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import PermissionGuard from "../components/PermissionGuard";
@@ -155,12 +155,22 @@ export default function Recepcao() {
       <div className="p-4 md:p-8 bg-gradient-to-br from-blue-50 to-indigo-50 min-h-screen">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-                <User className="w-8 h-8 text-blue-600" />
-                Recepção
-              </h1>
-              <p className="text-gray-600 mt-1">Gerencie a chegada de pacientes</p>
+            <div className="flex items-center gap-4">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => navigate(createPageUrl("Home"))}
+                className="shadow-sm"
+              >
+                <ArrowLeft className="w-4 h-4" />
+              </Button>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+                  <User className="w-8 h-8 text-blue-600" />
+                  Recepção
+                </h1>
+                <p className="text-gray-600 mt-1">Gerencie a chegada de pacientes</p>
+              </div>
             </div>
             
             <div className="flex gap-2">
