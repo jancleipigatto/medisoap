@@ -294,6 +294,7 @@ export default function Agenda() {
               </Button>
             </div>
           </div>
+          </div>
 
           {viewMode === "day" ? (
             <Card className="shadow-lg border-none">
