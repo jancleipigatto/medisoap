@@ -63,6 +63,7 @@ export default function NewAnamnesisContent() {
   const [activeDocument, setActiveDocument] = useState(null);
   const [anamnesis, setAnamnesis] = useState(null);
   const [linkedAppointment, setLinkedAppointment] = useState(null);
+  const [showTriagem, setShowTriagem] = useState(true);
 
   useEffect(() => {
     loadTemplates();
@@ -665,58 +666,111 @@ ${result.plano || ''}`;
           </Card>
 
           {/* Mostrar dados da triagem se existirem */}
-          {(soapData || textoOriginal) && (anamnesis?.triagem_pa || anamnesis?.triagem_temperatura || anamnesis?.triagem_peso || anamnesis?.triagem_altura || anamnesis?.triagem_queixa) && (
+          {(soapData || textoOriginal || anamnesis) && (
+            anamnesis?.triagem_pa || 
+            anamnesis?.triagem_temperatura || 
+            anamnesis?.triagem_peso || 
+            anamnesis?.triagem_altura || 
+            anamnesis?.triagem_spo2 || 
+            anamnesis?.triagem_fc || 
+            anamnesis?.triagem_fr || 
+            anamnesis?.triagem_hgt ||
+            anamnesis?.triagem_queixa
+          ) && (
             <Card className="shadow-lg border-none bg-gradient-to-br from-green-50 to-emerald-50">
-              <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Activity className="w-5 h-5 text-green-600" />
-                  Dados da Triagem
-                </CardTitle>
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Activity className="w-5 h-5 text-green-600" />
+                    Dados da Triagem
+                  </CardTitle>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setShowTriagem(!showTriagem)}
+                    className="h-8 px-2 text-green-700 hover:text-green-800 hover:bg-green-100"
+                  >
+                    {showTriagem ? "Ocultar" : "Mostrar"}
+                  </Button>
+                </div>
               </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  {anamnesis?.triagem_pa && (
-                    <div className="bg-white p-3 rounded-lg">
-                      <span className="text-gray-600 font-medium">PA:</span>
-                      <span className="ml-2 text-gray-900">{anamnesis.triagem_pa}</span>
-                    </div>
-                  )}
-                  {anamnesis?.triagem_temperatura && (
-                    <div className="bg-white p-3 rounded-lg">
-                      <span className="text-gray-600 font-medium">Temp:</span>
-                      <span className="ml-2 text-gray-900">{anamnesis.triagem_temperatura}</span>
-                    </div>
-                  )}
-                  {anamnesis?.triagem_peso && (
-                    <div className="bg-white p-3 rounded-lg">
-                      <span className="text-gray-600 font-medium">Peso:</span>
-                      <span className="ml-2 text-gray-900">{anamnesis.triagem_peso}</span>
-                    </div>
-                  )}
-                  {anamnesis?.triagem_altura && (
-                    <div className="bg-white p-3 rounded-lg">
-                      <span className="text-gray-600 font-medium">Altura:</span>
-                      <span className="ml-2 text-gray-900">{anamnesis.triagem_altura}</span>
-                    </div>
-                  )}
-                </div>
-                {anamnesis?.triagem_queixa && (
-                  <div className="mt-3 bg-white p-3 rounded-lg">
-                    <span className="text-gray-600 font-medium block mb-1">Queixa:</span>
-                    <p className="text-gray-900">{anamnesis.triagem_queixa}</p>
+              {showTriagem && (
+                <CardContent>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 text-sm">
+                    {anamnesis?.triagem_pa && (
+                      <div className="bg-white p-3 rounded-lg shadow-sm">
+                        <span className="text-gray-600 font-medium block text-xs uppercase tracking-wide">PA</span>
+                        <span className="text-gray-900 font-semibold">{anamnesis.triagem_pa}</span>
+                      </div>
+                    )}
+                    {anamnesis?.triagem_temperatura && (
+                      <div className="bg-white p-3 rounded-lg shadow-sm">
+                        <span className="text-gray-600 font-medium block text-xs uppercase tracking-wide">Temp</span>
+                        <span className="text-gray-900 font-semibold">{anamnesis.triagem_temperatura}</span>
+                      </div>
+                    )}
+                    {anamnesis?.triagem_peso && (
+                      <div className="bg-white p-3 rounded-lg shadow-sm">
+                        <span className="text-gray-600 font-medium block text-xs uppercase tracking-wide">Peso</span>
+                        <span className="text-gray-900 font-semibold">{anamnesis.triagem_peso}</span>
+                      </div>
+                    )}
+                    {anamnesis?.triagem_altura && (
+                      <div className="bg-white p-3 rounded-lg shadow-sm">
+                        <span className="text-gray-600 font-medium block text-xs uppercase tracking-wide">Altura</span>
+                        <span className="text-gray-900 font-semibold">{anamnesis.triagem_altura}</span>
+                      </div>
+                    )}
+                    {anamnesis?.triagem_spo2 && (
+                      <div className="bg-white p-3 rounded-lg shadow-sm">
+                        <span className="text-gray-600 font-medium block text-xs uppercase tracking-wide">SpO2</span>
+                        <span className="text-gray-900 font-semibold">{anamnesis.triagem_spo2}</span>
+                      </div>
+                    )}
+                    {anamnesis?.triagem_fc && (
+                      <div className="bg-white p-3 rounded-lg shadow-sm">
+                        <span className="text-gray-600 font-medium block text-xs uppercase tracking-wide">FC (BPM)</span>
+                        <span className="text-gray-900 font-semibold">{anamnesis.triagem_fc}</span>
+                      </div>
+                    )}
+                    {anamnesis?.triagem_fr && (
+                      <div className="bg-white p-3 rounded-lg shadow-sm">
+                        <span className="text-gray-600 font-medium block text-xs uppercase tracking-wide">FR (IRPM)</span>
+                        <span className="text-gray-900 font-semibold">{anamnesis.triagem_fr}</span>
+                      </div>
+                    )}
+                    {anamnesis?.triagem_hgt && (
+                      <div className="bg-white p-3 rounded-lg shadow-sm">
+                        <span className="text-gray-600 font-medium block text-xs uppercase tracking-wide">HGT</span>
+                        <span className="text-gray-900 font-semibold">
+                          {anamnesis.triagem_hgt}
+                          {anamnesis.triagem_hgt_tipo && (
+                            <span className="text-xs font-normal text-gray-500 block">({anamnesis.triagem_hgt_tipo === 'jejum' ? 'Jejum' : 'Pós-prandial'})</span>
+                          )}
+                        </span>
+                      </div>
+                    )}
                   </div>
-                )}
-                {anamnesis?.triagem_observacoes && (
-                  <div className="mt-3 bg-white p-3 rounded-lg">
-                    <span className="text-gray-600 font-medium block mb-1">Observações:</span>
-                    <p className="text-gray-900">{anamnesis.triagem_observacoes}</p>
+                  
+                  {anamnesis?.triagem_queixa && (
+                    <div className="mt-3 bg-white p-3 rounded-lg shadow-sm">
+                      <span className="text-gray-600 font-medium block text-xs uppercase tracking-wide mb-1">Queixa Principal</span>
+                      <p className="text-gray-900">{anamnesis.triagem_queixa}</p>
+                    </div>
+                  )}
+                  {anamnesis?.triagem_observacoes && (
+                    <div className="mt-3 bg-white p-3 rounded-lg shadow-sm">
+                      <span className="text-gray-600 font-medium block text-xs uppercase tracking-wide mb-1">Observações</span>
+                      <p className="text-gray-900">{anamnesis.triagem_observacoes}</p>
+                    </div>
+                  )}
+                  
+                  <div className="mt-3 text-xs text-gray-600 flex justify-between items-center border-t border-green-200 pt-2">
+                    <span>Realizada por: {anamnesis?.triagem_realizada_por || "Não informado"}</span>
+                    {anamnesis?.triagem_data_hora && <span>{new Date(anamnesis.triagem_data_hora).toLocaleString('pt-BR')}</span>}
                   </div>
-                )}
-                <div className="mt-3 text-xs text-gray-600">
-                  Triagem realizada por: {anamnesis?.triagem_realizada_por || "Não informado"}
-                  {anamnesis?.triagem_data_hora && ` em ${new Date(anamnesis.triagem_data_hora).toLocaleString('pt-BR')}`}
-                </div>
-              </CardContent>
+                </CardContent>
+              )}
             </Card>
           )}
 
