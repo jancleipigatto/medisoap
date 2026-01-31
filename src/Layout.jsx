@@ -33,6 +33,44 @@ export default function Layout({ children, currentPageName }) {
     loadUser();
   }, []);
 
+  // Auto-logout logic
+  useEffect(() => {
+    const INACTIVITY_LIMIT = 30 * 60 * 1000; // 30 minutes
+    let inactivityTimer;
+
+    const logoutUser = () => {
+      console.log("User inactive for 30 minutes. Logging out...");
+      User.logout();
+    };
+
+    const resetTimer = () => {
+      if (inactivityTimer) clearTimeout(inactivityTimer);
+      inactivityTimer = setTimeout(logoutUser, INACTIVITY_LIMIT);
+    };
+
+    // Events that indicate user activity
+    const activityEvents = [
+      'mousedown', 'mousemove', 'keydown', 
+      'scroll', 'touchstart'
+    ];
+
+    // Attach listeners
+    activityEvents.forEach(event => {
+      window.addEventListener(event, resetTimer);
+    });
+
+    // Initialize timer
+    resetTimer();
+
+    // Cleanup
+    return () => {
+      if (inactivityTimer) clearTimeout(inactivityTimer);
+      activityEvents.forEach(event => {
+        window.removeEventListener(event, resetTimer);
+      });
+    };
+  }, []);
+
   const loadUser = async () => {
     try {
       const currentUser = await User.me();
