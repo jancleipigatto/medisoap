@@ -23,8 +23,15 @@ export default function Consulta() {
   const loadAgendamentos = async () => {
     setIsLoading(true);
     try {
+      const user = await base44.auth.me();
       const data = await base44.entities.Agendamento.list("-data_agendamento");
-      const filtered = data.filter(ag => isSameDay(parseISO(ag.data_agendamento), selectedDate));
+      
+      let filtered = data.filter(ag => isSameDay(parseISO(ag.data_agendamento), selectedDate));
+      
+      // If user is doctor (can create anamnesis) and NOT master/manager, filter by professional
+      if (user.can_create_anamnesis && !user.is_master && !user.can_manage_schedule) {
+          filtered = filtered.filter(ag => ag.professional_id === user.id);
+      }
       
       // Sort: Priority to those waiting (recepcionado, em_triagem, etc)
       // But showing ALL as requested
@@ -148,6 +155,7 @@ export default function Consulta() {
                           <TableCell>
                             <div className="flex flex-col">
                               <span className="font-medium">{ag.patient_name}</span>
+                              <span className="text-xs text-indigo-600 font-medium">Dr(a). {ag.professional_name || "N/A"}</span>
                               {ag.telefone_contato && <span className="text-xs text-gray-500">{ag.telefone_contato}</span>}
                               {ag.observacoes && ag.observacoes.includes("Não recepcionado") && (
                                 <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 mt-1 w-fit">

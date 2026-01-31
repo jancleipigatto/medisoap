@@ -20,6 +20,9 @@ import PatientSelector from "../components/anamnesis/PatientSelector";
 export default function Agenda() {
   const navigate = useNavigate();
   const [agendamentos, setAgendamentos] = useState([]);
+  const [professionals, setProfessionals] = useState([]);
+  const [selectedProfessional, setSelectedProfessional] = useState(null); // Filter
+  const [currentUser, setCurrentUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showDialog, setShowDialog] = useState(false);
@@ -28,6 +31,8 @@ export default function Agenda() {
   const [formData, setFormData] = useState({
     patient_id: "",
     patient_name: "",
+    professional_id: "", 
+    professional_name: "",
     data_agendamento: format(new Date(), "yyyy-MM-dd"),
     horario_inicio: "",
     horario_fim: "",
@@ -38,11 +43,43 @@ export default function Agenda() {
   });
 
   useEffect(() => {
-    loadAgendamentos();
+    loadData();
   }, []);
 
-  const loadAgendamentos = async () => {
+  const loadData = async () => {
     setIsLoading(true);
+    const user = await base44.auth.me();
+    setCurrentUser(user);
+    
+    // Load Professionals (Users who can create anamnesis - i.e., Doctors)
+    const allUsers = await base44.entities.User.list();
+    // Assuming can_create_anamnesis is the flag for doctors.
+    // However, users entity structure in frontend SDK might not have these expanded properties if they are not in the custom User entity but on the Profile.
+    // But currentUser usually has flattened permissions. 
+    // To filter correctly, we should look at profiles or assume the custom User entity has these props.
+    // Let's assume User entity has these properties or we rely on role.
+    // If not, we might need to fetch Profiles too. 
+    // For now, let's filter by checking if they have 'can_create_anamnesis' true or is_master
+    // Note: The User.list() returns custom user entity records, but permissions are often on the user object itself if synced.
+    // If permissions are dynamic from ProfileTemplate, we might need to join them. 
+    // Let's list all users and assume we can filter.
+    const docs = allUsers.filter(u => u.can_create_anamnesis === true || u.is_master);
+    setProfessionals(docs);
+
+    // Set default filter
+    if (user.is_master || user.can_manage_schedule) {
+       // See all or select first? Let's default to "All" (null) or first if "All" is not desired.
+       // User asked: "Master Admin possa ter acesso as agendas por profissional"
+       // Let's allow null to mean "All" or force selection.
+       setSelectedProfessional("all");
+    } else if (user.can_create_anamnesis) {
+       // Doctor sees their own
+       setSelectedProfessional(user.id);
+    } else {
+       // Receptionist without manage_schedule? Should not happen if configured right.
+       setSelectedProfessional("all");
+    }
+
     const data = await base44.entities.Agendamento.list("-data_agendamento");
     setAgendamentos(data);
     setIsLoading(false);
@@ -75,6 +112,8 @@ export default function Agenda() {
     setFormData({
       patient_id: agendamento.patient_id || "",
       patient_name: agendamento.patient_name,
+      professional_id: agendamento.professional_id || "",
+      professional_name: agendamento.professional_name || "",
       data_agendamento: agendamento.data_agendamento,
       horario_inicio: agendamento.horario_inicio,
       horario_fim: agendamento.horario_fim || "",
@@ -92,6 +131,8 @@ export default function Agenda() {
     setFormData({
       patient_id: "",
       patient_name: "",
+      professional_id: currentUser?.can_create_anamnesis && !currentUser?.is_master ? currentUser.id : "",
+      professional_name: currentUser?.can_create_anamnesis && !currentUser?.is_master ? currentUser.full_name : "",
       data_agendamento: format(new Date(), "yyyy-MM-dd"),
       horario_inicio: "",
       horario_fim: "",
@@ -103,9 +144,11 @@ export default function Agenda() {
   };
 
   const getAgendamentosByDate = (date) => {
-    return agendamentos.filter(ag => 
-      isSameDay(parseISO(ag.data_agendamento), date)
-    ).sort((a, b) => a.horario_inicio.localeCompare(b.horario_inicio));
+    return agendamentos.filter(ag => {
+      const sameDay = isSameDay(parseISO(ag.data_agendamento), date);
+      const professionalMatch = selectedProfessional === "all" || ag.professional_id === selectedProfessional;
+      return sameDay && professionalMatch;
+    }).sort((a, b) => a.horario_inicio.localeCompare(b.horario_inicio));
   };
 
   const getWeekDays = () => {
@@ -170,7 +213,15 @@ export default function Agenda() {
               </div>
             </div>
             <Button
-              onClick={() => setShowDialog(true)}
+              onClick={() => {
+                  setFormData(prev => ({
+                      ...prev,
+                      // Pre-select current user if they are a doctor
+                      professional_id: (currentUser?.can_create_anamnesis && !currentUser?.is_master && !currentUser?.can_manage_schedule) ? currentUser.id : selectedProfessional !== "all" ? selectedProfessional : "",
+                      professional_name: (currentUser?.can_create_anamnesis && !currentUser?.is_master && !currentUser?.can_manage_schedule) ? currentUser.full_name : professionals.find(p => p.id === selectedProfessional)?.full_name || ""
+                  }));
+                  setShowDialog(true);
+              }}
               className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
             >
               <Plus className="w-4 h-4 mr-2" />
@@ -178,7 +229,25 @@ export default function Agenda() {
             </Button>
           </div>
 
-          <div className="mb-6 flex gap-4 items-center">
+          <div className="mb-6 flex flex-col md:flex-row gap-4 items-center justify-between">
+            {/* Professional Filter */}
+            {(currentUser?.is_master || currentUser?.can_manage_schedule) && (
+                <div className="w-full md:w-64">
+                    <Select value={selectedProfessional} onValueChange={setSelectedProfessional}>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Selecione o Profissional" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Todos os Profissionais</SelectItem>
+                            {professionals.map(p => (
+                                <SelectItem key={p.id} value={p.id}>{p.full_name}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+            )}
+            
+            <div className="flex gap-4 items-center">
             <div className="flex gap-2">
               <Button
                 variant={viewMode === "day" ? "default" : "outline"}
@@ -363,18 +432,41 @@ export default function Agenda() {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div>
-              <Label>Paciente *</Label>
-              <PatientSelector
-                selectedPatient={formData.patient_name ? { nome: formData.patient_name, id: formData.patient_id } : null}
-                onSelect={(patient) => {
-                  setFormData({
-                    ...formData,
-                    patient_id: patient?.id || "",
-                    patient_name: patient?.nome || ""
-                  });
-                }}
-              />
+            <div className="grid grid-cols-2 gap-4">
+                <div className="col-span-2">
+                    <Label>Profissional (Médico) *</Label>
+                    <Select 
+                        value={formData.professional_id} 
+                        onValueChange={(val) => {
+                            const prof = professionals.find(p => p.id === val);
+                            setFormData({...formData, professional_id: val, professional_name: prof?.full_name || ""})
+                        }}
+                        disabled={currentUser?.can_create_anamnesis && !currentUser?.is_master && !currentUser?.can_manage_schedule}
+                    >
+                        <SelectTrigger>
+                            <SelectValue placeholder="Selecione o médico" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {professionals.map(p => (
+                                <SelectItem key={p.id} value={p.id}>{p.full_name}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                <div className="col-span-2">
+                  <Label>Paciente *</Label>
+                  <PatientSelector
+                    selectedPatient={formData.patient_name ? { nome: formData.patient_name, id: formData.patient_id } : null}
+                    onSelect={(patient) => {
+                      setFormData({
+                        ...formData,
+                        patient_id: patient?.id || "",
+                        patient_name: patient?.nome || ""
+                      });
+                    }}
+                  />
+                </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">

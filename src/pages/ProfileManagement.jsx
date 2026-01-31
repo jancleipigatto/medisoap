@@ -44,6 +44,8 @@ export default function ProfileManagement() {
     can_view_all_anamnesis: false,
     can_access_reception: false,
     can_perform_triage: false,
+    can_manage_schedule: false,
+    roles: [],
     is_default: false
   });
 
@@ -84,6 +86,8 @@ export default function ProfileManagement() {
       can_view_all_anamnesis: profile.can_view_all_anamnesis || false,
       can_access_reception: profile.can_access_reception || false,
       can_perform_triage: profile.can_perform_triage || false,
+      can_manage_schedule: profile.can_manage_schedule || false,
+      roles: profile.roles || [],
       is_default: profile.is_default || false
     });
     setShowForm(true);
@@ -342,9 +346,78 @@ export default function ProfileManagement() {
               </div>
 
               <div className="border-t pt-4">
+                <p className="text-sm font-medium mb-4">Áreas de Atuação (Simplificado)</p>
+                <div className="grid grid-cols-2 gap-4 mb-6">
+                  {['agendamento', 'recepcao', 'triagem', 'consulta'].map(role => {
+                     const isChecked = formData.roles?.includes(role);
+                     const labels = {
+                       agendamento: "Agendamento",
+                       recepcao: "Recepção",
+                       triagem: "Triagem",
+                       consulta: "Consulta (Médico)"
+                     };
+                     
+                     const handleRoleChange = (checked) => {
+                       let newRoles = checked 
+                         ? [...(formData.roles || []), role]
+                         : (formData.roles || []).filter(r => r !== role);
+                       
+                       // Auto-set permissions based on roles
+                       const newPermissions = { ...formData, roles: newRoles };
+                       
+                       if (checked) {
+                         if (role === 'agendamento') newPermissions.can_manage_schedule = true;
+                         if (role === 'recepcao') {
+                           newPermissions.can_access_reception = true;
+                           newPermissions.can_access_patients = true;
+                         }
+                         if (role === 'triagem') {
+                           newPermissions.can_perform_triage = true;
+                           newPermissions.can_access_patients = true;
+                         }
+                         if (role === 'consulta') {
+                           newPermissions.can_create_anamnesis = true;
+                           newPermissions.can_access_patients = true;
+                           newPermissions.can_access_templates = true;
+                         }
+                       }
+                       // Note: we don't auto-uncheck permissions because they might be needed by other roles
+                       
+                       setFormData(newPermissions);
+                     };
+
+                     return (
+                        <div key={role} className="flex items-center space-x-2 p-3 bg-indigo-50/50 rounded-lg border border-indigo-100">
+                          <Switch
+                            id={`role-${role}`}
+                            checked={isChecked}
+                            onCheckedChange={handleRoleChange}
+                          />
+                          <Label htmlFor={`role-${role}`} className="font-medium cursor-pointer">
+                            {labels[role]}
+                          </Label>
+                        </div>
+                     );
+                  })}
+                </div>
+              </div>
+
+              <div className="border-t pt-4">
                 <p className="text-sm font-medium mb-4">Funcionalidades do Perfil</p>
                 
                 <div className="space-y-4">
+                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div>
+                      <Label htmlFor="manage_schedule" className="font-medium">Gerenciar Agendas</Label>
+                      <p className="text-sm text-gray-500">Ver e gerenciar agendas de todos os profissionais</p>
+                    </div>
+                    <Switch
+                      id="manage_schedule"
+                      checked={formData.can_manage_schedule}
+                      onCheckedChange={(checked) => setFormData({...formData, can_manage_schedule: checked})}
+                    />
+                  </div>
+
                   <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <div>
                       <Label htmlFor="anamnesis" className="font-medium">Criar Anamneses</Label>

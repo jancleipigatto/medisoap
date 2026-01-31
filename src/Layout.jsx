@@ -101,7 +101,7 @@ export default function Layout({ children, currentPageName }) {
       title: "Agenda",
       url: createPageUrl("Agenda"),
       icon: Calendar,
-      permission: "can_create_anamnesis"
+      permission: "can_access_agenda" // Will check manually in hasPermission
     },
     {
       title: "Pacientes",
@@ -188,6 +188,12 @@ export default function Layout({ children, currentPageName }) {
     if (loading) return false;
     if (user?.is_master === true) return true;
     if (item.masterOnly) return user?.is_master === true;
+
+    if (item.permission === "can_access_agenda") {
+      // Access agenda if has specific permission OR is a doctor (can create anamnesis)
+      return user?.can_manage_schedule === true || user?.can_create_anamnesis === true;
+    }
+
     if (!item.permission) return true;
     return user?.[item.permission] === true;
   };
