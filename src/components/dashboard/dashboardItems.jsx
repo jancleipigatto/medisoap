@@ -10,11 +10,30 @@ import {
   Calculator, 
   Pill, 
   Info, 
-  Activity
+  Activity,
+  Stethoscope
 } from "lucide-react";
 import { createPageUrl } from "@/utils";
 
 export const ALL_DASHBOARD_ITEMS = {
+  recepcao: {
+    id: "recepcao",
+    title: "Recepção",
+    description: "Gerenciar chegada de pacientes",
+    icon: Users,
+    url: createPageUrl("Recepcao"),
+    color: "from-blue-500 to-cyan-600",
+    permission: "can_access_reception"
+  },
+  consulta: {
+    id: "consulta",
+    title: "Consulta",
+    description: "Atendimentos e Consultas",
+    icon: Stethoscope,
+    url: createPageUrl("Consulta"),
+    color: "from-indigo-500 to-purple-600",
+    permission: "can_create_anamnesis"
+  },
   triagem: {
     id: "triagem",
     title: "Triagem",

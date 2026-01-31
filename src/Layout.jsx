@@ -74,6 +74,12 @@ export default function Layout({ children, currentPageName }) {
       permission: "can_perform_triage"
     },
     {
+      title: "Consulta",
+      url: createPageUrl("Consulta"),
+      icon: Stethoscope,
+      permission: "can_create_anamnesis"
+    },
+    {
       title: "Novo Atendimento",
       url: createPageUrl("NewAnamnesis"),
       icon: Plus,
