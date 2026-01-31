@@ -36,7 +36,8 @@ export default function UserManagement() {
     can_create_anamnesis: false,
     can_view_all_anamnesis: false,
     can_access_reception: false,
-    can_perform_triage: false
+    can_perform_triage: false,
+    can_manage_schedule: false
   });
 
   useEffect(() => {
@@ -73,7 +74,8 @@ export default function UserManagement() {
       can_create_anamnesis: user.can_create_anamnesis || false,
       can_view_all_anamnesis: user.can_view_all_anamnesis || false,
       can_access_reception: user.can_access_reception || false,
-      can_perform_triage: user.can_perform_triage || false
+      can_perform_triage: user.can_perform_triage || false,
+      can_manage_schedule: user.can_manage_schedule || false
     });
   };
 
@@ -97,7 +99,8 @@ export default function UserManagement() {
         can_create_anamnesis: selectedProfile.can_create_anamnesis || false,
         can_view_all_anamnesis: selectedProfile.can_view_all_anamnesis || false,
         can_access_reception: selectedProfile.can_access_reception || false,
-        can_perform_triage: selectedProfile.can_perform_triage || false
+        can_perform_triage: selectedProfile.can_perform_triage || false,
+        can_manage_schedule: selectedProfile.can_manage_schedule || false
       });
     }
   };
@@ -223,6 +226,12 @@ export default function UserManagement() {
                           {user.can_view_all_anamnesis ? 'Permitido' : 'Bloqueado'}
                         </p>
                       </div>
+                      <div className={`p-3 rounded-lg ${user.can_manage_schedule ? 'bg-green-50 border border-green-200' : 'bg-gray-50 border border-gray-200'}`}>
+                        <p className="text-xs text-gray-600">Agendas</p>
+                        <p className={`text-sm font-medium ${user.can_manage_schedule ? 'text-green-700' : 'text-gray-400'}`}>
+                          {user.can_manage_schedule ? 'Permitido' : 'Bloqueado'}
+                        </p>
+                      </div>
                       <div className={`p-3 rounded-lg ${user.can_access_reception ? 'bg-green-50 border border-green-200' : 'bg-gray-50 border border-gray-200'}`}>
                         <p className="text-xs text-gray-600">Recepção</p>
                         <p className={`text-sm font-medium ${user.can_access_reception ? 'text-green-700' : 'text-gray-400'}`}>
@@ -276,6 +285,18 @@ export default function UserManagement() {
               <div className="border-t pt-4">
                 <p className="text-sm font-medium mb-4">Permissões Personalizadas</p>
                 
+                <div className="flex items-center justify-between mb-4">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="manage_schedule">Gerenciar Agendas</Label>
+                    <p className="text-sm text-gray-500">Ver e gerenciar agendas de todos os profissionais</p>
+                  </div>
+                  <Switch
+                    id="manage_schedule"
+                    checked={permissions.can_manage_schedule}
+                    onCheckedChange={(checked) => setPermissions({...permissions, can_manage_schedule: checked})}
+                  />
+                </div>
+
                 <div className="flex items-center justify-between mb-4">
                   <div className="space-y-0.5">
                     <Label htmlFor="templates">Acessar Modelos</Label>

@@ -259,6 +259,12 @@ export default function ProfileManagement() {
                   
                   <div className="border-t pt-3 space-y-2">
                     <p className="text-xs font-medium text-gray-600 mb-2">Funcionalidades:</p>
+                    {profile.can_manage_schedule && (
+                      <div className="flex items-center gap-2 text-xs">
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                        <span className="text-gray-700">Gerenciar Agendas</span>
+                      </div>
+                    )}
                     {profile.can_create_anamnesis && (
                       <div className="flex items-center gap-2 text-xs">
                         <div className="w-2 h-2 bg-green-500 rounded-full"></div>
