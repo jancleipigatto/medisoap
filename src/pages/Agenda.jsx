@@ -51,20 +51,19 @@ export default function Agenda() {
     const user = await base44.auth.me();
     setCurrentUser(user);
     
-    // Load Professionals (Users who can create anamnesis - i.e., Doctors)
-    const allUsers = await base44.entities.User.list();
-    // Assuming can_create_anamnesis is the flag for doctors.
-    // However, users entity structure in frontend SDK might not have these expanded properties if they are not in the custom User entity but on the Profile.
-    // But currentUser usually has flattened permissions. 
-    // To filter correctly, we should look at profiles or assume the custom User entity has these props.
-    // Let's assume User entity has these properties or we rely on role.
-    // If not, we might need to fetch Profiles too. 
-    // For now, let's filter by checking if they have 'can_create_anamnesis' true or is_master
-    // Note: The User.list() returns custom user entity records, but permissions are often on the user object itself if synced.
-    // If permissions are dynamic from ProfileTemplate, we might need to join them. 
-    // Let's list all users and assume we can filter.
-    const docs = allUsers.filter(u => u.can_create_anamnesis === true || u.is_master);
-    setProfessionals(docs);
+    // Load Professionals using backend function to bypass non-admin restriction
+    try {
+      const { data: docs } = await base44.functions.invoke("getMedicalProfessionals");
+      setProfessionals(docs || []);
+    } catch (err) {
+      console.error("Failed to load professionals:", err);
+      // Fallback: se falhar, assume apenas o usuário atual se ele for médico
+      if (user.can_create_anamnesis) {
+        setProfessionals([user]);
+      } else {
+        setProfessionals([]);
+      }
+    }
 
     // Set default filter
     if (user.is_master || user.can_manage_schedule) {
