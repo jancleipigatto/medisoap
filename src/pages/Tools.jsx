@@ -6,6 +6,10 @@ import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import GestationalAgeCalculator from "../components/tools/GestationalAgeCalculator";
 import BMICalculator from "../components/tools/BMICalculator";
+import AlvaradoScore from "../components/tools/AlvaradoScore";
+import CardiacRiskCalculator from "../components/tools/CardiacRiskCalculator";
+import GFRCalculator from "../components/tools/GFRCalculator";
+import SimpleCalculator from "../components/tools/SimpleCalculator";
 import { AnimatePresence } from "framer-motion";
 
 export default function Tools() {
@@ -31,18 +35,30 @@ export default function Tools() {
     {
       id: "cardiac_risk",
       name: "Risco Cardíaco",
-      description: "Em breve",
+      description: "Risco cardiovascular (Framingham)",
       icon: Heart,
-      color: "from-red-500 to-pink-600",
-      disabled: true
+      color: "from-red-500 to-pink-600"
+    },
+    {
+      id: "alvarado",
+      name: "Escala Alvarado",
+      description: "Probabilidade de apendicite",
+      icon: Activity,
+      color: "from-amber-500 to-orange-600"
+    },
+    {
+      id: "gfr",
+      name: "Taxa Filtração",
+      description: "Filtração Glomerular (CKD-EPI)",
+      icon: Activity,
+      color: "from-emerald-500 to-green-600"
     },
     {
       id: "calculator",
       name: "Calculadora",
-      description: "Em breve",
+      description: "Calculadora simples",
       icon: Calculator,
-      color: "from-purple-500 to-indigo-600",
-      disabled: true
+      color: "from-purple-500 to-indigo-600"
     }
   ];
 
@@ -125,6 +141,30 @@ export default function Tools() {
         )}
         {activeTool === 'bmi' && (
           <BMICalculator 
+            onClose={() => setActiveTool(null)}
+            onSave={handleToolSave}
+          />
+        )}
+        {activeTool === 'alvarado' && (
+          <AlvaradoScore 
+            onClose={() => setActiveTool(null)}
+            onSave={handleToolSave}
+          />
+        )}
+        {activeTool === 'cardiac_risk' && (
+          <CardiacRiskCalculator 
+            onClose={() => setActiveTool(null)}
+            onSave={handleToolSave}
+          />
+        )}
+        {activeTool === 'gfr' && (
+          <GFRCalculator 
+            onClose={() => setActiveTool(null)}
+            onSave={handleToolSave}
+          />
+        )}
+        {activeTool === 'calculator' && (
+          <SimpleCalculator 
             onClose={() => setActiveTool(null)}
             onSave={handleToolSave}
           />

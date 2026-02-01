@@ -20,6 +20,7 @@ import BMICalculator from "../tools/BMICalculator";
 import AlvaradoScore from "../tools/AlvaradoScore";
 import CardiacRiskCalculator from "../tools/CardiacRiskCalculator";
 import GFRCalculator from "../tools/GFRCalculator";
+import SimpleCalculator from "../tools/SimpleCalculator";
 import FloatingDocument from "../medical/FloatingDocument";
 import DocumentForm from "../medical/DocumentForm";
 import ReceitaFormAdvanced from "../medical/ReceitaFormAdvanced";
@@ -542,6 +543,12 @@ ${result.plano || ''}`;
         )}
         {activeTool === 'gfr' && (
           <GFRCalculator 
+            onClose={() => setActiveTool(null)}
+            onSave={handleToolSave}
+          />
+        )}
+        {activeTool === 'calculator' && (
+          <SimpleCalculator 
             onClose={() => setActiveTool(null)}
             onSave={handleToolSave}
           />
