@@ -34,12 +34,7 @@ export default function FloatingDocument({ document, onClose, children }) {
       drag
       dragMomentum={false}
       dragElastic={0}
-      dragConstraints={{
-        left: 0,
-        top: 0,
-        right: window.innerWidth - 450,
-        bottom: window.innerHeight - 600
-      }}
+      dragConstraints={false}
       initial={{ scale: 0.8, opacity: 0 }}
       animate={{ scale: 1, opacity: isTranslucent ? 0.3 : 1 }}
       exit={{ scale: 0.8, opacity: 0 }}

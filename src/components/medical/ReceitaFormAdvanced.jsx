@@ -15,10 +15,10 @@ import PrintableDocument from "./PrintableDocument";
 import { ReceitaTemplate } from "@/entities/ReceitaTemplate";
 import PatientSelector from "../anamnesis/PatientSelector";
 
-export default function ReceitaFormAdvanced() {
+export default function ReceitaFormAdvanced({ patient }) {
   const navigate = useNavigate();
   const [templates, setTemplates] = useState([]);
-  const [patientName, setPatientName] = useState("");
+  const [patientName, setPatientName] = useState(patient?.nome || "");
   const [dataConsulta, setDataConsulta] = useState(new Date().toISOString().split('T')[0]);
   const [horarioConsulta, setHorarioConsulta] = useState("");
   const [conteudo, setConteudo] = useState("");
@@ -45,6 +45,12 @@ export default function ReceitaFormAdvanced() {
   useEffect(() => {
     loadTemplates();
   }, []);
+
+  useEffect(() => {
+    if (patient?.nome) {
+      setPatientName(patient.nome);
+    }
+  }, [patient]);
 
   useEffect(() => {
     if (searchMedicamento.length >= 2) {
@@ -349,10 +355,17 @@ export default function ReceitaFormAdvanced() {
                 <CardTitle>Informações do Paciente</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <PatientSelector
-                  selectedPatient={patientName ? { nome: patientName } : null}
-                  onSelect={(p) => setPatientName(p?.nome || "")}
-                />
+                {patient ? (
+                   <div className="bg-gray-50 p-3 rounded-md border border-gray-200">
+                     <Label className="text-xs text-gray-500 uppercase font-bold tracking-wide">Paciente</Label>
+                     <p className="text-lg font-medium text-gray-900">{patientName}</p>
+                   </div>
+                ) : (
+                  <PatientSelector
+                    selectedPatient={patientName ? { nome: patientName } : null}
+                    onSelect={(p) => setPatientName(p?.nome || "")}
+                  />
+                )}
 
                 <div className="grid grid-cols-3 gap-4">
                   <div>

@@ -137,7 +137,7 @@ export default function NewAnamnesisContent() {
     };
   };
 
-  const convertToSOAP = async (useTemplate = false) => {
+  const convertToSOAP = async () => {
     if (!textoOriginal.trim()) {
       alert("Por favor, digite o texto do atendimento");
       return;
@@ -146,21 +146,10 @@ export default function NewAnamnesisContent() {
     setIsProcessing(true);
     
     try {
-      // 1. Preparar Prompt
+      // 1. Preparar Prompt para SOAP
       let systemPrompt = appSettings?.prompt_prontuario || `Você é um assistente médico especializado. Analise o seguinte texto de um atendimento médico e organize-o no formato SOAP.`;
-      
-      // Construir o conteúdo do usuário
       let userContent = `TEXTO DO ATENDIMENTO:\n${textoOriginal}`;
 
-      // Adicionar template se selecionado
-      if (useTemplate && selectedTemplate && selectedTemplate !== "none") {
-        const template = templates.find(t => t.id === selectedTemplate);
-        if (template) {
-          userContent = `MODELO DE REFERÊNCIA:\n${template.template_texto}\n\n${userContent}`;
-        }
-      }
-
-      // Adicionar instrução de formatação JSON se não houver no prompt personalizado
       if (!systemPrompt.includes("JSON")) {
           systemPrompt += `\n\nResponda ESTRITAMENTE com um objeto JSON válido contendo os campos: subjetivo, objetivo, avaliacao, plano. Mantenha a formatação original do texto.`;
       }
@@ -184,7 +173,6 @@ export default function NewAnamnesisContent() {
       // 3. Atualizar Estados
       setSoapData(result);
       
-      // Gerar texto formatado inicial
       const formattedText = `ATENDIMENTO - FORMATO SOAP
 
 S - SUBJETIVO:
@@ -204,6 +192,53 @@ ${result.plano || ''}`;
     } catch (error) {
       console.error("Erro na conversão:", error);
       alert("Ocorreu um erro ao processar o texto. Tente simplificar ou reduzir o tamanho do texto.");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const applyTemplateToText = async () => {
+    if (!textoOriginal.trim()) {
+      alert("Por favor, digite algum texto para converter");
+      return;
+    }
+    
+    if (!selectedTemplate || selectedTemplate === "none") {
+      alert("Selecione um modelo para usar como referência");
+      return;
+    }
+    
+    const template = templates.find(t => t.id === selectedTemplate);
+    if (!template) return;
+
+    if (!window.confirm("Isso irá reescrever seu texto atual seguindo o modelo selecionado. Deseja continuar?")) return;
+
+    setIsProcessing(true);
+
+    try {
+      const prompt = `
+        Você é um assistente médico. 
+        Sua tarefa é reescrever o texto do atendimento médico fornecido abaixo para que ele siga a ESTRUTURA e ESTILO do Modelo de Referência.
+        Mantenha todas as informações clínicas importantes do texto original, apenas reorganize e reformate para seguir o modelo.
+        
+        MODELO DE REFERÊNCIA:
+        ${template.template_texto}
+        
+        TEXTO ORIGINAL DO ATENDIMENTO:
+        ${textoOriginal}
+        
+        Responda APENAS com o novo texto reescrito. Não inclua explicações.
+      `;
+
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: prompt
+      });
+
+      setTextoOriginal(result); // Atualiza o texto principal com a versão convertida
+
+    } catch (error) {
+      console.error("Erro na conversão de modelo:", error);
+      alert("Erro ao aplicar modelo.");
     } finally {
       setIsProcessing(false);
     }
@@ -250,16 +285,12 @@ ${result.plano || ''}`;
     if (currentAnamnesisId) {
       // Atualizar anamnese existente
       // Adicionar histórico de edição
-      const existingAnamnesis = await base44.entities.Anamnesis.list();
-      const current = existingAnamnesis.find(a => a.id === currentAnamnesisId);
-      const historicoLine = `\n\n--- Atualizado em ${new Date().toLocaleString('pt-BR')} ---\n\n`;
-      
       await base44.entities.Anamnesis.update(currentAnamnesisId, {
         patient_id: selectedPatient.id,
         patient_name: selectedPatient.nome,
         data_consulta: dataConsulta,
         horario_consulta: horarioConsulta,
-        texto_original: current?.texto_original ? current.texto_original + historicoLine + textoOriginal : textoOriginal
+        texto_original: textoOriginal // Sobrescreve para evitar duplicação, já que o editor contém o texto completo
       });
     } else {
       // Criar nova anamnese com número de atendimento
@@ -344,6 +375,17 @@ ${result.plano || ''}`;
       });
       savedId = created.id;
       setCurrentAnamnesisId(savedId);
+    }
+
+    // Atualizar status do agendamento vinculado, se houver
+    if (linkedAppointment && linkedAppointment.status !== 'realizado') {
+        try {
+            await base44.entities.Agendamento.update(linkedAppointment.id, { 
+                status: 'realizado' // ou 'atendimento_realizado' dependendo da enum
+            });
+        } catch (error) {
+            console.error("Erro ao atualizar status do agendamento:", error);
+        }
     }
 
     setIsSaving(false);
@@ -473,7 +515,7 @@ ${result.plano || ''}`;
             document={{ name: "Receita" }}
             onClose={() => { setActiveDocument(null); setActiveDocType(null); }}
           >
-            <ReceitaFormAdvanced />
+            <ReceitaFormAdvanced patient={selectedPatient} />
           </FloatingDocument>
         )}
         {activeDocument === 'atestado' && (
@@ -486,6 +528,7 @@ ${result.plano || ''}`;
               tipoLabel="Atestado Médico"
               icon={ClipboardList}
               templateEntity={AtestadoTemplate}
+              patient={selectedPatient}
             />
           </FloatingDocument>
         )}
@@ -499,6 +542,7 @@ ${result.plano || ''}`;
               tipoLabel="Solicitação de Exames"
               icon={FileCheck}
               templateEntity={ExameTemplate}
+              patient={selectedPatient}
             />
           </FloatingDocument>
         )}
@@ -512,6 +556,7 @@ ${result.plano || ''}`;
               tipoLabel="Encaminhamento Médico"
               icon={Send}
               templateEntity={EncaminhamentoTemplate}
+              patient={selectedPatient}
             />
           </FloatingDocument>
         )}
@@ -525,6 +570,7 @@ ${result.plano || ''}`;
               tipoLabel="Orientação"
               icon={Info}
               templateEntity={base44.entities.OrientacoesTemplate}
+              patient={selectedPatient}
             />
           </FloatingDocument>
         )}
@@ -833,22 +879,33 @@ ${result.plano || ''}`;
                     )}
                   </Button>
                   <Button
-                    onClick={() => convertToSOAP(true)}
-                    disabled={isProcessing || !textoOriginal.trim()}
+                    onClick={applyTemplateToText}
+                    disabled={isProcessing || !textoOriginal.trim() || !selectedTemplate || selectedTemplate === "none"}
                     variant="outline"
                     className="flex-1 min-w-[140px] text-sm h-9"
+                    title="Reescreve seu texto usando a estrutura do modelo selecionado"
                   >
                     {isProcessing ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Convertendo...
+                        Processando...
                       </>
                     ) : (
                       <>
                         <Sparkles className="w-4 h-4 mr-2" />
-                        Converter Modelo
+                        Aplicar Modelo
                       </>
                     )}
+                  </Button>
+                  <Button
+                    onClick={convertToSOAP}
+                    disabled={isProcessing || !textoOriginal.trim()}
+                    variant="outline"
+                    className="flex-1 min-w-[140px] text-sm h-9"
+                    title="Gera o prontuário SOAP automaticamente"
+                  >
+                     <FileText className="w-4 h-4 mr-2" />
+                     Gerar SOAP
                   </Button>
                   {templates.length > 0 && (
                     <Select

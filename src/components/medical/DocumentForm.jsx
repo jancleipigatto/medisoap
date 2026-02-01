@@ -12,10 +12,10 @@ import { ArrowLeft, Printer, Save } from "lucide-react";
 import PrintableDocument from "./PrintableDocument";
 import PatientSelector from "../anamnesis/PatientSelector";
 
-export default function DocumentForm({ tipo, tipoLabel, icon: Icon, templateEntity }) {
+export default function DocumentForm({ tipo, tipoLabel, icon: Icon, templateEntity, patient }) {
   const navigate = useNavigate();
   const [templates, setTemplates] = useState([]);
-  const [patientName, setPatientName] = useState("");
+  const [patientName, setPatientName] = useState(patient?.nome || "");
   const [dataConsulta, setDataConsulta] = useState(new Date().toISOString().split('T')[0]);
   const [horarioConsulta, setHorarioConsulta] = useState("");
   const [conteudo, setConteudo] = useState("");
@@ -31,6 +31,12 @@ export default function DocumentForm({ tipo, tipoLabel, icon: Icon, templateEnti
   useEffect(() => {
     loadTemplates();
   }, []);
+
+  useEffect(() => {
+    if (patient?.nome) {
+      setPatientName(patient.nome);
+    }
+  }, [patient]);
 
   const loadTemplates = async () => {
     const data = await templateEntity.list("-created_date");
@@ -132,10 +138,17 @@ export default function DocumentForm({ tipo, tipoLabel, icon: Icon, templateEnti
                 <CardTitle>Informações do Paciente</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <PatientSelector
-                  selectedPatient={patientName ? { nome: patientName } : null}
-                  onSelect={(p) => setPatientName(p?.nome || "")}
-                />
+                {patient ? (
+                   <div className="bg-gray-50 p-3 rounded-md border border-gray-200">
+                     <Label className="text-xs text-gray-500 uppercase font-bold tracking-wide">Paciente</Label>
+                     <p className="text-lg font-medium text-gray-900">{patientName}</p>
+                   </div>
+                ) : (
+                  <PatientSelector
+                    selectedPatient={patientName ? { nome: patientName } : null}
+                    onSelect={(p) => setPatientName(p?.nome || "")}
+                  />
+                )}
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
