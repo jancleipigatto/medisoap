@@ -46,12 +46,12 @@ export default function FloatingDocument({ document, onClose, children }) {
     };
 
     const handleMouseUpResize = () => {
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUpResize);
+      window.document.removeEventListener("mousemove", handleMouseMove);
+      window.document.removeEventListener("mouseup", handleMouseUpResize);
     };
 
-    document.addEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mouseup", handleMouseUpResize);
+    window.document.addEventListener("mousemove", handleMouseMove);
+    window.document.addEventListener("mouseup", handleMouseUpResize);
   };
 
   return (
