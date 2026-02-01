@@ -190,7 +190,7 @@ export default function Layout({ children, currentPageName }) {
       permission: "can_access_templates"
     },
     {
-      title: "Banco de CIDs",
+      title: "CIDs Cadastrados",
       url: createPageUrl("CIDManagement"),
       icon: FileText,
       permission: "can_access_templates"

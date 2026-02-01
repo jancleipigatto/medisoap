@@ -166,7 +166,7 @@ export default function CIDManagement() {
             <ArrowLeft className="w-4 h-4" />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Banco de CIDs</h1>
+            <h1 className="text-3xl font-bold text-gray-900">CIDs Cadastrados</h1>
             <p className="text-gray-600 mt-1">Consulte e gerencie a base de dados CID-10</p>
           </div>
         </div>

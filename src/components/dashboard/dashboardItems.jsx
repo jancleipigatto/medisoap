@@ -127,7 +127,7 @@ export const ALL_DASHBOARD_ITEMS = {
   },
   cid_management: {
     id: "cid_management",
-    title: "Banco de CIDs",
+    title: "CIDs Cadastrados",
     description: "Consultar base de dados CID-10",
     icon: FileText,
     url: createPageUrl("CIDManagement"),
