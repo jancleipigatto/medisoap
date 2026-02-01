@@ -82,10 +82,26 @@ export default function Recepcao() {
     }
   };
 
-  const handleOpenRecepcao = (agendamento) => {
+  const handleOpenRecepcao = async (agendamento) => {
     setSelectedAgendamento(agendamento);
-    setRecepcaoPhoto(agendamento.foto_url || null);
     setShowWebcam(false);
+    
+    // Se já tem foto no agendamento, usa ela
+    if (agendamento.foto_url) {
+      setRecepcaoPhoto(agendamento.foto_url);
+    } else {
+      // Se não, tenta buscar do paciente
+      setRecepcaoPhoto(null);
+      try {
+        const patient = await base44.entities.Patient.get(agendamento.patient_id);
+        if (patient && patient.foto_url) {
+          setRecepcaoPhoto(patient.foto_url);
+        }
+      } catch (error) {
+        console.error("Erro ao buscar foto do paciente:", error);
+      }
+    }
+    
     setShowRecepcaoModal(true);
   };
 
@@ -121,11 +137,20 @@ export default function Recepcao() {
       const minutes = String(now.getMinutes()).padStart(2, '0');
       const horarioRecepcao = `${hours}:${minutes}`;
 
+      // Atualiza o agendamento
       await base44.entities.Agendamento.update(selectedAgendamento.id, {
         status: "recepcionado",
         foto_url: recepcaoPhoto,
         horario_recepcao: horarioRecepcao
       });
+
+      // Atualiza a foto do paciente também, para manter o cadastro atualizado
+      if (selectedAgendamento.patient_id) {
+        await base44.entities.Patient.update(selectedAgendamento.patient_id, {
+          foto_url: recepcaoPhoto || null // Atualiza com a foto ou remove se null
+        });
+      }
+
       setShowRecepcaoModal(false);
       loadAgendamentos();
     } catch (error) {

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { MapPin } from "lucide-react";
+import { MapPin, Upload, X, User, Camera } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -35,8 +35,11 @@ export default function PatientFormDialog({ open, onOpenChange, patientToEdit, o
     comorbidades: "",
     medicamentos_uso_continuo: "",
     observacoes: "",
-    is_favorite: false
+    is_favorite: false,
+    foto_url: ""
   });
+  
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
 
   useEffect(() => {
     loadConvenios();
@@ -63,7 +66,8 @@ export default function PatientFormDialog({ open, onOpenChange, patientToEdit, o
         comorbidades: patientToEdit.comorbidades || "",
         medicamentos_uso_continuo: patientToEdit.medicamentos_uso_continuo || "",
         observacoes: patientToEdit.observacoes || "",
-        is_favorite: patientToEdit.is_favorite || false
+        is_favorite: patientToEdit.is_favorite || false,
+        foto_url: patientToEdit.foto_url || ""
       });
     } else {
       setFormData({
@@ -84,10 +88,27 @@ export default function PatientFormDialog({ open, onOpenChange, patientToEdit, o
         comorbidades: "",
         medicamentos_uso_continuo: "",
         observacoes: "",
-        is_favorite: false
+        is_favorite: false,
+        foto_url: ""
       });
     }
   }, [patientToEdit, open]);
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setIsUploadingPhoto(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setFormData(prev => ({ ...prev, foto_url: file_url }));
+    } catch (error) {
+      console.error("Erro ao fazer upload:", error);
+      alert("Erro ao enviar foto");
+    } finally {
+      setIsUploadingPhoto(false);
+    }
+  };
 
   const loadConvenios = async () => {
     const data = await base44.entities.Convenio.list("nome");
@@ -132,6 +153,57 @@ export default function PatientFormDialog({ open, onOpenChange, patientToEdit, o
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
+          
+          <div className="flex justify-center mb-6">
+            <div className="flex flex-col items-center gap-3">
+              <div className="relative group">
+                {formData.foto_url ? (
+                  <>
+                    <img 
+                      src={formData.foto_url} 
+                      alt="Foto Paciente" 
+                      className="w-32 h-32 object-cover rounded-full shadow-lg border-4 border-white bg-gray-100" 
+                    />
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="destructive"
+                      className="absolute -top-1 -right-1 h-8 w-8 rounded-full shadow-md"
+                      onClick={() => setFormData({...formData, foto_url: ""})}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </>
+                ) : (
+                  <div className="w-32 h-32 bg-gray-100 rounded-full flex items-center justify-center text-gray-400 border-2 border-dashed border-gray-300">
+                    <User className="w-16 h-16 opacity-50" />
+                  </div>
+                )}
+                
+                <div className="absolute bottom-0 right-0">
+                  <Label htmlFor="foto-upload" className="cursor-pointer">
+                    <div className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full shadow-lg transition-colors">
+                      {isUploadingPhoto ? (
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      ) : (
+                        <Camera className="w-4 h-4" />
+                      )}
+                    </div>
+                  </Label>
+                  <Input
+                    id="foto-upload"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleFileUpload}
+                    disabled={isUploadingPhoto}
+                  />
+                </div>
+              </div>
+              <span className="text-sm text-gray-500 font-medium">Foto do Paciente</span>
+            </div>
+          </div>
+
           <div>
             <Label htmlFor="nome">Nome Completo *</Label>
             <Input
