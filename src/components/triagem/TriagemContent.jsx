@@ -156,6 +156,7 @@ export default function TriagemContent() {
           queixa: anamnesis.triagem_queixa || "",
           observacoes: anamnesis.triagem_observacoes || ""
         });
+        setIsListMode(false);
       }
     }
   };
