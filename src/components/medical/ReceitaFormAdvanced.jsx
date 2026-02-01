@@ -13,6 +13,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import PrintableDocument from "./PrintableDocument";
 import { ReceitaTemplate } from "@/entities/ReceitaTemplate";
+import PatientSelector from "../anamnesis/PatientSelector";
 
 export default function ReceitaFormAdvanced() {
   const navigate = useNavigate();
@@ -323,21 +324,35 @@ export default function ReceitaFormAdvanced() {
         </DialogContent>
       </Dialog>
 
-      <div className="space-y-4">
+      <div className="max-w-7xl mx-auto p-4 md:p-8">
+        <div className="flex items-center gap-4 mb-6">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => navigate(createPageUrl("Home"))}
+            className="shadow-sm"
+          >
+            <ArrowLeft className="w-4 h-4" />
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+              <Pill className="w-8 h-8 text-pink-600" />
+              Nova Receita
+            </h1>
+            <p className="text-gray-600 mt-1">Preencha os dados para gerar a receita</p>
+          </div>
+        </div>
+
+        <div className="space-y-4">
             <Card className="shadow-lg border-none">
               <CardHeader>
-                <CardTitle>Atendimento</CardTitle>
+                <CardTitle>Informações do Paciente</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="patient">Nome do Paciente *</Label>
-                  <Input
-                    id="patient"
-                    value={patientName}
-                    onChange={(e) => setPatientName(e.target.value)}
-                    placeholder="Digite o nome completo do paciente"
-                  />
-                </div>
+                <PatientSelector
+                  selectedPatient={patientName ? { nome: patientName } : null}
+                  onSelect={(p) => setPatientName(p?.nome || "")}
+                />
 
                 <div className="grid grid-cols-3 gap-4">
                   <div>
@@ -487,6 +502,7 @@ export default function ReceitaFormAdvanced() {
                 Imprimir / Salvar PDF
               </Button>
             </div>
+        </div>
       </div>
     </>
   );

@@ -7,6 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { FileText, Search, Calendar, User as UserIcon, ArrowLeft, Copy as CopyIcon, Trash2, FileCheck } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -20,6 +22,7 @@ export default function History() {
   const [filteredAnamneses, setFilteredAnamneses] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [showCancelled, setShowCancelled] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
@@ -27,16 +30,21 @@ export default function History() {
   }, []);
 
   useEffect(() => {
+    let filtered = anamneses;
+    
     if (searchTerm) {
-      const filtered = anamneses.filter(a => 
+      filtered = filtered.filter(a => 
         a.patient_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         a.avaliacao?.toLowerCase().includes(searchTerm.toLowerCase())
       );
-      setFilteredAnamneses(filtered);
-    } else {
-      setFilteredAnamneses(anamneses);
     }
-  }, [searchTerm, anamneses]);
+    
+    if (!showCancelled) {
+      filtered = filtered.filter(a => !a.is_cancelled);
+    }
+    
+    setFilteredAnamneses(filtered);
+  }, [searchTerm, anamneses, showCancelled]);
 
   const generateAttendanceNumber = (date, existingAnamneses) => {
     const dateObj = new Date(date);
@@ -146,6 +154,14 @@ export default function History() {
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
                 />
+              </div>
+              <div className="flex items-center gap-2 mt-4">
+                <Switch
+                  id="show-cancelled"
+                  checked={showCancelled}
+                  onCheckedChange={setShowCancelled}
+                />
+                <Label htmlFor="show-cancelled" className="cursor-pointer">Mostrar cancelados</Label>
               </div>
             </CardContent>
           </Card>

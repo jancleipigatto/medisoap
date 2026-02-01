@@ -143,6 +143,15 @@ export const ALL_DASHBOARD_ITEMS = {
     color: "from-cyan-500 to-teal-600",
     permission: "can_access_templates"
   },
+  medicamentos_database: {
+    id: "medicamentos_database",
+    title: "Banco de Medicamentos",
+    description: "Gerenciar medicamentos",
+    icon: Pill,
+    url: createPageUrl("MedicamentosDatabase"),
+    color: "from-pink-500 to-purple-600",
+    permission: "can_access_templates"
+  },
   // Templates section
   templates: {
     id: "templates",
