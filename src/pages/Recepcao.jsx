@@ -16,6 +16,7 @@ import { ptBR } from "date-fns/locale";
 import PermissionGuard from "../components/PermissionGuard";
 import PatientSelector from "../components/anamnesis/PatientSelector";
 import PatientFormDialog from "../components/patients/PatientFormDialog";
+import WebcamCapture from "../components/common/WebcamCapture";
 
 export default function Recepcao() {
   const navigate = useNavigate();
@@ -33,6 +34,7 @@ export default function Recepcao() {
   const [selectedAgendamento, setSelectedAgendamento] = useState(null);
   const [recepcaoPhoto, setRecepcaoPhoto] = useState(null);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [showWebcam, setShowWebcam] = useState(false);
 
   // New Agendamento Form
   const [newAgendamentoData, setNewAgendamentoData] = useState({
@@ -83,23 +85,33 @@ export default function Recepcao() {
   const handleOpenRecepcao = (agendamento) => {
     setSelectedAgendamento(agendamento);
     setRecepcaoPhoto(agendamento.foto_url || null);
+    setShowWebcam(false);
     setShowRecepcaoModal(true);
   };
 
-  const handleFileUpload = async (e) => {
-    const file = e.target.files[0];
+  const processPhotoUpload = async (file) => {
     if (!file) return;
 
     setIsUploadingPhoto(true);
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
       setRecepcaoPhoto(file_url);
+      setShowWebcam(false);
     } catch (error) {
       console.error("Erro ao fazer upload:", error);
-      alert("Erro ao enviar foto");
+      alert("Erro ao enviar foto: " + error.message);
     } finally {
       setIsUploadingPhoto(false);
     }
+  };
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    processPhotoUpload(file);
+  };
+
+  const handleWebcamCapture = (file) => {
+    processPhotoUpload(file);
   };
 
   const handleConfirmRecepcao = async () => {
@@ -339,39 +351,65 @@ export default function Recepcao() {
 
                 <div>
                   <Label className="mb-2 block">Foto do Paciente (Opcional)</Label>
-                  <div className="flex flex-col items-center gap-4 border-2 border-dashed border-gray-300 rounded-lg p-6">
-                    {recepcaoPhoto ? (
-                      <div className="relative">
-                        <img src={recepcaoPhoto} alt="Foto Paciente" className="w-32 h-32 object-cover rounded-full shadow-md" />
-                        <Button
-                          size="icon"
-                          variant="destructive"
-                          className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
-                          onClick={() => setRecepcaoPhoto(null)}
-                        >
-                          <X className="w-3 h-3" />
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="w-32 h-32 bg-gray-100 rounded-full flex items-center justify-center text-gray-400">
-                        <User className="w-16 h-16" />
-                      </div>
-                    )}
-                    
-                    <div className="flex gap-2 w-full">
-                      <Button variant="outline" className="flex-1 relative" disabled={isUploadingPhoto}>
-                        <Upload className="w-4 h-4 mr-2" />
-                        Upload Foto
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="absolute inset-0 opacity-0 cursor-pointer"
-                          onChange={handleFileUpload}
-                        />
-                      </Button>
+                  
+                  {showWebcam ? (
+                    <WebcamCapture 
+                      onCapture={handleWebcamCapture} 
+                      onCancel={() => setShowWebcam(false)} 
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center gap-4 border-2 border-dashed border-gray-300 rounded-lg p-6 transition-all hover:border-blue-300 hover:bg-blue-50/30">
+                      {recepcaoPhoto ? (
+                        <div className="relative group">
+                          <img src={recepcaoPhoto} alt="Foto Paciente" className="w-40 h-40 object-cover rounded-full shadow-lg border-4 border-white" />
+                          <div className="absolute inset-0 bg-black/20 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+                          <Button
+                            size="icon"
+                            variant="destructive"
+                            className="absolute -top-2 -right-2 h-8 w-8 rounded-full shadow-sm"
+                            onClick={() => setRecepcaoPhoto(null)}
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="w-32 h-32 bg-gray-100 rounded-full flex items-center justify-center text-gray-400 shadow-inner">
+                          <User className="w-16 h-16 opacity-50" />
+                        </div>
+                      )}
+                      
+                      {isUploadingPhoto ? (
+                        <div className="flex flex-col items-center gap-2 py-2">
+                           <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                           <p className="text-sm text-blue-600 font-medium">Processando imagem...</p>
+                        </div>
+                      ) : (
+                        <div className="flex gap-3 w-full">
+                          <Button 
+                            variant="outline" 
+                            className="flex-1 relative border-blue-200 text-blue-700 hover:bg-blue-50"
+                          >
+                            <Upload className="w-4 h-4 mr-2" />
+                            Upload
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="absolute inset-0 opacity-0 cursor-pointer"
+                              onChange={handleFileUpload}
+                            />
+                          </Button>
+                          <Button 
+                            variant="default"
+                            className="flex-1 bg-blue-600 hover:bg-blue-700"
+                            onClick={() => setShowWebcam(true)}
+                          >
+                            <Camera className="w-4 h-4 mr-2" />
+                            Câmera
+                          </Button>
+                        </div>
+                      )}
                     </div>
-                    {isUploadingPhoto && <p className="text-xs text-blue-600">Enviando foto...</p>}
-                  </div>
+                  )}
                 </div>
 
                 <Button onClick={handleConfirmRecepcao} className="w-full bg-green-600 hover:bg-green-700">
