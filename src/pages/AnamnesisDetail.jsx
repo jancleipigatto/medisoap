@@ -481,6 +481,14 @@ ${anamnesis.plano || "Não informado"}`;
             >
               <ArrowLeft className="w-4 h-4" />
             </Button>
+            <Button
+              onClick={() => navigate(createPageUrl("Consulta"))}
+              variant="outline"
+              size="sm"
+              className="ml-2"
+            >
+              Sair
+            </Button>
             <div className="flex-1">
               <h1 className="text-3xl font-bold text-gray-900">{anamnesis.patient_name}</h1>
               <div className="flex items-center gap-2 mt-1 text-gray-600">

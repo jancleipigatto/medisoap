@@ -32,6 +32,7 @@ export default function NewAnamnesisContent() {
   const [templates, setTemplates] = useState([]);
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [selectedTemplate, setSelectedTemplate] = useState("");
+  const [isInfoLocked, setIsInfoLocked] = useState(false);
   const [dataConsulta, setDataConsulta] = useState(() => {
     const now = new Date();
     const year = now.getFullYear();
@@ -332,14 +333,8 @@ ${result.plano || ''}`;
 
     setIsSaving(true);
 
-    // Adicionar histórico se estiver atualizando
+    // Texto original atualizado (sobrescreve para evitar duplicação)
     let finalTextoOriginal = textoOriginal;
-    if (currentAnamnesisId) {
-      const existingAnamnesis = await base44.entities.Anamnesis.list();
-      const current = existingAnamnesis.find(a => a.id === currentAnamnesisId);
-      const historicoLine = `\n\n--- Finalizado em ${new Date().toLocaleString('pt-BR')} ---\n\n`;
-      finalTextoOriginal = current?.texto_original ? current.texto_original + historicoLine + textoOriginal : textoOriginal;
-    }
 
     // Se o usuário editou o texto do SOAP, parsear novamente para salvar atualizado
     let finalSoapData = soapData;
@@ -426,7 +421,25 @@ ${result.plano || ''}`;
     if (appointmentId && !continueId) {
         loadAppointmentData(appointmentId);
     }
+    
+    // Check for patient_id passed (e.g. from Triage/Agenda)
+    const patientId = urlParams.get('patient_id');
+    if (patientId) {
+      loadPatientData(patientId);
+    }
   }, []);
+
+  const loadPatientData = async (id) => {
+    try {
+      const patient = await base44.entities.Patient.get(id);
+      if (patient) {
+        setSelectedPatient(patient);
+        setIsInfoLocked(true);
+      }
+    } catch (e) {
+      console.error("Error loading patient", e);
+    }
+  };
 
   const loadAppointmentData = async (id) => {
       try {
@@ -434,6 +447,7 @@ ${result.plano || ''}`;
           const app = apps.find(a => a.id === id);
           if (app) {
               setLinkedAppointment(app);
+              setIsInfoLocked(true); // Lock info if coming from appointment
               // Also update status to em_atendimento if new
               if (app.status !== 'em_atendimento' && app.status !== 'realizado') {
                   base44.entities.Agendamento.update(app.id, { status: "em_atendimento" });
@@ -452,6 +466,7 @@ ${result.plano || ''}`;
       setAnamnesis(foundAnamnesis);
       setCurrentAnamnesisId(id);
       setSelectedPatient({ id: foundAnamnesis.patient_id, nome: foundAnamnesis.patient_name });
+      setIsInfoLocked(true); // Lock info on existing anamnesis
       setDataConsulta(foundAnamnesis.data_consulta);
       setHorarioConsulta(foundAnamnesis.horario_consulta || "");
       setTextoOriginal(foundAnamnesis.texto_original || "");
@@ -600,77 +615,104 @@ ${result.plano || ''}`;
               <CardTitle className="text-base">Informações da Consulta</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <PatientSelector
-                selectedPatient={selectedPatient}
-                onSelect={setSelectedPatient}
-              />
-
-              {selectedPatient && (
-                <div className="grid grid-cols-3 gap-2">
-                  <Button
-                    variant="outline"
-                    className="text-sm h-9"
-                    onClick={() => {
-                      window.open(createPageUrl(`Patients?edit=${selectedPatient.id}`), '_blank');
-                    }}
-                  >
-                    Editar Paciente
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="text-sm h-9"
-                    onClick={() => {
-                      window.open(createPageUrl(`Patients?new=true`), '_blank');
-                    }}
-                  >
-                    Novo Paciente
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="text-sm h-9"
-                    onClick={() => {
-                      window.open(createPageUrl(`PatientHistory?patientId=${selectedPatient.id}`), '_blank');
-                    }}
-                  >
-                    Histórico
-                  </Button>
+              {isInfoLocked ? (
+                <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <Label className="text-xs text-gray-500 uppercase font-bold tracking-wide">Paciente</Label>
+                      <p className="text-lg font-medium text-gray-900">{selectedPatient?.nome}</p>
+                    </div>
+                    <Button variant="ghost" size="sm" onClick={() => window.open(createPageUrl(`PatientHistory?patientId=${selectedPatient.id}`), '_blank')}>
+                      Histórico
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 mt-4">
+                    <div>
+                      <Label className="text-xs text-gray-500 uppercase font-bold tracking-wide">Data</Label>
+                      <p className="text-sm font-medium text-gray-900">{new Date(dataConsulta).toLocaleDateString('pt-BR')}</p>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-gray-500 uppercase font-bold tracking-wide">Horário</Label>
+                      <p className="text-sm font-medium text-gray-900">{horarioConsulta}</p>
+                    </div>
+                  </div>
                 </div>
-              )}
-
-              {!selectedPatient && (
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    window.open(createPageUrl(`Patients?new=true`), '_blank');
-                  }}
-                  className="w-full text-sm h-9"
-                >
-                  Criar Novo Paciente
-                </Button>
-              )}
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="data" className="text-sm">Data da Consulta</Label>
-                  <Input
-                    id="data"
-                    type="date"
-                    value={dataConsulta}
-                    onChange={(e) => setDataConsulta(e.target.value)}
-                    className="text-sm h-9"
+              ) : (
+                <>
+                  <PatientSelector
+                    selectedPatient={selectedPatient}
+                    onSelect={setSelectedPatient}
                   />
-                </div>
-                <div>
-                  <Label htmlFor="horario" className="text-sm">Horário</Label>
-                  <Input
-                    id="horario"
-                    type="time"
-                    value={horarioConsulta}
-                    onChange={(e) => setHorarioConsulta(e.target.value)}
-                    className="text-sm h-9"
-                  />
-                </div>
-              </div>
+
+                  {selectedPatient && (
+                    <div className="grid grid-cols-3 gap-2">
+                      <Button
+                        variant="outline"
+                        className="text-sm h-9"
+                        onClick={() => window.open(createPageUrl(`Patients?edit=${selectedPatient.id}`), '_blank')}
+                      >
+                        Editar Paciente
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="text-sm h-9"
+                        onClick={() => window.open(createPageUrl(`Patients?new=true`), '_blank')}
+                      >
+                        Novo Paciente
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="text-sm h-9"
+                        onClick={() => window.open(createPageUrl(`PatientHistory?patientId=${selectedPatient.id}`), '_blank')}
+                      >
+                        Histórico
+                      </Button>
+                    </div>
+                  )}
+
+                  {!selectedPatient && (
+                    <Button
+                      variant="outline"
+                      onClick={() => window.open(createPageUrl(`Patients?new=true`), '_blank')}
+                      className="w-full text-sm h-9"
+                    >
+                      Criar Novo Paciente
+                    </Button>
+                  )}
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="data" className="text-sm">Data da Consulta</Label>
+                      <Input
+                        id="data"
+                        type="date"
+                        value={dataConsulta}
+                        onChange={(e) => setDataConsulta(e.target.value)}
+                        className="text-sm h-9"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="horario" className="text-sm">Horário</Label>
+                      <Input
+                        id="horario"
+                        type="time"
+                        value={horarioConsulta}
+                        onChange={(e) => setHorarioConsulta(e.target.value)}
+                        className="text-sm h-9"
+                      />
+                    </div>
+                  </div>
+
+                  {selectedPatient && (
+                    <Button 
+                      onClick={() => setIsInfoLocked(true)} 
+                      className="w-full bg-blue-600 hover:bg-blue-700"
+                    >
+                      Salvar Informações & Iniciar Atendimento
+                    </Button>
+                  )}
+                </>
+              )}
 
               {linkedAppointment && (
                 <div className="bg-blue-50 p-3 rounded-md border border-blue-100 grid grid-cols-2 gap-4">
@@ -682,30 +724,6 @@ ${result.plano || ''}`;
                         <span className="text-xs text-gray-500 block">Horário Recepcionado</span>
                         <span className="text-sm font-medium text-blue-900">{linkedAppointment.horario_recepcao || "-"}</span>
                     </div>
-                </div>
-              )}
-
-              {templates.length > 0 && (
-                <div>
-                  <Label htmlFor="template" className="text-sm">Usar Modelo ao Carregar (Opcional)</Label>
-                  <Select
-                    value={selectedTemplate}
-                    onValueChange={handleTemplateSelect}
-                  >
-                    <SelectTrigger id="template" className="text-sm h-9">
-                      <SelectValue placeholder="Selecione um modelo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">Nenhum modelo</SelectItem>
-                      {templates.map((template) => (
-                        <SelectItem key={template.id} value={template.id}>
-                          {template.nome}
-                          {template.is_medisoap_public && " 🌐"}
-                          {template.is_public_org && !template.is_medisoap_public && " 👥"}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
                 </div>
               )}
             </CardContent>
@@ -822,7 +840,31 @@ ${result.plano || ''}`;
 
           <Card className="shadow-lg border-none">
             <CardHeader>
-              <CardTitle className="text-base">Atendimento</CardTitle>
+              <div className="flex justify-between items-center">
+                <CardTitle className="text-base">Atendimento</CardTitle>
+                {templates.length > 0 && (
+                  <div className="w-[250px]">
+                    <Select
+                      value={selectedTemplate}
+                      onValueChange={handleTemplateSelect}
+                    >
+                      <SelectTrigger id="template" className="text-sm h-8">
+                        <SelectValue placeholder="Usar Modelo de Atendimento" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">Nenhum modelo</SelectItem>
+                        {templates.map((template) => (
+                          <SelectItem key={template.id} value={template.id}>
+                            {template.nome}
+                            {template.is_medisoap_public && " 🌐"}
+                            {template.is_public_org && !template.is_medisoap_public && " 👥"}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+              </div>
             </CardHeader>
             <CardContent>
               <RichTextEditor
@@ -941,6 +983,21 @@ ${result.plano || ''}`;
                     ) : (
                       "Finalizar"
                     )}
+                  </Button>
+                  <Button
+                    onClick={() => {
+                        if (confirm("Deseja realmente cancelar este atendimento?")) {
+                            if (linkedAppointment) {
+                                navigate(createPageUrl("Consulta"));
+                            } else {
+                                navigate(createPageUrl("Home"));
+                            }
+                        }
+                    }}
+                    variant="destructive"
+                    className="flex-1 min-w-[140px] text-sm h-9"
+                  >
+                    Cancelar Atendimento
                   </Button>
                 </div>
               </div>
