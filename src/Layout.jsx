@@ -184,7 +184,7 @@ export default function Layout({ children, currentPageName }) {
       permission: "can_access_templates"
     },
     {
-      title: "Banco de Medicamentos",
+      title: "Medicamentos cadastrados",
       url: createPageUrl("MedicamentosDatabase"),
       icon: Pill,
       permission: "can_access_templates"

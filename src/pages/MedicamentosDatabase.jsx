@@ -139,7 +139,7 @@ export default function MedicamentosDatabase() {
             <div className="flex-1">
               <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
                 <Pill className="w-8 h-8 text-pink-600" />
-                Banco de Medicamentos
+                Medicamentos cadastrados
               </h1>
               <p className="text-gray-600 mt-1">
                 Gerencie medicamentos para autocomplete nas receitas

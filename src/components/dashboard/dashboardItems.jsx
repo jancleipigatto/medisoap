@@ -145,7 +145,7 @@ export const ALL_DASHBOARD_ITEMS = {
   },
   medicamentos_database: {
     id: "medicamentos_database",
-    title: "Banco de Medicamentos",
+    title: "Medicamentos cadastrados",
     description: "Gerenciar medicamentos",
     icon: Pill,
     url: createPageUrl("MedicamentosDatabase"),
