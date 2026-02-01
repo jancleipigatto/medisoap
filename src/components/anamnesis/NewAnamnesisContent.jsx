@@ -530,7 +530,12 @@ ${result.plano || ''}`;
             document={{ name: "Receita" }}
             onClose={() => { setActiveDocument(null); setActiveDocType(null); }}
           >
-            <ReceitaFormAdvanced patient={selectedPatient} />
+            <ReceitaFormAdvanced 
+              patient={selectedPatient} 
+              dataConsulta={dataConsulta}
+              horarioConsulta={horarioConsulta}
+              onSuccess={() => { /* Optionally close or keep open */ }}
+            />
           </FloatingDocument>
         )}
         {activeDocument === 'atestado' && (
@@ -544,6 +549,9 @@ ${result.plano || ''}`;
               icon={ClipboardList}
               templateEntity={AtestadoTemplate}
               patient={selectedPatient}
+              dataConsulta={dataConsulta}
+              horarioConsulta={horarioConsulta}
+              onSuccess={() => { /* Optionally close or keep open */ }}
             />
           </FloatingDocument>
         )}
@@ -558,6 +566,9 @@ ${result.plano || ''}`;
               icon={FileCheck}
               templateEntity={ExameTemplate}
               patient={selectedPatient}
+              dataConsulta={dataConsulta}
+              horarioConsulta={horarioConsulta}
+              onSuccess={() => { /* Optionally close or keep open */ }}
             />
           </FloatingDocument>
         )}
@@ -572,6 +583,9 @@ ${result.plano || ''}`;
               icon={Send}
               templateEntity={EncaminhamentoTemplate}
               patient={selectedPatient}
+              dataConsulta={dataConsulta}
+              horarioConsulta={horarioConsulta}
+              onSuccess={() => { /* Optionally close or keep open */ }}
             />
           </FloatingDocument>
         )}
@@ -586,6 +600,9 @@ ${result.plano || ''}`;
               icon={Info}
               templateEntity={base44.entities.OrientacoesTemplate}
               patient={selectedPatient}
+              dataConsulta={dataConsulta}
+              horarioConsulta={horarioConsulta}
+              onSuccess={() => { /* Optionally close or keep open */ }}
             />
           </FloatingDocument>
         )}

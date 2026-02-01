@@ -15,12 +15,12 @@ import PrintableDocument from "./PrintableDocument";
 import { ReceitaTemplate } from "@/entities/ReceitaTemplate";
 import PatientSelector from "../anamnesis/PatientSelector";
 
-export default function ReceitaFormAdvanced({ patient }) {
-  const navigate = useNavigate();
+export default function ReceitaFormAdvanced({ patient, dataConsulta: initialData, horarioConsulta: initialHorario, onSuccess }) {
+  // const navigate = useNavigate(); // Removed navigation
   const [templates, setTemplates] = useState([]);
   const [patientName, setPatientName] = useState(patient?.nome || "");
-  const [dataConsulta, setDataConsulta] = useState(new Date().toISOString().split('T')[0]);
-  const [horarioConsulta, setHorarioConsulta] = useState("");
+  const [dataConsulta, setDataConsulta] = useState(initialData || new Date().toISOString().split('T')[0]);
+  const [horarioConsulta, setHorarioConsulta] = useState(initialHorario || "");
   const [conteudo, setConteudo] = useState("");
   const [selectedTemplate, setSelectedTemplate] = useState("");
   const [templateData, setTemplateData] = useState({
@@ -224,7 +224,8 @@ export default function ReceitaFormAdvanced({ patient }) {
     });
 
     setIsSaving(false);
-    navigate(createPageUrl("Home"));
+    alert("Receita salva com sucesso!");
+    if (onSuccess) onSuccess();
   };
 
   const handlePrint = () => {

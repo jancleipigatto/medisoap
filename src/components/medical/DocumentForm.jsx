@@ -12,12 +12,12 @@ import { ArrowLeft, Printer, Save } from "lucide-react";
 import PrintableDocument from "./PrintableDocument";
 import PatientSelector from "../anamnesis/PatientSelector";
 
-export default function DocumentForm({ tipo, tipoLabel, icon: Icon, templateEntity, patient }) {
-  const navigate = useNavigate();
+export default function DocumentForm({ tipo, tipoLabel, icon: Icon, templateEntity, patient, dataConsulta: initialData, horarioConsulta: initialHorario, onSuccess }) {
+  // const navigate = useNavigate(); // Removed navigation
   const [templates, setTemplates] = useState([]);
   const [patientName, setPatientName] = useState(patient?.nome || "");
-  const [dataConsulta, setDataConsulta] = useState(new Date().toISOString().split('T')[0]);
-  const [horarioConsulta, setHorarioConsulta] = useState("");
+  const [dataConsulta, setDataConsulta] = useState(initialData || new Date().toISOString().split('T')[0]);
+  const [horarioConsulta, setHorarioConsulta] = useState(initialHorario || "");
   const [conteudo, setConteudo] = useState("");
   const [selectedTemplate, setSelectedTemplate] = useState("");
   const [templateData, setTemplateData] = useState({
@@ -78,7 +78,8 @@ export default function DocumentForm({ tipo, tipoLabel, icon: Icon, templateEnti
     });
 
     setIsSaving(false);
-    navigate(createPageUrl("Home"));
+    alert(`${tipoLabel} salvo com sucesso!`);
+    if (onSuccess) onSuccess();
   };
 
   const handlePrint = () => {
