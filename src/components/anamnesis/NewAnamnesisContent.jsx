@@ -17,6 +17,9 @@ import ToolsSidebar from "../tools/ToolsSidebar";
 import DocumentsSidebar from "../medical/DocumentsSidebar";
 import GestationalAgeCalculator from "../tools/GestationalAgeCalculator";
 import BMICalculator from "../tools/BMICalculator";
+import AlvaradoScore from "../tools/AlvaradoScore";
+import CardiacRiskCalculator from "../tools/CardiacRiskCalculator";
+import GFRCalculator from "../tools/GFRCalculator";
 import FloatingDocument from "../medical/FloatingDocument";
 import DocumentForm from "../medical/DocumentForm";
 import ReceitaFormAdvanced from "../medical/ReceitaFormAdvanced";
@@ -521,6 +524,24 @@ ${result.plano || ''}`;
         )}
         {activeTool === 'bmi' && (
           <BMICalculator 
+            onClose={() => setActiveTool(null)}
+            onSave={handleToolSave}
+          />
+        )}
+        {activeTool === 'alvarado' && (
+          <AlvaradoScore 
+            onClose={() => setActiveTool(null)}
+            onSave={handleToolSave}
+          />
+        )}
+        {activeTool === 'cardiac_risk' && (
+          <CardiacRiskCalculator 
+            onClose={() => setActiveTool(null)}
+            onSave={handleToolSave}
+          />
+        )}
+        {activeTool === 'gfr' && (
+          <GFRCalculator 
             onClose={() => setActiveTool(null)}
             onSave={handleToolSave}
           />

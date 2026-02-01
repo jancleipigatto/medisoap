@@ -27,6 +27,18 @@ export default function ToolsSidebar({ onToolOpen, isDocumentsOpen }) {
       color: "from-red-500 to-pink-600"
     },
     {
+      id: "alvarado",
+      name: "Escala Alvarado",
+      icon: Activity,
+      color: "from-amber-500 to-orange-600"
+    },
+    {
+      id: "gfr",
+      name: "Taxa Filtração",
+      icon: Activity,
+      color: "from-emerald-500 to-green-600"
+    },
+    {
       id: "calculator",
       name: "Calculadora",
       icon: Calculator,
