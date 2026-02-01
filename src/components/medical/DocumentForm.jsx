@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Printer, Save } from "lucide-react";
 import PrintableDocument from "./PrintableDocument";
+import PatientSelector from "../anamnesis/PatientSelector";
 
 export default function DocumentForm({ tipo, tipoLabel, icon: Icon, templateEntity }) {
   const navigate = useNavigate();
@@ -106,22 +107,35 @@ export default function DocumentForm({ tipo, tipoLabel, icon: Icon, templateEnti
         </div>
       )}
 
-      <div className="space-y-4">
-          <div className="space-y-4">
+      <div className="max-w-7xl mx-auto p-4 md:p-8">
+        <div className="flex items-center gap-4 mb-6">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => navigate(createPageUrl("Home"))}
+            className="shadow-sm"
+          >
+            <ArrowLeft className="w-4 h-4" />
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+              {Icon && <Icon className="w-8 h-8 text-indigo-600" />}
+              {tipoLabel}
+            </h1>
+            <p className="text-gray-600 mt-1">Preencha os dados para gerar o documento</p>
+          </div>
+        </div>
+
+        <div className="space-y-4">
             <Card className="shadow-lg border-none">
               <CardHeader>
                 <CardTitle>Informações do Paciente</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="patient">Nome do Paciente *</Label>
-                  <Input
-                    id="patient"
-                    value={patientName}
-                    onChange={(e) => setPatientName(e.target.value)}
-                    placeholder="Digite o nome completo do paciente"
-                  />
-                </div>
+                <PatientSelector
+                  selectedPatient={patientName ? { nome: patientName } : null}
+                  onSelect={(p) => setPatientName(p?.nome || "")}
+                />
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -200,7 +214,7 @@ export default function DocumentForm({ tipo, tipoLabel, icon: Icon, templateEnti
                 Imprimir / Salvar PDF
               </Button>
             </div>
-          </div>
+        </div>
       </div>
     </>
   );
