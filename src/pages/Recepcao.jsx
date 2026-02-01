@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { User, Calendar, Plus, Clock, Search, Edit, ArrowRight, Camera, Upload, CheckCircle, ArrowLeft } from "lucide-react";
+import { User, Calendar, Plus, Clock, Search, Edit, ArrowRight, Camera, Upload, CheckCircle, ArrowLeft, X } from "lucide-react";
 import { format, isSameDay, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import PermissionGuard from "../components/PermissionGuard";
