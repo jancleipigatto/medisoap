@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Calendar, Plus, Clock, User, Phone, FileText, ArrowLeft, CheckCircle, XCircle, AlertCircle } from "lucide-react";
+import { Calendar, Plus, Clock, User, Phone, FileText, ArrowLeft, CheckCircle, XCircle, AlertCircle, Settings } from "lucide-react";
 import { format, addDays, startOfWeek, endOfWeek, isSameDay, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -376,6 +376,16 @@ export default function Agenda() {
             )}
             
             <div className="flex gap-4 items-center">
+              <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate(createPageUrl("AgendaConfig"))}
+                  className="gap-2"
+                  title="Configurar Horários e Bloqueios"
+              >
+                  <Settings className="w-4 h-4" />
+                  <span className="hidden md:inline">Configurar Agenda</span>
+              </Button>
             <div className="flex gap-2">
               <Button
                 variant={viewMode === "day" ? "default" : "outline"}

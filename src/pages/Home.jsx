@@ -31,9 +31,12 @@ export default function Home() {
 
   const hasPermission = (item) => {
     if (!user) return false;
-    if (item.adminOnly) return user.role === 'admin';
+    if (user.role === 'admin') return true; // Admins see everything
+    
+    if (item.adminOnly) return false; // Non-admins don't see adminOnly
 
-    if (item.permission === "can_access_agenda") {
+    if (item.permission === "can_access_agenda" || item.permission === "can_manage_schedule") {
+      // Doctors can also manage their schedule/agenda settings
       return user?.can_manage_schedule === true || user?.can_create_anamnesis === true;
     }
 
