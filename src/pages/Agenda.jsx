@@ -603,7 +603,7 @@ export default function Agenda() {
                                     }}
                                 >
                                     <div className="text-[10px] font-medium uppercase tracking-wider text-gray-500 mb-1">
-                                        {format(day, "EEE", { locale: ptBR }).toUpperCase().replace('.', '')}
+                                        {format(day, "EEE", { locale: ptBR }).toUpperCase()}
                                     </div>
                                     <div className={`
                                         w-10 h-10 mx-auto flex items-center justify-center rounded-full text-lg font-bold transition-all
