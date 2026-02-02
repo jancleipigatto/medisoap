@@ -3,7 +3,9 @@ import { base44 } from "@/api/base44Client";
 import PermissionGuard from "@/components/PermissionGuard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Settings, CalendarX } from "lucide-react";
+import { Settings, CalendarX, ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { createPageUrl } from "@/utils";
 import WeeklyScheduleEditor from "@/components/agenda/WeeklyScheduleEditor";
 import BlockManager from "@/components/agenda/BlockManager";
 
@@ -19,14 +21,21 @@ export default function AgendaConfig() {
     setUser(currentUser);
   };
 
+  const navigate = useNavigate();
+
   return (
     <PermissionGuard permission="can_manage_schedule">
       <div className="p-6 md:p-8 max-w-6xl mx-auto space-y-8">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Configuração de Agenda</h1>
-          <p className="text-muted-foreground mt-2">
-            Defina seus horários de atendimento recorrentes e gerencie bloqueios de agenda.
-          </p>
+        <div className="flex items-center gap-4">
+          <Button variant="outline" size="icon" onClick={() => navigate(createPageUrl("Agenda"))}>
+            <ArrowLeft className="w-4 h-4" />
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Configuração de Agenda</h1>
+            <p className="text-muted-foreground mt-2">
+              Defina seus horários de atendimento recorrentes e gerencie bloqueios de agenda.
+            </p>
+          </div>
         </div>
 
         <Tabs defaultValue="schedule" className="w-full">

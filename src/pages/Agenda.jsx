@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Calendar, Plus, Clock, User, Phone, FileText, ArrowLeft, CheckCircle, XCircle, AlertCircle, Settings } from "lucide-react";
-import { format, addDays, startOfWeek, endOfWeek, isSameDay, parseISO } from "date-fns";
+import { format, addDays, startOfWeek, endOfWeek, isSameDay, parseISO, startOfMonth, endOfMonth, isSameMonth } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Skeleton } from "@/components/ui/skeleton";
 import PermissionGuard from "../components/PermissionGuard";
@@ -29,7 +29,7 @@ export default function Agenda() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showDialog, setShowDialog] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  const [viewMode, setViewMode] = useState("day"); // day, week
+  const [viewMode, setViewMode] = useState("day"); // day, week, month
   const [formData, setFormData] = useState({
     patient_id: "",
     patient_name: "",
@@ -284,6 +284,19 @@ export default function Agenda() {
     return Array.from({ length: 7 }, (_, i) => addDays(start, i));
   };
 
+  const getMonthDays = () => {
+    const start = startOfWeek(startOfMonth(selectedDate), { locale: ptBR });
+    const end = endOfWeek(endOfMonth(selectedDate), { locale: ptBR });
+    
+    const days = [];
+    let day = start;
+    while (day <= end) {
+        days.push(day);
+        day = addDays(day, 1);
+    }
+    return days;
+  };
+
   const statusColors = {
     agendado: "bg-blue-100 text-blue-800",
     confirmado: "bg-green-100 text-green-800",
@@ -394,22 +407,11 @@ export default function Agenda() {
               >
                 Dia
               </Button>
-              <Button
-                variant={viewMode === "week" ? "default" : "outline"}
-                onClick={() => setViewMode("week")}
-                size="sm"
-              >
-                Semana
-              </Button>
-            </div>
-            <div className="flex gap-2 items-center">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setSelectedDate(addDays(selectedDate, viewMode === "day" ? -1 : -7))}
-              >
-                ←
-              </Button>
+  const getStep = () => {
+      if (viewMode === 'day') return 1;
+      if (viewMode === 'week') return 7;
+      return 30; // Approx month
+  };
               <Input
                 type="date"
                 value={format(selectedDate, "yyyy-MM-dd")}
@@ -419,7 +421,10 @@ export default function Agenda() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setSelectedDate(addDays(selectedDate, viewMode === "day" ? 1 : 7))}
+                onClick={() => {
+                    if (viewMode === 'month') setSelectedDate(addDays(selectedDate, 30));
+                    else setSelectedDate(addDays(selectedDate, viewMode === "day" ? 1 : 7));
+                }}
               >
                 →
               </Button>
