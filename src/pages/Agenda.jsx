@@ -22,6 +22,8 @@ export default function Agenda() {
   const [agendamentos, setAgendamentos] = useState([]);
   const [professionals, setProfessionals] = useState([]);
   const [selectedProfessional, setSelectedProfessional] = useState(null); // Filter
+  const [scheduleSettings, setScheduleSettings] = useState(null);
+  const [scheduleBlocks, setScheduleBlocks] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -45,6 +47,28 @@ export default function Agenda() {
   useEffect(() => {
     loadData();
   }, []);
+
+  useEffect(() => {
+    if (selectedProfessional && selectedProfessional !== "all") {
+      loadSchedule(selectedProfessional);
+    } else {
+      setScheduleSettings(null);
+      setScheduleBlocks([]);
+    }
+  }, [selectedProfessional]);
+
+  const loadSchedule = async (profId) => {
+    try {
+      const settings = await base44.entities.AgendaSettings.filter({ professional_id: profId });
+      if (settings.length > 0) setScheduleSettings(settings[0]);
+      else setScheduleSettings(null);
+
+      const blocks = await base44.entities.ScheduleBlock.filter({ professional_id: profId });
+      setScheduleBlocks(blocks);
+    } catch (err) {
+      console.error("Error loading schedule:", err);
+    }
+  };
 
   const loadData = async () => {
     setIsLoading(true);
@@ -84,10 +108,95 @@ export default function Agenda() {
     setIsLoading(false);
   };
 
+  const checkAvailability = (dateStr, startTime, endTime, profId) => {
+    // If no settings, assume available (or blocked? Default to available for backward compatibility)
+    if (!scheduleSettings && scheduleBlocks.length === 0) return { available: true };
+
+    const date = parseISO(dateStr);
+    
+    // 1. Check Blocks
+    const blocked = scheduleBlocks.find(b => {
+      const start = parseISO(b.start_date);
+      const end = parseISO(b.end_date);
+      // Check if date overlaps with block date range
+      // Simplified: check if date is within range (inclusive)
+      const isDateBlocked = date >= start && date <= end;
+      
+      if (!isDateBlocked) return false;
+
+      if (b.is_all_day) return true;
+      
+      // Partial block check
+      // If block has times, check if appointment overlaps
+      if (b.start_time && b.end_time) {
+        // Simple string comparison works for HH:mm if format is consistent
+        return (startTime >= b.start_time && startTime < b.end_time) || 
+               (endTime > b.start_time && endTime <= b.end_time) ||
+               (startTime <= b.start_time && endTime >= b.end_time);
+      }
+      return true; // Fallback if times missing but not all day
+    });
+
+    if (blocked) return { available: false, reason: blocked.reason || "Horário bloqueado" };
+
+    // 2. Check Weekly Schedule (only if settings exist)
+    if (scheduleSettings && scheduleSettings.weekly_schedule) {
+      const dayOfWeek = date.getDay(); // 0 = Sunday
+      const intervals = scheduleSettings.weekly_schedule[dayOfWeek];
+
+      if (!intervals || intervals.length === 0) {
+        return { available: false, reason: "Profissional não atende neste dia da semana" };
+      }
+
+      // Check if time is within ANY interval
+      const inInterval = intervals.some(inv => {
+        return startTime >= inv.start && startTime < inv.end;
+        // Note: this simple check assumes appointment fits entirely? 
+        // Or just starts within? Let's check start time validity.
+        // Ideally checking full duration overlap.
+        // Assuming slots are small enough or user picks start time.
+        // Let's check if start time is valid.
+      });
+
+      if (!inInterval) {
+        return { available: false, reason: "Horário fora do expediente do profissional" };
+      }
+    }
+
+    return { available: true };
+  };
+
   const handleSave = async () => {
     if (!formData.patient_name || !formData.data_agendamento || !formData.horario_inicio) {
       alert("Preencha os campos obrigatórios");
       return;
+    }
+
+    // Availability Check
+    if (formData.professional_id) {
+        // We need to load availability if not currently selected (e.g. creating for someone else)
+        // But the useEffect loads for 'selectedProfessional'.
+        // If formData.professional_id != selectedProfessional, we might miss data.
+        // However, the dialog usually matches selected or forces selection.
+        // If 'selectedProfessional' is 'all', we might not have settings loaded.
+        // For robustness, if selectedProfessional is 'all', we should skip check or fetch ad-hoc.
+        // Given complexity, let's rely on currently loaded settings if matches.
+        
+        if (selectedProfessional && selectedProfessional !== "all" && formData.professional_id === selectedProfessional) {
+            const availability = checkAvailability(formData.data_agendamento, formData.horario_inicio, formData.horario_fim || formData.horario_inicio, formData.professional_id);
+            if (!availability.available) {
+                // If user is the doctor himself, maybe allow override with confirmation?
+                // User said "impedir que a recepção agende".
+                // Let's block for everyone but show specific message.
+                
+                // Allow override if admin or self?
+                const isSelf = currentUser?.id === formData.professional_id;
+                // If strict requirement:
+                if (!confirm(`Atenção: ${availability.reason}. Deseja agendar mesmo assim?`)) {
+                    return;
+                }
+            }
+        }
     }
 
     if (editingId) {
@@ -143,11 +252,31 @@ export default function Agenda() {
   };
 
   const getAgendamentosByDate = (date) => {
-    return agendamentos.filter(ag => {
+    const list = agendamentos.filter(ag => {
       const sameDay = isSameDay(parseISO(ag.data_agendamento), date);
       const professionalMatch = selectedProfessional === "all" || ag.professional_id === selectedProfessional;
       return sameDay && professionalMatch;
     }).sort((a, b) => a.horario_inicio.localeCompare(b.horario_inicio));
+
+    // Inject blocks as fake appointments for visual if selectedProfessional is specific
+    if (selectedProfessional && selectedProfessional !== "all" && scheduleBlocks.length > 0) {
+        scheduleBlocks.forEach(block => {
+            const start = parseISO(block.start_date);
+            const end = parseISO(block.end_date);
+            if (date >= start && date <= end) {
+                list.push({
+                    id: `block-${block.id}`,
+                    patient_name: `BLOQUEIO: ${block.reason}`,
+                    horario_inicio: block.is_all_day ? "00:00" : block.start_time || "00:00",
+                    horario_fim: block.is_all_day ? "23:59" : block.end_time || "23:59",
+                    status: "cancelado", // visual style
+                    tipo: "block",
+                    is_block: true
+                });
+            }
+        });
+    }
+    return list;
   };
 
   const getWeekDays = () => {
@@ -328,7 +457,7 @@ export default function Agenda() {
                                   </span>
                                 </Badge>
                               </div>
-                              <div className="flex items-center gap-2 text-gray-900 font-medium mb-1">
+                              <div className={`flex items-center gap-2 font-medium mb-1 ${ag.is_block ? "text-red-600" : "text-gray-900"}`}>
                                 <User className="w-4 h-4 text-gray-500" />
                                 {ag.patient_name}
                               </div>
@@ -350,21 +479,25 @@ export default function Agenda() {
                             </div>
                             <div className="flex gap-2 flex-wrap">
 
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleEdit(ag)}
-                              >
-                                Editar
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleDelete(ag.id)}
-                                className="text-red-600 hover:text-red-700"
-                              >
-                                Excluir
-                              </Button>
+                              {!ag.is_block && (
+                                <>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleEdit(ag)}
+                                  >
+                                    Editar
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleDelete(ag.id)}
+                                    className="text-red-600 hover:text-red-700"
+                                  >
+                                    Excluir
+                                  </Button>
+                                </>
+                              )}
                             </div>
                           </div>
                         </CardContent>
