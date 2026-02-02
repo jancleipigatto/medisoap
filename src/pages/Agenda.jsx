@@ -461,85 +461,128 @@ export default function Agenda() {
           </div>
 
           {viewMode === "day" ? (
-            <Card className="shadow-lg border-none">
-              <CardHeader>
-                <CardTitle>
-                  {format(selectedDate, "EEEE, dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {getAgendamentosByDate(selectedDate).length === 0 ? (
-                    <div className="text-center py-12 text-gray-500">
-                      <Calendar className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                      <p>Nenhum agendamento para este dia</p>
+            <Card className="shadow-lg border-none bg-white">
+              <CardHeader className="border-b border-gray-100 pb-4">
+                <div className="flex items-center gap-3">
+                    <div className="flex flex-col items-center justify-center w-12 h-12 rounded-full bg-blue-600 text-white shadow-md">
+                        <span className="text-[10px] font-medium uppercase tracking-wider">{format(selectedDate, "EEE", { locale: ptBR })}</span>
+                        <span className="text-xl font-bold leading-none">{format(selectedDate, "dd")}</span>
                     </div>
-                  ) : (
-                    getAgendamentosByDate(selectedDate).map(ag => (
-                      <Card key={ag.id} className="shadow-sm hover:shadow-md transition-shadow">
-                        <CardContent className="p-4">
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-3 mb-2">
-                                <div className="flex items-center gap-2 text-lg font-semibold text-gray-900">
-                                  <Clock className="w-5 h-5 text-blue-600" />
-                                  {ag.horario_inicio}
-                                  {ag.horario_fim && ` - ${ag.horario_fim}`}
+                    <div>
+                        <CardTitle className="text-xl">
+                        {format(selectedDate, "MMMM 'de' yyyy", { locale: ptBR })}
+                        </CardTitle>
+                        <p className="text-sm text-gray-500">Agenda diária</p>
+                    </div>
+                </div>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="relative min-h-[600px] bg-white">
+                    {/* Time Grid Background */}
+                    <div className="absolute inset-0 flex flex-col pointer-events-none">
+                        {Array.from({ length: 14 }).map((_, i) => { // 7am to 8pm
+                            const hour = i + 7; 
+                            return (
+                                <div key={hour} className="flex-1 flex border-b border-gray-100 min-h-[60px]">
+                                    <div className="w-16 flex-shrink-0 border-r border-gray-100 bg-gray-50/50 text-xs text-gray-400 font-medium p-2 text-right">
+                                        {hour.toString().padStart(2, '0')}:00
+                                    </div>
+                                    <div className="flex-1" />
                                 </div>
-                                <Badge className={statusColors[ag.status]}>
-                                  <span className="flex items-center gap-1">
-                                    {statusIcons[ag.status]}
-                                    {ag.status}
-                                  </span>
-                                </Badge>
-                              </div>
-                              <div className={`flex items-center gap-2 font-medium mb-1 ${ag.is_block ? "text-red-600" : "text-gray-900"}`}>
-                                <User className="w-4 h-4 text-gray-500" />
-                                {ag.patient_name}
-                              </div>
-                              <div className="text-sm text-gray-600 mb-1">
-                                {tipoLabels[ag.tipo]}
-                              </div>
-                              {ag.telefone_contato && (
-                                <div className="flex items-center gap-2 text-sm text-gray-600">
-                                  <Phone className="w-4 h-4" />
-                                  {ag.telefone_contato}
-                                </div>
-                              )}
-                              {ag.observacoes && (
-                                <div className="flex items-start gap-2 text-sm text-gray-600 mt-2">
-                                  <FileText className="w-4 h-4 mt-0.5" />
-                                  <span>{ag.observacoes}</span>
-                                </div>
-                              )}
-                            </div>
-                            <div className="flex gap-2 flex-wrap">
+                            );
+                        })}
+                    </div>
 
-                              {!ag.is_block && (
-                                <>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleEdit(ag)}
-                                  >
-                                    Editar
-                                  </Button>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleDelete(ag.id)}
-                                    className="text-red-600 hover:text-red-700"
-                                  >
-                                    Excluir
-                                  </Button>
-                                </>
-                              )}
+                    {/* Appointments Overlay */}
+                    <div className="relative pt-[1px] ml-16 min-h-[840px]"> 
+                        {/* 14 hours * 60px = 840px height approx */}
+                        {getAgendamentosByDate(selectedDate).length === 0 ? (
+                             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                <div className="text-center py-12 text-gray-400 bg-white/80 p-6 rounded-xl">
+                                    <Calendar className="w-10 h-10 mx-auto mb-2 opacity-30" />
+                                    <p>Nenhum agendamento</p>
+                                </div>
                             </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))
-                  )}
+                        ) : (
+                            getAgendamentosByDate(selectedDate).map(ag => {
+                                // Calculate position based on time
+                                const [h, m] = ag.horario_inicio.split(':').map(Number);
+                                const startMinutes = (h * 60) + m;
+                                const startOffset = startMinutes - (7 * 60); // 7am start
+                                
+                                const [endH, endM] = ag.horario_fim ? ag.horario_fim.split(':').map(Number) : [h, m + 30]; // default 30m duration if no end time
+                                const endMinutes = (endH * 60) + endM;
+                                const duration = endMinutes - startMinutes;
+                                
+                                // pixels per minute = 60px / 60min = 1px/min
+                                const top = startOffset * 1; 
+                                const height = Math.max(duration * 1, 30); // minimum height 30px
+
+                                if (startOffset < 0) return null; // Before 7am - maybe handle separately or adjust start time
+
+                                return (
+                                    <div 
+                                        key={ag.id}
+                                        className={`absolute left-1 right-2 rounded-lg border-l-4 shadow-sm hover:shadow-md transition-all cursor-pointer overflow-hidden group z-10 
+                                            ${ag.is_block ? "bg-red-50 border-red-500/50" : "bg-blue-50 border-blue-500"}
+                                        `}
+                                        style={{ top: `${top}px`, height: `${height}px` }}
+                                        onClick={() => !ag.is_block && handleEdit(ag)}
+                                    >
+                                        <div className="flex flex-row h-full">
+                                            <div className="flex-1 p-2 flex items-center gap-3">
+                                                <div className="flex flex-col min-w-[60px]">
+                                                    <span className={`text-xs font-bold ${ag.is_block ? "text-red-700" : "text-blue-700"}`}>
+                                                        {ag.horario_inicio}
+                                                    </span>
+                                                    <span className="text-[10px] text-gray-500">
+                                                        {ag.horario_fim || `${format(addDays(parseISO(`2000-01-01T${ag.horario_inicio}`), 0), 'HH:mm')}`}
+                                                    </span>
+                                                </div>
+                                                
+                                                <div className="flex-1 min-w-0 flex items-center justify-between">
+                                                    <div>
+                                                        <div className={`font-semibold text-sm truncate ${ag.is_block ? "text-red-800" : "text-gray-900"}`}>
+                                                            {ag.patient_name}
+                                                        </div>
+                                                        {!ag.is_block && (
+                                                            <div className="text-xs text-gray-500 flex items-center gap-2 truncate">
+                                                                <span>{tipoLabels[ag.tipo]}</span>
+                                                                {ag.telefone_contato && (
+                                                                    <>
+                                                                        <span className="w-1 h-1 rounded-full bg-gray-300" />
+                                                                        <span className="flex items-center gap-1"><Phone className="w-3 h-3" /> {ag.telefone_contato}</span>
+                                                                    </>
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+                                                    <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        {!ag.is_block && (
+                                                            <>
+                                                                <Badge className={`${statusColors[ag.status]} shadow-none border-0`}>
+                                                                    {ag.status}
+                                                                </Badge>
+                                                                <Button 
+                                                                    size="icon" 
+                                                                    variant="ghost" 
+                                                                    className="h-6 w-6 text-gray-400 hover:text-red-500"
+                                                                    onClick={(e) => { e.stopPropagation(); handleDelete(ag.id); }}
+                                                                >
+                                                                    <XCircle className="w-4 h-4" />
+                                                                </Button>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })
+                        )}
+                    </div>
                 </div>
               </CardContent>
             </Card>
