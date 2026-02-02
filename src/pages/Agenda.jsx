@@ -297,6 +297,19 @@ export default function Agenda() {
     return days;
   };
 
+  const getMonthDays = () => {
+    const start = startOfWeek(startOfMonth(selectedDate), { locale: ptBR });
+    const end = endOfWeek(endOfMonth(selectedDate), { locale: ptBR });
+    
+    const days = [];
+    let day = start;
+    while (day <= end) {
+        days.push(day);
+        day = addDays(day, 1);
+    }
+    return days;
+  };
+
   const statusColors = {
     agendado: "bg-blue-100 text-blue-800",
     confirmado: "bg-green-100 text-green-800",
@@ -533,18 +546,18 @@ export default function Agenda() {
                       <span className="text-2xl font-bold">{format(day, "dd")}</span>
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-2">
+                  <CardContent className="space-y-2 max-h-[600px] overflow-y-auto">
                     {getAgendamentosByDate(day).length === 0 ? (
                       <p className="text-xs text-gray-400 text-center py-4">Sem agendamentos</p>
                     ) : (
                       getAgendamentosByDate(day).map(ag => (
                         <Card
                           key={ag.id}
-                          className="shadow-sm cursor-pointer hover:shadow-md transition-shadow"
-                          onClick={() => handleEdit(ag)}
+                          className={`shadow-sm cursor-pointer hover:shadow-md transition-shadow ${ag.is_block ? "bg-red-50 border-red-200" : ""}`}
+                          onClick={() => !ag.is_block && handleEdit(ag)}
                         >
                           <CardContent className="p-2">
-                            <div className="text-xs font-semibold text-blue-600 mb-1">
+                            <div className={`text-xs font-semibold mb-1 ${ag.is_block ? "text-red-600" : "text-blue-600"}`}>
                               {ag.horario_inicio}
                             </div>
                             <div className="text-xs text-gray-900 font-medium truncate">
@@ -560,6 +573,47 @@ export default function Agenda() {
                   </CardContent>
                 </Card>
               ))}
+            </div>
+          ) : (
+            // Month View
+            <div className="grid grid-cols-7 gap-2">
+                {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(d => (
+                    <div key={d} className="text-center font-bold text-gray-500 py-2">{d}</div>
+                ))}
+                {getMonthDays().map((day, idx) => {
+                    const isCurrentMonth = isSameMonth(day, selectedDate);
+                    const dayAgendamentos = getAgendamentosByDate(day);
+                    const isToday = isSameDay(day, new Date());
+                    
+                    return (
+                        <Card 
+                            key={idx} 
+                            className={`min-h-[100px] border-none shadow-sm ${!isCurrentMonth ? 'bg-gray-50 opacity-50' : 'bg-white'} ${isToday ? 'ring-2 ring-blue-500' : ''}`}
+                            onClick={() => {
+                                setSelectedDate(day);
+                                setViewMode('day');
+                            }}
+                        >
+                            <CardHeader className="p-2 pb-0">
+                                <span className={`text-sm font-semibold ${!isCurrentMonth ? 'text-gray-400' : 'text-gray-700'}`}>
+                                    {format(day, 'd')}
+                                </span>
+                            </CardHeader>
+                            <CardContent className="p-2 space-y-1">
+                                {dayAgendamentos.slice(0, 3).map((ag, i) => (
+                                    <div key={i} className={`text-[10px] truncate px-1 rounded ${ag.is_block ? 'bg-red-100 text-red-700' : 'bg-blue-50 text-blue-700'}`}>
+                                        {ag.is_block ? 'Bloqueio' : ag.horario_inicio}
+                                    </div>
+                                ))}
+                                {dayAgendamentos.length > 3 && (
+                                    <div className="text-[10px] text-gray-500 text-center">
+                                        + {dayAgendamentos.length - 3} mais
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+                    );
+                })}
             </div>
           )}
         </div>
