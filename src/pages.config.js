@@ -78,6 +78,7 @@ import Tools from './pages/Tools';
 import Triagem from './pages/Triagem';
 import UserManagement from './pages/UserManagement';
 import UserProfile from './pages/UserProfile';
+import AgendaConfig from './pages/AgendaConfig';
 import __Layout from './Layout.jsx';
 
 
@@ -113,6 +114,7 @@ export const PAGES = {
     "Triagem": Triagem,
     "UserManagement": UserManagement,
     "UserProfile": UserProfile,
+    "AgendaConfig": AgendaConfig,
 }
 
 export const pagesConfig = {

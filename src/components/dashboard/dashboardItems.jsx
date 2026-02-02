@@ -62,6 +62,15 @@ export const ALL_DASHBOARD_ITEMS = {
     color: "from-orange-500 to-amber-600",
     permission: "can_access_agenda"
   },
+  agenda_config: {
+    id: "agenda_config",
+    title: "Configurar Agenda",
+    description: "Definir horários e bloqueios",
+    icon: Settings,
+    url: createPageUrl("AgendaConfig"),
+    color: "from-slate-500 to-gray-600",
+    permission: "can_manage_schedule"
+  },
   history: {
     id: "history",
     title: "Histórico de Consultas",
