@@ -524,7 +524,7 @@ export default function Agenda() {
                                     <div 
                                         key={ag.id}
                                         className={`absolute left-1 right-2 rounded-lg border-l-4 shadow-sm hover:shadow-md transition-all cursor-pointer overflow-hidden group z-10 
-                                            ${ag.is_block ? "bg-red-50 border-red-500/50" : "bg-blue-50 border-blue-500"}
+                                            ${ag.is_block ? "bg-red-100 border-red-600" : "bg-emerald-100 border-emerald-600"}
                                         `}
                                         style={{ top: `${top}px`, height: `${height}px` }}
                                         onClick={() => !ag.is_block && handleEdit(ag)}
@@ -532,7 +532,7 @@ export default function Agenda() {
                                         <div className="flex flex-row h-full">
                                             <div className="flex-1 p-2 flex items-center gap-3">
                                                 <div className="flex flex-col min-w-[60px]">
-                                                    <span className={`text-xs font-bold ${ag.is_block ? "text-red-700" : "text-blue-700"}`}>
+                                                    <span className={`text-xs font-bold ${ag.is_block ? "text-red-900" : "text-emerald-900"}`}>
                                                         {ag.horario_inicio}
                                                     </span>
                                                     <span className="text-[10px] text-gray-500">
@@ -542,7 +542,7 @@ export default function Agenda() {
                                                 
                                                 <div className="flex-1 min-w-0 flex items-center justify-between">
                                                     <div>
-                                                        <div className={`font-semibold text-sm truncate ${ag.is_block ? "text-red-800" : "text-gray-900"}`}>
+                                                        <div className={`font-semibold text-sm truncate ${ag.is_block ? "text-red-900" : "text-emerald-950"}`}>
                                                             {ag.patient_name}
                                                         </div>
                                                         {!ag.is_block && (
@@ -587,44 +587,107 @@ export default function Agenda() {
               </CardContent>
             </Card>
           ) : viewMode === "week" ? (
-            <div className="grid grid-cols-7 gap-4">
-              {getWeekDays().map(day => (
-                <Card key={day.toISOString()} className="shadow-lg border-none">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm text-center">
-                      {format(day, "EEE", { locale: ptBR })}
-                      <br />
-                      <span className="text-2xl font-bold">{format(day, "dd")}</span>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2 max-h-[600px] overflow-y-auto">
-                    {getAgendamentosByDate(day).length === 0 ? (
-                      <p className="text-xs text-gray-400 text-center py-4">Sem agendamentos</p>
-                    ) : (
-                      getAgendamentosByDate(day).map(ag => (
-                        <Card
-                          key={ag.id}
-                          className={`shadow-sm cursor-pointer hover:shadow-md transition-shadow ${ag.is_block ? "bg-red-50 border-red-200" : ""}`}
-                          onClick={() => !ag.is_block && handleEdit(ag)}
-                        >
-                          <CardContent className="p-2">
-                            <div className={`text-xs font-semibold mb-1 ${ag.is_block ? "text-red-600" : "text-blue-600"}`}>
-                              {ag.horario_inicio}
-                            </div>
-                            <div className="text-xs text-gray-900 font-medium truncate">
-                              {ag.patient_name}
-                            </div>
-                            <Badge className={`${statusColors[ag.status]} text-[10px] mt-1`}>
-                              {ag.status}
-                            </Badge>
-                          </CardContent>
-                        </Card>
-                      ))
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            <Card className="shadow-lg border-none bg-white overflow-hidden">
+                <CardHeader className="border-b border-gray-100 pb-0 pt-4 px-0">
+                    <div className="flex ml-16">
+                        {getWeekDays().map((day, i) => {
+                            const isToday = isSameDay(day, new Date());
+                            const isSelected = isSameDay(day, selectedDate);
+                            return (
+                                <div 
+                                    key={i} 
+                                    className="flex-1 text-center cursor-pointer hover:bg-gray-50 pb-4 transition-colors group relative"
+                                    onClick={() => {
+                                        setSelectedDate(day);
+                                        setViewMode('day');
+                                    }}
+                                >
+                                    <div className="text-[10px] font-medium uppercase tracking-wider text-gray-500 mb-1">
+                                        {format(day, "EEE", { locale: ptBR }).toUpperCase().replace('.', '')}
+                                    </div>
+                                    <div className={`
+                                        w-10 h-10 mx-auto flex items-center justify-center rounded-full text-lg font-bold transition-all
+                                        ${isToday ? 'bg-blue-600 text-white shadow-md scale-110' : 
+                                          isSelected ? 'bg-blue-100 text-blue-700' : 'text-gray-700 group-hover:bg-gray-200'}
+                                    `}>
+                                        {format(day, "d")}
+                                    </div>
+                                    {/* Vertical separator lines for header */}
+                                    {i < 6 && <div className="absolute right-0 top-2 bottom-2 w-[1px] bg-gray-100" />}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </CardHeader>
+                <CardContent className="p-0 overflow-auto">
+                    <div className="relative min-h-[600px] bg-white">
+                         {/* Time Grid Background */}
+                        <div className="absolute inset-0 flex flex-col pointer-events-none z-0">
+                            {Array.from({ length: 14 }).map((_, i) => { // 7am to 8pm
+                                const hour = i + 7; 
+                                return (
+                                    <div key={hour} className="flex-1 flex border-b border-gray-100 min-h-[60px]">
+                                        <div className="w-16 flex-shrink-0 border-r border-gray-100 bg-gray-50/50 text-xs text-gray-400 font-medium p-2 text-right transform -translate-y-3">
+                                            {hour.toString().padStart(2, '0')}:00
+                                        </div>
+                                        {/* Vertical lines for days */}
+                                        {Array.from({ length: 7 }).map((_, j) => (
+                                            <div key={j} className={`flex-1 ${j < 6 ? 'border-r border-gray-100' : ''}`} />
+                                        ))}
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        {/* Events Overlay */}
+                        <div className="relative ml-16 flex min-h-[840px]">
+                            {getWeekDays().map((day, colIndex) => {
+                                const dayAgendamentos = getAgendamentosByDate(day);
+                                return (
+                                    <div key={colIndex} className="flex-1 relative border-r border-transparent px-0.5"> 
+                                        {dayAgendamentos.map(ag => {
+                                            const [h, m] = ag.horario_inicio.split(':').map(Number);
+                                            const startMinutes = (h * 60) + m;
+                                            const startOffset = startMinutes - (7 * 60); // 7am start
+                                            
+                                            const [endH, endM] = ag.horario_fim ? ag.horario_fim.split(':').map(Number) : [h, m + 30]; 
+                                            const endMinutes = (endH * 60) + endM;
+                                            const duration = endMinutes - startMinutes;
+                                            
+                                            const top = startOffset * 1; 
+                                            const height = Math.max(duration * 1, 30); 
+
+                                            if (startOffset < 0) return null;
+
+                                            return (
+                                                <div 
+                                                    key={ag.id}
+                                                    className={`absolute left-0 right-0 rounded-md border-l-4 shadow-sm hover:shadow-md transition-all cursor-pointer overflow-hidden z-10 text-[10px] p-1
+                                                        ${ag.is_block ? "bg-red-100 border-red-600 hover:z-20" : "bg-emerald-100 border-emerald-600 hover:z-20"}
+                                                    `}
+                                                    style={{ top: `${top}px`, height: `${height}px` }}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        if (!ag.is_block) handleEdit(ag);
+                                                    }}
+                                                    title={`${ag.horario_inicio} - ${ag.patient_name}`}
+                                                >
+                                                     <div className={`font-bold leading-tight truncate ${ag.is_block ? "text-red-900" : "text-emerald-900"}`}>
+                                                        {ag.is_block ? "BLOQUEIO" : ag.patient_name}
+                                                     </div>
+                                                     <div className={`truncate ${ag.is_block ? "text-red-700" : "text-emerald-700"}`}>
+                                                        {ag.horario_inicio} - {ag.horario_fim}
+                                                     </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
           ) : (
             // Month View
             <div className="grid grid-cols-7 gap-2">
