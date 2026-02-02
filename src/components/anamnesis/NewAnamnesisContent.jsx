@@ -69,6 +69,7 @@ export default function NewAnamnesisContent() {
   const [anamnesis, setAnamnesis] = useState(null);
   const [linkedAppointment, setLinkedAppointment] = useState(null);
   const [showTriagem, setShowTriagem] = useState(true);
+  const [previousStatus, setPreviousStatus] = useState(null);
 
   useEffect(() => {
     loadTemplates();
@@ -454,6 +455,7 @@ ${result.plano || ''}`;
               setIsInfoLocked(true); // Lock info if coming from appointment
               // Also update status to em_atendimento if new
               if (app.status !== 'em_atendimento' && app.status !== 'realizado') {
+                  setPreviousStatus(app.status); // Save previous status
                   base44.entities.Agendamento.update(app.id, { status: "em_atendimento" });
               }
           }
@@ -1030,10 +1032,37 @@ ${result.plano || ''}`;
                     )}
                   </Button>
                   <Button
-                    onClick={() => {
-                        if (confirm("Deseja realmente cancelar este atendimento?")) {
+                    onClick={async () => {
+                        if (confirm("Deseja realmente cancelar este atendimento? O paciente voltará para a fila.")) {
                             if (linkedAppointment) {
-                                navigate(createPageUrl("Consulta"));
+                                try {
+                                    let newStatus = 'aguardando_triagem';
+                                    
+                                    // Check if triagem data exists
+                                    const hasTriagem = anamnesis && (
+                                        anamnesis.triagem_pa || anamnesis.triagem_temperatura || 
+                                        anamnesis.triagem_peso || anamnesis.triagem_altura || 
+                                        anamnesis.triagem_spo2 || anamnesis.triagem_fc || 
+                                        anamnesis.triagem_fr || anamnesis.triagem_hgt ||
+                                        anamnesis.triagem_queixa
+                                    );
+
+                                    if (hasTriagem) {
+                                        newStatus = 'aguardando_atendimento';
+                                    } else {
+                                        newStatus = 'aguardando_triagem';
+                                    }
+                                    
+                                    if (previousStatus) {
+                                         newStatus = previousStatus;
+                                    }
+
+                                    await base44.entities.Agendamento.update(linkedAppointment.id, { status: newStatus });
+                                    navigate(createPageUrl("Consulta"));
+                                } catch (error) {
+                                    console.error("Erro ao cancelar atendimento:", error);
+                                    alert("Erro ao reverter status do agendamento.");
+                                }
                             } else {
                                 navigate(createPageUrl("Home"));
                             }
