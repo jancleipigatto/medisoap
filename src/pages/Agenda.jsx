@@ -297,19 +297,6 @@ export default function Agenda() {
     return days;
   };
 
-  const getMonthDays = () => {
-    const start = startOfWeek(startOfMonth(selectedDate), { locale: ptBR });
-    const end = endOfWeek(endOfMonth(selectedDate), { locale: ptBR });
-    
-    const days = [];
-    let day = start;
-    while (day <= end) {
-        days.push(day);
-        day = addDays(day, 1);
-    }
-    return days;
-  };
-
   const statusColors = {
     agendado: "bg-blue-100 text-blue-800",
     confirmado: "bg-green-100 text-green-800",
@@ -556,7 +543,7 @@ export default function Agenda() {
                 </div>
               </CardContent>
             </Card>
-          ) : (
+          ) : viewMode === "week" ? (
             <div className="grid grid-cols-7 gap-4">
               {getWeekDays().map(day => (
                 <Card key={day.toISOString()} className="shadow-lg border-none">
