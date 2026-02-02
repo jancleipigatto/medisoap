@@ -420,11 +420,32 @@ export default function Agenda() {
               >
                 Dia
               </Button>
-  const getStep = () => {
-      if (viewMode === 'day') return 1;
-      if (viewMode === 'week') return 7;
-      return 30; // Approx month
-  };
+              <Button
+                variant={viewMode === "week" ? "default" : "outline"}
+                onClick={() => setViewMode("week")}
+                size="sm"
+              >
+                Semana
+              </Button>
+              <Button
+                variant={viewMode === "month" ? "default" : "outline"}
+                onClick={() => setViewMode("month")}
+                size="sm"
+              >
+                Mês
+              </Button>
+            </div>
+            <div className="flex gap-2 items-center">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                    if (viewMode === 'month') setSelectedDate(addDays(selectedDate, -30));
+                    else setSelectedDate(addDays(selectedDate, viewMode === "day" ? -1 : -7));
+                }}
+              >
+                ←
+              </Button>
               <Input
                 type="date"
                 value={format(selectedDate, "yyyy-MM-dd")}
