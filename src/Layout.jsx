@@ -229,7 +229,7 @@ export default function Layout({ children, currentPageName }) {
 
     if (item.permission === "can_access_agenda") {
       // Access agenda if has specific permission OR is a doctor (can create anamnesis)
-      return user?.can_manage_schedule === true || user?.can_create_anamnesis === true;
+      return user?.can_manage_schedule === true || user?.can_manage_own_schedule === true || user?.can_create_anamnesis === true;
     }
 
     if (!item.permission) return true;

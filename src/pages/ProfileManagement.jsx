@@ -48,6 +48,7 @@ export default function ProfileManagement() {
     can_access_reception: false,
     can_perform_triage: false,
     can_manage_schedule: false,
+    can_manage_own_schedule: false,
     roles: [],
     is_default: false
   });
@@ -90,6 +91,7 @@ export default function ProfileManagement() {
       can_access_reception: profile.can_access_reception || false,
       can_perform_triage: profile.can_perform_triage || false,
       can_manage_schedule: profile.can_manage_schedule || false,
+      can_manage_own_schedule: profile.can_manage_own_schedule || false,
       roles: profile.roles || [],
       is_default: profile.is_default || false
     });
@@ -273,7 +275,13 @@ export default function ProfileManagement() {
                     {profile.can_manage_schedule && (
                       <div className="flex items-center gap-2 text-xs">
                         <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                        <span className="text-gray-700">Gerenciar Agendas</span>
+                        <span className="text-gray-700">Gerenciar Todas Agendas</span>
+                      </div>
+                    )}
+                    {profile.can_manage_own_schedule && !profile.can_manage_schedule && (
+                      <div className="flex items-center gap-2 text-xs">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                        <span className="text-gray-700">Gerenciar Própria Agenda</span>
                       </div>
                     )}
                     {profile.can_create_anamnesis && (
@@ -387,7 +395,10 @@ export default function ProfileManagement() {
                        const newPermissions = { ...formData, roles: newRoles };
                        
                        if (checked) {
-                         if (role === 'agendamento') newPermissions.can_manage_schedule = true;
+                         if (role === 'agendamento') {
+                           newPermissions.can_manage_schedule = true;
+                           newPermissions.can_manage_own_schedule = true;
+                        }
                          if (role === 'recepcao') {
                            newPermissions.can_access_reception = true;
                            newPermissions.can_access_patients = true;
@@ -429,13 +440,25 @@ export default function ProfileManagement() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <div>
-                      <Label htmlFor="manage_schedule" className="font-medium">Gerenciar Agendas</Label>
+                      <Label htmlFor="manage_schedule" className="font-medium">Gerenciar Todas Agendas</Label>
                       <p className="text-sm text-gray-500">Ver e gerenciar agendas de todos os profissionais</p>
                     </div>
                     <Switch
                       id="manage_schedule"
                       checked={formData.can_manage_schedule}
                       onCheckedChange={(checked) => setFormData({...formData, can_manage_schedule: checked})}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div>
+                      <Label htmlFor="manage_own_schedule" className="font-medium">Gerenciar Própria Agenda</Label>
+                      <p className="text-sm text-gray-500">Gerenciar sua agenda e torná-la visível para recepção</p>
+                    </div>
+                    <Switch
+                      id="manage_own_schedule"
+                      checked={formData.can_manage_own_schedule}
+                      onCheckedChange={(checked) => setFormData({...formData, can_manage_own_schedule: checked})}
                     />
                   </div>
 

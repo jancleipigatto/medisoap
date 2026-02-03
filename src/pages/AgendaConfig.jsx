@@ -27,7 +27,7 @@ export default function AgendaConfig() {
   const navigate = useNavigate();
 
   return (
-    <PermissionGuard permission="can_manage_schedule">
+    <PermissionGuard permission={["can_manage_schedule", "can_manage_own_schedule"]}>
       <div className="p-6 md:p-8 max-w-6xl mx-auto space-y-8">
         <div className="flex items-center gap-4">
           <Button variant="outline" size="icon" onClick={() => navigate(createPageUrl("Agenda"))}>

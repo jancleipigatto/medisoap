@@ -81,8 +81,8 @@ export default function Agenda() {
       setProfessionals(docs || []);
     } catch (err) {
       console.error("Failed to load professionals:", err);
-      // Fallback: se falhar, assume apenas o usuário atual se ele for médico
-      if (user.can_create_anamnesis) {
+      // Fallback: se falhar, assume apenas o usuário atual se ele for médico ou puder gerenciar agenda
+      if (user.can_create_anamnesis || user.can_manage_own_schedule) {
         setProfessionals([user]);
       } else {
         setProfessionals([]);
@@ -91,15 +91,11 @@ export default function Agenda() {
 
     // Set default filter
     if (user.is_master || user.can_manage_schedule) {
-       // See all or select first? Let's default to "All" (null) or first if "All" is not desired.
-       // User asked: "Master Admin possa ter acesso as agendas por profissional"
-       // Let's allow null to mean "All" or force selection.
        setSelectedProfessional("all");
-    } else if (user.can_create_anamnesis) {
-       // Doctor sees their own
+    } else if (user.can_create_anamnesis || user.can_manage_own_schedule) {
+       // Doctor or professional sees their own
        setSelectedProfessional(user.id);
     } else {
-       // Receptionist without manage_schedule? Should not happen if configured right.
        setSelectedProfessional("all");
     }
 
@@ -239,8 +235,8 @@ export default function Agenda() {
     setFormData({
       patient_id: "",
       patient_name: "",
-      professional_id: currentUser?.can_create_anamnesis && !currentUser?.is_master ? currentUser.id : "",
-      professional_name: currentUser?.can_create_anamnesis && !currentUser?.is_master ? currentUser.full_name : "",
+      professional_id: (currentUser?.can_create_anamnesis || currentUser?.can_manage_own_schedule) && !currentUser?.is_master ? currentUser.id : "",
+      professional_name: (currentUser?.can_create_anamnesis || currentUser?.can_manage_own_schedule) && !currentUser?.is_master ? currentUser.full_name : "",
       data_agendamento: format(new Date(), "yyyy-MM-dd"),
       horario_inicio: "",
       horario_fim: "",
@@ -357,9 +353,9 @@ export default function Agenda() {
               onClick={() => {
                   setFormData(prev => ({
                       ...prev,
-                      // Pre-select current user if they are a doctor
-                      professional_id: (currentUser?.can_create_anamnesis && !currentUser?.is_master && !currentUser?.can_manage_schedule) ? currentUser.id : selectedProfessional !== "all" ? selectedProfessional : "",
-                      professional_name: (currentUser?.can_create_anamnesis && !currentUser?.is_master && !currentUser?.can_manage_schedule) ? currentUser.full_name : professionals.find(p => p.id === selectedProfessional)?.full_name || ""
+                      // Pre-select current user if they are a doctor or manage own schedule
+                      professional_id: ((currentUser?.can_create_anamnesis || currentUser?.can_manage_own_schedule) && !currentUser?.is_master && !currentUser?.can_manage_schedule) ? currentUser.id : selectedProfessional !== "all" ? selectedProfessional : "",
+                      professional_name: ((currentUser?.can_create_anamnesis || currentUser?.can_manage_own_schedule) && !currentUser?.is_master && !currentUser?.can_manage_schedule) ? currentUser.full_name : professionals.find(p => p.id === selectedProfessional)?.full_name || ""
                   }));
                   setShowDialog(true);
               }}
@@ -751,7 +747,7 @@ export default function Agenda() {
                             const prof = professionals.find(p => p.id === val);
                             setFormData({...formData, professional_id: val, professional_name: prof?.full_name || ""})
                         }}
-                        disabled={currentUser?.can_create_anamnesis && !currentUser?.is_master && !currentUser?.can_manage_schedule}
+                        disabled={(currentUser?.can_create_anamnesis || currentUser?.can_manage_own_schedule) && !currentUser?.is_master && !currentUser?.can_manage_schedule}
                     >
                         <SelectTrigger>
                             <SelectValue placeholder="Selecione o médico" />
