@@ -229,10 +229,16 @@ export default function IntegrationsSettings({ user }) {
                 </div>
 
                 <div className="pt-2 border-t flex justify-between items-center">
-                   <span className="text-xs text-muted-foreground">Última sincronização: Automática</span>
+                   <div className="flex flex-col">
+                       <span className="text-xs text-muted-foreground">Sincronização Bidirecional Ativa</span>
+                       <span className="text-[10px] text-gray-500">
+                           • Enviamos para o Google instantaneamente<br/>
+                           • Recebemos do Google a cada 15 minutos
+                       </span>
+                   </div>
                    <Button variant="outline" size="sm" onClick={handleSyncNow} disabled={syncing}>
                        {syncing ? <Loader2 className="w-3 h-3 animate-spin mr-2" /> : <RefreshCw className="w-3 h-3 mr-2" />}
-                       Sincronizar Agora (Importar Bloqueios)
+                       Forçar Importação Agora
                    </Button>
                 </div>
             </CardContent>
