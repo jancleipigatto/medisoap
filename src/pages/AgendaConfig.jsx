@@ -9,6 +9,8 @@ import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import WeeklyScheduleEditor from "@/components/agenda/WeeklyScheduleEditor";
 import BlockManager from "@/components/agenda/BlockManager";
+import IntegrationsSettings from "@/components/agenda/IntegrationsSettings";
+import { Share2 } from "lucide-react";
 
 export default function AgendaConfig() {
   const [user, setUser] = useState(null);
@@ -40,7 +42,7 @@ export default function AgendaConfig() {
         </div>
 
         <Tabs defaultValue="schedule" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 max-w-[400px]">
+          <TabsList className="grid w-full grid-cols-3 max-w-[600px]">
             <TabsTrigger value="schedule">
               <Settings className="w-4 h-4 mr-2" />
               Horário Semanal
@@ -48,6 +50,10 @@ export default function AgendaConfig() {
             <TabsTrigger value="blocks">
               <CalendarX className="w-4 h-4 mr-2" />
               Bloqueios
+            </TabsTrigger>
+            <TabsTrigger value="integrations">
+              <Share2 className="w-4 h-4 mr-2" />
+              Integrações
             </TabsTrigger>
           </TabsList>
 
@@ -78,6 +84,10 @@ export default function AgendaConfig() {
                 <BlockManager user={user} />
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="integrations" className="mt-6">
+             <IntegrationsSettings user={user} />
           </TabsContent>
         </Tabs>
       </div>

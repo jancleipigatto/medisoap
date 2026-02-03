@@ -6,9 +6,31 @@ export async function googleCalendarSync(req) {
     const payload = await req.json();
     const { event, data, old_data } = payload;
 
-    // Verify authentication via service role or check if triggered by automation
-    // Automations typically run with system privileges, but we need the App Owner's calendar token
-    // The "googlecalendar" connector is linked to the App Builder's account.
+    // Check if user has sync enabled
+    // We need to find the professional_id. 
+    // In Agendamento entity, we have professional_id.
+    const professionalId = data?.professional_id || old_data?.professional_id;
+    
+    if (!professionalId) {
+        console.log("No professional ID found. Skipping sync.");
+        return Response.json({ message: "Skipped: No professional ID" });
+    }
+
+    // Get Settings
+    const settingsList = await base44.asServiceRole.entities.AgendaSettings.filter({ professional_id: professionalId });
+    const settings = settingsList[0];
+
+    if (!settings || !settings.google_sync_enabled) {
+        console.log("Google Sync disabled for this professional. Skipping.");
+        return Response.json({ message: "Skipped: Sync disabled" });
+    }
+
+    // Check if appointment type is selected
+    const type = data?.tipo || old_data?.tipo;
+    if (settings.google_sync_types && !settings.google_sync_types.includes(type)) {
+        console.log(`Type ${type} not enabled for sync. Skipping.`);
+        return Response.json({ message: "Skipped: Type not enabled" });
+    }
 
     const accessToken = await base44.asServiceRole.connectors.getAccessToken("googlecalendar");
     if (!accessToken) {
@@ -36,19 +58,6 @@ export async function googleCalendarSync(req) {
       return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
     };
 
-    // Prevent infinite loops on update:
-    // If this update was just setting the google_event_id, ignore it.
-    if (event.type === 'update' && old_data) {
-      // Check if critical fields changed
-      const fieldsToCheck = ['patient_name', 'data_agendamento', 'horario_inicio', 'horario_fim', 'observacoes', 'status'];
-      const hasChanges = fieldsToCheck.some(field => data[field] !== old_data[field]);
-      
-      if (!hasChanges) {
-        console.log("No relevant fields changed. Skipping sync.");
-        return Response.json({ message: "Skipped: No relevant changes" });
-      }
-    }
-
     const eventBody = {
       summary: `Consulta: ${data?.patient_name || 'Paciente'}`,
       description: `Tipo: ${data?.tipo}\nStatus: ${data?.status}\nObs: ${data?.observacoes || '-'}`,
@@ -56,7 +65,6 @@ export async function googleCalendarSync(req) {
     };
 
     if (event.type === 'create') {
-      // Create event
       const resp = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events', {
         method: 'POST',
         headers: {
@@ -74,8 +82,6 @@ export async function googleCalendarSync(req) {
 
       const googleEvent = await resp.json();
       
-      // Update entity with google_event_id
-      // We use asServiceRole to bypass RLS if needed, though automations usually have access
       await base44.asServiceRole.entities.Agendamento.update(data.id, {
         google_event_id: googleEvent.id
       });
@@ -84,12 +90,16 @@ export async function googleCalendarSync(req) {
     } 
     
     else if (event.type === 'update') {
+      // Prevent infinite loop from the update above
+      if (old_data && data.google_event_id && data.google_event_id !== old_data.google_event_id) {
+          // This update was probably caused by the sync function itself setting the ID
+          return Response.json({ message: "Skipped: Internal update" });
+      }
+
       const eventId = data.google_event_id || old_data?.google_event_id;
       
       if (!eventId) {
-        // Should create if it doesn't exist? Yes.
-        console.log("No Google Event ID found on update. Creating new event.");
-        // Call create logic recursively or duplicate code? Duplicating for simplicity in this context
+        // If no ID, treat as create
         const resp = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events', {
           method: 'POST',
           headers: {
@@ -103,7 +113,6 @@ export async function googleCalendarSync(req) {
         return Response.json({ message: "Created missing Google Event on update", google_id: googleEvent.id });
       }
 
-      // Update existing
       const resp = await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events/${eventId}`, {
         method: 'PATCH',
         headers: {
@@ -113,27 +122,18 @@ export async function googleCalendarSync(req) {
         body: JSON.stringify(eventBody)
       });
 
-      if (!resp.ok) {
-         // If 404/410, maybe recreate? For now just log.
-         const err = await resp.text();
-         console.error("Google Calendar Update Error:", err);
-         return Response.json({ error: err }, { status: 500 });
-      }
+      if (!resp.ok) return Response.json({ error: await resp.text() }, { status: 500 });
       
       return Response.json({ message: "Updated Google Event" });
     } 
     
     else if (event.type === 'delete') {
-      const eventId = old_data?.google_event_id; // For delete, data might be null, use old_data
-      if (!eventId) {
-        return Response.json({ message: "Skipped delete: No Google Event ID" });
-      }
+      const eventId = old_data?.google_event_id;
+      if (!eventId) return Response.json({ message: "Skipped delete: No Google Event ID" });
 
       await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events/${eventId}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`
-        }
+        headers: { 'Authorization': `Bearer ${accessToken}` }
       });
 
       return Response.json({ message: "Deleted Google Event" });
@@ -147,5 +147,4 @@ export async function googleCalendarSync(req) {
   }
 }
 
-// Deno handler
 Deno.serve(googleCalendarSync);
