@@ -127,6 +127,7 @@ export default function ProfileManagement() {
       can_access_reception: false,
       can_perform_triage: false,
       can_manage_schedule: false,
+      can_manage_own_schedule: false,
       roles: [],
       is_default: false
     });
@@ -156,6 +157,7 @@ export default function ProfileManagement() {
       can_access_reception: false,
       can_perform_triage: false,
       can_manage_schedule: false,
+      can_manage_own_schedule: false,
       roles: [],
       is_default: false
     });
