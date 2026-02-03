@@ -79,6 +79,7 @@ import Tools from './pages/Tools';
 import Triagem from './pages/Triagem';
 import UserManagement from './pages/UserManagement';
 import UserProfile from './pages/UserProfile';
+import ConfirmAppointment from './pages/ConfirmAppointment';
 import __Layout from './Layout.jsx';
 
 
@@ -115,6 +116,7 @@ export const PAGES = {
     "Triagem": Triagem,
     "UserManagement": UserManagement,
     "UserProfile": UserProfile,
+    "ConfirmAppointment": ConfirmAppointment,
 }
 
 export const pagesConfig = {

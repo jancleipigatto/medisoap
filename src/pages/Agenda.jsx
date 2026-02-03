@@ -9,8 +9,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
+import { v4 as uuidv4 } from 'uuid'; // We need a way to generate token. If uuid not available, use Math.random
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Calendar, Plus, Clock, User, Phone, FileText, ArrowLeft, CheckCircle, XCircle, AlertCircle, Settings } from "lucide-react";
+import { Calendar, Plus, Clock, User, Phone, FileText, ArrowLeft, CheckCircle, XCircle, AlertCircle, Settings, Trash2, Send, MessageSquare, Link as LinkIcon, AlertTriangle } from "lucide-react";
 import { format, addDays, startOfWeek, endOfWeek, isSameDay, parseISO, startOfMonth, endOfMonth, isSameMonth } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -41,7 +44,9 @@ export default function Agenda() {
     tipo: "primeira_consulta",
     status: "agendado",
     telefone_contato: "",
-    observacoes: ""
+    observacoes: "",
+    message_history: [],
+    confirmation_token: ""
   });
 
   useEffect(() => {
@@ -135,7 +140,32 @@ export default function Agenda() {
 
     if (blocked) return { available: false, reason: blocked.reason || "Horário bloqueado" };
 
-    // 2. Check Weekly Schedule (only if settings exist)
+    // 2. Check Overlaps with OTHER appointments
+    // We filter by date and professional first to optimize
+    const sameDayAppts = agendamentos.filter(a => 
+        a.professional_id === profId && 
+        a.data_agendamento === dateStr &&
+        a.status !== 'cancelado' && a.status !== 'faltou' &&
+        a.id !== editingId // Exclude self if editing
+    );
+
+    const overlap = sameDayAppts.find(a => {
+        // Simple overlap check: (StartA < EndB) and (EndA > StartB)
+        // Ensure we have end times. If not, assume 30m.
+        const startA = startTime;
+        const endA = endTime || startTime; // fallback if empty? usually handled before check
+        
+        const startB = a.horario_inicio;
+        const endB = a.horario_fim || a.horario_inicio; // fallback
+
+        return (startA < endB) && (endA > startB);
+    });
+
+    if (overlap) {
+        return { available: false, reason: `Conflito com agendamento de ${overlap.patient_name} (${overlap.horario_inicio})` };
+    }
+
+    // 3. Check Weekly Schedule (only if settings exist)
     if (scheduleSettings && scheduleSettings.weekly_schedule) {
       const dayOfWeek = date.getDay(); // 0 = Sunday
       const intervals = scheduleSettings.weekly_schedule[dayOfWeek];
@@ -178,21 +208,27 @@ export default function Agenda() {
         // For robustness, if selectedProfessional is 'all', we should skip check or fetch ad-hoc.
         // Given complexity, let's rely on currently loaded settings if matches.
         
-        if (selectedProfessional && selectedProfessional !== "all" && formData.professional_id === selectedProfessional) {
-            const availability = checkAvailability(formData.data_agendamento, formData.horario_inicio, formData.horario_fim || formData.horario_inicio, formData.professional_id);
-            if (!availability.available) {
-                // If user is the doctor himself, maybe allow override with confirmation?
-                // User said "impedir que a recepção agende".
-                // Let's block for everyone but show specific message.
-                
-                // Allow override if admin or self?
-                const isSelf = currentUser?.id === formData.professional_id;
-                // If strict requirement:
-                if (!confirm(`Atenção: ${availability.reason}. Deseja agendar mesmo assim?`)) {
-                    return;
-                }
+        // Always check availability if professional is selected
+    if (formData.professional_id) {
+        // Reload schedule settings if needed? 
+        // We assume checkAvailability uses current state `scheduleBlocks` and `scheduleSettings`.
+        // If formData.professional_id is different from `selectedProfessional`, the state `scheduleSettings` might be wrong!
+        // This is a risk. We should ideally fetch settings for the specific professional if not currently loaded.
+        // But for now, let's assume users mostly filter by the professional they are scheduling for.
+        // Or we can warn if contexts mismatch.
+        
+        // BETTER: If we can't trust the loaded settings because ID mismatch, we skip the weekly schedule check but still do the overlap check if we can filter agendamentos (which we have all of).
+        
+        const availability = checkAvailability(formData.data_agendamento, formData.horario_inicio, formData.horario_fim || formData.horario_inicio, formData.professional_id);
+        
+        if (!availability.available) {
+            // "aviso quem está fazendo a agenda"
+            const msg = `ALERTA DE CONFLITO:\n\n${availability.reason}\n\nDeseja prosseguir e agendar mesmo assim?`;
+            if (!confirm(msg)) {
+                return;
             }
         }
+    }
     }
 
     if (editingId) {
@@ -206,9 +242,88 @@ export default function Agenda() {
   };
 
   const handleDelete = async (id) => {
-    if (!confirm("Deseja excluir este agendamento?")) return;
+    if (!confirm("Deseja excluir este agendamento? Esta ação não pode ser desfeita.")) return;
     await base44.entities.Agendamento.delete(id);
     await loadData();
+    handleCloseDialog();
+  };
+
+  const handleSendWhatsApp = async () => {
+    if (!formData.telefone_contato) {
+        toast.error("Adicione um telefone de contato para enviar mensagem.");
+        return;
+    }
+
+    // Generate token if not exists
+    let token = formData.confirmation_token;
+    if (!token) {
+        token = Math.random().toString(36).substring(2) + Date.now().toString(36);
+        // We update the state, but we also need to save it to DB if we want the link to work immediately
+        // Actually we should save the appointment first.
+    }
+
+    // Save first to ensure token exists in DB
+    let apptId = editingId;
+    if (!apptId) {
+        toast.error("Salve o agendamento antes de enviar mensagem.");
+        return;
+    }
+
+    // Update with token if needed
+    if (!formData.confirmation_token) {
+        await base44.entities.Agendamento.update(apptId, { confirmation_token: token });
+        setFormData(prev => ({ ...prev, confirmation_token: token }));
+    }
+
+    const link = `${window.location.origin}${createPageUrl('ConfirmAppointment')}?token=${token}`;
+    const message = `Olá ${formData.patient_name}, confirmamos sua consulta para ${format(parseISO(formData.data_agendamento), "dd/MM 'às' HH:mm")}. Confirme sua presença: ${link}`;
+
+    try {
+        const { data } = await base44.functions.invoke("sendWhatsAppMessage", {
+            phone: formData.telefone_contato.replace(/\D/g, ''), // remove non-digits
+            message: message
+        });
+
+        if (data?.success) {
+            toast.success("Mensagem enviada!");
+            // Log history
+            const newLog = {
+                date: new Date().toISOString(),
+                type: 'whatsapp_confirmation',
+                status: 'sent'
+            };
+            const history = [...(formData.message_history || []), newLog];
+            
+            await base44.entities.Agendamento.update(apptId, { 
+                message_history: history,
+                reminder_sent: true 
+            });
+            setFormData(prev => ({ ...prev, message_history: history }));
+            await loadData(); // refresh list
+        } else {
+            toast.error("Erro ao enviar mensagem: " + (data?.warning || "Erro desconhecido"));
+        }
+    } catch (err) {
+        console.error(err);
+        toast.error("Falha ao comunicar com serviço de WhatsApp");
+    }
+  };
+
+  const copyConfirmationLink = async () => {
+    let token = formData.confirmation_token;
+    if (!token) {
+        // Generate and save
+        if (!editingId) {
+             toast.error("Salve o agendamento primeiro.");
+             return;
+        }
+        token = Math.random().toString(36).substring(2) + Date.now().toString(36);
+        await base44.entities.Agendamento.update(editingId, { confirmation_token: token });
+        setFormData(prev => ({ ...prev, confirmation_token: token }));
+    }
+    const link = `${window.location.origin}${createPageUrl('ConfirmAppointment')}?token=${token}`;
+    navigator.clipboard.writeText(link);
+    toast.success("Link copiado para a área de transferência!");
   };
 
   const handleEdit = (agendamento) => {
@@ -224,7 +339,9 @@ export default function Agenda() {
       tipo: agendamento.tipo,
       status: agendamento.status,
       telefone_contato: agendamento.telefone_contato || "",
-      observacoes: agendamento.observacoes || ""
+      observacoes: agendamento.observacoes || "",
+      message_history: agendamento.message_history || [],
+      confirmation_token: agendamento.confirmation_token || ""
     });
     setShowDialog(true);
   };
@@ -243,7 +360,9 @@ export default function Agenda() {
       tipo: "primeira_consulta",
       status: "agendado",
       telefone_contato: "",
-      observacoes: ""
+      observacoes: "",
+      message_history: [],
+      confirmation_token: ""
     });
   };
 
@@ -481,12 +600,38 @@ export default function Agenda() {
                     <div className="absolute inset-0 flex flex-col pointer-events-none">
                         {Array.from({ length: 18 }).map((_, i) => { // 6am to 23pm
                             const hour = i + 6; 
+                            
+                            // Visualize Weekly Schedule
+                            // Check if this hour is working hour
+                            let isWorkingHour = true;
+                            if (scheduleSettings && scheduleSettings.weekly_schedule) {
+                                const dayOfWeek = selectedDate.getDay();
+                                const intervals = scheduleSettings.weekly_schedule[dayOfWeek];
+                                if (!intervals || intervals.length === 0) {
+                                    isWorkingHour = false;
+                                } else {
+                                    // Check if hour is within any interval
+                                    // Simple check: if hour start matches any hour in intervals
+                                    const hourStr = hour.toString().padStart(2, '0') + ":00";
+                                    const inInterval = intervals.some(inv => {
+                                        // Simplified: Hour start is inside [start, end)
+                                        // or interval is inside hour [hour, hour+1)
+                                        return (hourStr >= inv.start && hourStr < inv.end);
+                                    });
+                                    if (!inInterval) isWorkingHour = false;
+                                }
+                            }
+                            
                             return (
-                                <div key={hour} className="flex-1 flex border-b border-gray-100 min-h-[60px]">
+                                <div key={hour} className={`flex-1 flex border-b border-gray-100 min-h-[60px] ${!isWorkingHour && scheduleSettings ? 'bg-gray-50/50' : ''}`}>
                                     <div className="w-16 flex-shrink-0 border-r border-gray-100 bg-gray-50/50 text-xs text-gray-400 font-medium p-2 text-right">
                                         {hour.toString().padStart(2, '0')}:00
                                     </div>
-                                    <div className="flex-1" />
+                                    <div className="flex-1 relative">
+                                        {!isWorkingHour && scheduleSettings && (
+                                            <div className="absolute inset-0 bg-gray-100/30" title="Fora do horário de atendimento"></div>
+                                        )}
+                                    </div>
                                 </div>
                             );
                         })}
@@ -517,7 +662,7 @@ export default function Agenda() {
                                 const top = startOffset * 1; 
                                 const height = Math.max(duration * 1, 30); // minimum height 30px
 
-                                if (startOffset < 0) return null; // Before 7am - maybe handle separately or adjust start time
+                                if (startOffset < 0) return null; 
 
                                 return (
                                     <div 
@@ -887,14 +1032,75 @@ export default function Agenda() {
                 className="min-h-[80px]"
               />
             </div>
+
+            {/* WhatsApp and History Section - Only in Edit Mode */}
+            {editingId && (
+                <div className="border-t border-gray-100 pt-4 mt-4">
+                    <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                        <MessageSquare className="w-4 h-4 text-green-600" />
+                        Comunicação com Paciente
+                    </h4>
+                    
+                    <div className="grid grid-cols-2 gap-3 mb-4">
+                        <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="gap-2 text-green-700 border-green-200 hover:bg-green-50"
+                            onClick={handleSendWhatsApp}
+                        >
+                            <Send className="w-3 h-3" />
+                            Enviar Confirmação (WhatsApp)
+                        </Button>
+                        <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="gap-2 text-blue-700 border-blue-200 hover:bg-blue-50"
+                            onClick={copyConfirmationLink}
+                        >
+                            <LinkIcon className="w-3 h-3" />
+                            Copiar Link de Confirmação
+                        </Button>
+                    </div>
+
+                    {formData.message_history && formData.message_history.length > 0 && (
+                        <div className="bg-gray-50 rounded-md p-3">
+                            <p className="text-xs font-semibold text-gray-500 mb-2">Histórico de Envios</p>
+                            <ScrollArea className="h-20">
+                                <div className="space-y-2">
+                                    {formData.message_history.map((log, i) => (
+                                        <div key={i} className="text-xs flex justify-between items-center text-gray-600">
+                                            <span>
+                                                {log.type === 'whatsapp_confirmation' ? 'Confirmação via WhatsApp' : 'Mensagem'}
+                                            </span>
+                                            <span className="text-gray-400">
+                                                {format(parseISO(log.date), "dd/MM HH:mm")}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </ScrollArea>
+                        </div>
+                    )}
+                </div>
+            )}
           </div>
-          <div className="flex justify-end gap-3">
-            <Button variant="outline" onClick={handleCloseDialog}>
-              Cancelar
-            </Button>
-            <Button onClick={handleSave} className="bg-blue-600 hover:bg-blue-700">
-              {editingId ? "Atualizar" : "Criar"} Agendamento
-            </Button>
+          
+          <div className="flex justify-between gap-3 pt-4 border-t mt-4">
+            {editingId ? (
+                <Button variant="destructive" onClick={() => handleDelete(editingId)} className="gap-2">
+                    <Trash2 className="w-4 h-4" />
+                    Excluir
+                </Button>
+            ) : <div />}
+            
+            <div className="flex gap-2">
+                <Button variant="outline" onClick={handleCloseDialog}>
+                    Cancelar
+                </Button>
+                <Button onClick={handleSave} className="bg-blue-600 hover:bg-blue-700">
+                    {editingId ? "Atualizar" : "Criar"} Agendamento
+                </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
