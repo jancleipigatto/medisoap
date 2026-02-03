@@ -245,32 +245,7 @@ export default function IntegrationsSettings({ user }) {
         )}
       </Card>
 
-      {/* Outlook Calendar */}
-      <Card className="opacity-80">
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-3">
-               <div className="bg-white p-2 rounded-full shadow-sm border">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/d/df/Microsoft_Office_Outlook_%282018%E2%80%93present%29.svg" alt="Outlook" className="w-8 h-8" />
-              </div>
-              <div>
-                <CardTitle>Outlook Calendar</CardTitle>
-                <CardDescription>Sincronize com o calendário do Microsoft Outlook</CardDescription>
-              </div>
-            </div>
-            <Switch 
-                checked={settings?.outlook_sync_enabled}
-                onCheckedChange={(checked) => updateSettings({ outlook_sync_enabled: checked })}
-                disabled={true} // Disabled as per plan
-            />
-          </div>
-        </CardHeader>
-        <CardContent>
-            <div className="text-sm text-muted-foreground bg-gray-50 p-3 rounded-md">
-                Em breve. A integração com Outlook estará disponível nas próximas atualizações.
-            </div>
-        </CardContent>
-      </Card>
+
 
       {/* iCal Feed */}
       <Card>
