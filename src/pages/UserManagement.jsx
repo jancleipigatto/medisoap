@@ -40,7 +40,8 @@ export default function UserManagement() {
     can_view_all_anamnesis: false,
     can_access_reception: false,
     can_perform_triage: false,
-    can_manage_schedule: false
+    can_manage_schedule: false,
+    can_manage_own_schedule: false
   });
 
   useEffect(() => {
@@ -78,7 +79,8 @@ export default function UserManagement() {
       can_view_all_anamnesis: user.can_view_all_anamnesis || false,
       can_access_reception: user.can_access_reception || false,
       can_perform_triage: user.can_perform_triage || false,
-      can_manage_schedule: user.can_manage_schedule || false
+      can_manage_schedule: user.can_manage_schedule || false,
+      can_manage_own_schedule: user.can_manage_own_schedule || false
     });
   };
 
@@ -103,7 +105,8 @@ export default function UserManagement() {
         can_view_all_anamnesis: selectedProfile.can_view_all_anamnesis || false,
         can_access_reception: selectedProfile.can_access_reception || false,
         can_perform_triage: selectedProfile.can_perform_triage || false,
-        can_manage_schedule: selectedProfile.can_manage_schedule || false
+        can_manage_schedule: selectedProfile.can_manage_schedule || false,
+        can_manage_own_schedule: selectedProfile.can_manage_own_schedule || false
       });
     }
   };
@@ -238,9 +241,15 @@ export default function UserManagement() {
                         </p>
                       </div>
                       <div className={`p-3 rounded-lg ${user.can_manage_schedule ? 'bg-green-50 border border-green-200' : 'bg-gray-50 border border-gray-200'}`}>
-                        <p className="text-xs text-gray-600">Agendas</p>
+                        <p className="text-xs text-gray-600">Todas Agendas</p>
                         <p className={`text-sm font-medium ${user.can_manage_schedule ? 'text-green-700' : 'text-gray-400'}`}>
                           {user.can_manage_schedule ? 'Permitido' : 'Bloqueado'}
+                        </p>
+                      </div>
+                      <div className={`p-3 rounded-lg ${user.can_manage_own_schedule ? 'bg-green-50 border border-green-200' : 'bg-gray-50 border border-gray-200'}`}>
+                        <p className="text-xs text-gray-600">Própria Agenda</p>
+                        <p className={`text-sm font-medium ${user.can_manage_own_schedule ? 'text-green-700' : 'text-gray-400'}`}>
+                          {user.can_manage_own_schedule ? 'Permitido' : 'Bloqueado'}
                         </p>
                       </div>
                       <div className={`p-3 rounded-lg ${user.can_access_reception ? 'bg-green-50 border border-green-200' : 'bg-gray-50 border border-gray-200'}`}>
@@ -298,13 +307,25 @@ export default function UserManagement() {
                 
                 <div className="flex items-center justify-between mb-4">
                   <div className="space-y-0.5">
-                    <Label htmlFor="manage_schedule">Gerenciar Agendas</Label>
+                    <Label htmlFor="manage_schedule">Gerenciar Todas as Agendas</Label>
                     <p className="text-sm text-gray-500">Ver e gerenciar agendas de todos os profissionais</p>
                   </div>
                   <Switch
                     id="manage_schedule"
                     checked={permissions.can_manage_schedule}
                     onCheckedChange={(checked) => setPermissions({...permissions, can_manage_schedule: checked})}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between mb-4">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="manage_own_schedule">Gerenciar Própria Agenda</Label>
+                    <p className="text-sm text-gray-500">Gerenciar sua agenda e torná-la visível na recepção</p>
+                  </div>
+                  <Switch
+                    id="manage_own_schedule"
+                    checked={permissions.can_manage_own_schedule}
+                    onCheckedChange={(checked) => setPermissions({...permissions, can_manage_own_schedule: checked})}
                   />
                 </div>
 
