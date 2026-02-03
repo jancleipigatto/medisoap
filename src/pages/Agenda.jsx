@@ -260,14 +260,16 @@ export default function Agenda() {
             const start = parseISO(block.start_date);
             const end = parseISO(block.end_date);
             if (date >= start && date <= end) {
+                const isGoogle = block.reason && block.reason.startsWith("Google:");
                 list.push({
                     id: `block-${block.id}`,
-                    patient_name: `BLOQUEIO: ${block.reason}`,
+                    patient_name: isGoogle ? block.reason.replace('Google: ', '') : `BLOQUEIO: ${block.reason}`,
                     horario_inicio: block.is_all_day ? "00:00" : block.start_time || "00:00",
                     horario_fim: block.is_all_day ? "23:59" : block.end_time || "23:59",
-                    status: "cancelado", // visual style
+                    status: "cancelado", 
                     tipo: "block",
-                    is_block: true
+                    is_block: true,
+                    is_google: isGoogle
                 });
             }
         });
@@ -477,8 +479,8 @@ export default function Agenda() {
                 <div className="relative min-h-[600px] bg-white">
                     {/* Time Grid Background */}
                     <div className="absolute inset-0 flex flex-col pointer-events-none">
-                        {Array.from({ length: 14 }).map((_, i) => { // 7am to 8pm
-                            const hour = i + 7; 
+                        {Array.from({ length: 18 }).map((_, i) => { // 6am to 23pm
+                            const hour = i + 6; 
                             return (
                                 <div key={hour} className="flex-1 flex border-b border-gray-100 min-h-[60px]">
                                     <div className="w-16 flex-shrink-0 border-r border-gray-100 bg-gray-50/50 text-xs text-gray-400 font-medium p-2 text-right">
@@ -491,8 +493,8 @@ export default function Agenda() {
                     </div>
 
                     {/* Appointments Overlay */}
-                    <div className="relative pt-[1px] ml-16 min-h-[840px]"> 
-                        {/* 14 hours * 60px = 840px height approx */}
+                    <div className="relative pt-[1px] ml-16 min-h-[1080px]"> 
+                        {/* 18 hours * 60px = 1080px height approx */}
                         {getAgendamentosByDate(selectedDate).length === 0 ? (
                              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                                 <div className="text-center py-12 text-gray-400 bg-white/80 p-6 rounded-xl">
@@ -505,7 +507,7 @@ export default function Agenda() {
                                 // Calculate position based on time
                                 const [h, m] = ag.horario_inicio.split(':').map(Number);
                                 const startMinutes = (h * 60) + m;
-                                const startOffset = startMinutes - (7 * 60); // 7am start
+                                const startOffset = startMinutes - (6 * 60); // 6am start
                                 
                                 const [endH, endM] = ag.horario_fim ? ag.horario_fim.split(':').map(Number) : [h, m + 30]; // default 30m duration if no end time
                                 const endMinutes = (endH * 60) + endM;
@@ -535,6 +537,11 @@ export default function Agenda() {
                                                     <span className="text-[10px] text-gray-500">
                                                         {ag.horario_fim || `${format(addDays(parseISO(`2000-01-01T${ag.horario_inicio}`), 0), 'HH:mm')}`}
                                                     </span>
+                                                    {ag.is_google && (
+                                                        <span className="text-[9px] text-blue-600 font-medium flex items-center gap-0.5 mt-1">
+                                                            Google
+                                                        </span>
+                                                    )}
                                                 </div>
                                                 
                                                 <div className="flex-1 min-w-0 flex items-center justify-between">
@@ -556,7 +563,23 @@ export default function Agenda() {
                                                     </div>
 
                                                     <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                        {!ag.is_block && (
+                                                        {ag.is_block ? (
+                                                            <Button 
+                                                                size="icon" 
+                                                                variant="ghost" 
+                                                                className="h-6 w-6 text-red-400 hover:text-red-700 hover:bg-red-200"
+                                                                onClick={async (e) => { 
+                                                                    e.stopPropagation(); 
+                                                                    if(confirm("Deseja remover este bloqueio?")) {
+                                                                        await base44.entities.ScheduleBlock.delete(ag.id.replace('block-', ''));
+                                                                        loadSchedule(selectedProfessional);
+                                                                    }
+                                                                }}
+                                                                title="Remover Bloqueio"
+                                                            >
+                                                                <Trash2 className="w-3 h-3" />
+                                                            </Button>
+                                                        ) : (
                                                             <>
                                                                 <Badge className={`${statusColors[ag.status]} shadow-none border-0`}>
                                                                     {ag.status}
@@ -620,8 +643,8 @@ export default function Agenda() {
                     <div className="relative min-h-[600px] bg-white">
                          {/* Time Grid Background */}
                         <div className="absolute inset-0 flex flex-col pointer-events-none z-0">
-                            {Array.from({ length: 14 }).map((_, i) => { // 7am to 8pm
-                                const hour = i + 7; 
+                            {Array.from({ length: 18 }).map((_, i) => { // 6am to 23pm
+                                const hour = i + 6; 
                                 return (
                                     <div key={hour} className="flex-1 flex border-b border-gray-100 min-h-[60px]">
                                         <div className="w-16 flex-shrink-0 border-r border-gray-100 bg-gray-50/50 text-xs text-gray-400 font-medium p-2 text-right transform -translate-y-3">
@@ -637,7 +660,7 @@ export default function Agenda() {
                         </div>
 
                         {/* Events Overlay */}
-                        <div className="relative ml-16 flex min-h-[840px]">
+                        <div className="relative ml-16 flex min-h-[1080px]">
                             {getWeekDays().map((day, colIndex) => {
                                 const dayAgendamentos = getAgendamentosByDate(day);
                                 return (
@@ -645,7 +668,7 @@ export default function Agenda() {
                                         {dayAgendamentos.map(ag => {
                                             const [h, m] = ag.horario_inicio.split(':').map(Number);
                                             const startMinutes = (h * 60) + m;
-                                            const startOffset = startMinutes - (7 * 60); // 7am start
+                                            const startOffset = startMinutes - (6 * 60); // 6am start
                                             
                                             const [endH, endM] = ag.horario_fim ? ag.horario_fim.split(':').map(Number) : [h, m + 30]; 
                                             const endMinutes = (endH * 60) + endM;

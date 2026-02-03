@@ -60,10 +60,11 @@ export async function syncExternalCalendars(req) {
                 if (event.transparency === 'transparent') continue;
 
                 const isAllDay = !event.start.dateTime;
-                const startDate = isAllDay ? event.start.date : event.start.dateTime.split('T')[0];
-                const endDate = isAllDay ? event.end.date : event.end.dateTime.split('T')[0];
-                const startTime = isAllDay ? null : event.start.dateTime.split('T')[1].substring(0, 5);
-                const endTime = isAllDay ? null : event.end.dateTime.split('T')[1].substring(0, 5);
+                const startDate = isAllDay ? event.start.date : new Date(event.start.dateTime).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' }).split('/').reverse().join('-');
+                const endDate = isAllDay ? event.end.date : new Date(event.end.dateTime).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' }).split('/').reverse().join('-');
+                
+                const startTime = isAllDay ? null : new Date(event.start.dateTime).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' });
+                const endTime = isAllDay ? null : new Date(event.end.dateTime).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' });
 
                 const reason = `Google: ${event.summary || 'Ocupado'}`;
                 
