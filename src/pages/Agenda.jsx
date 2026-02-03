@@ -464,15 +464,16 @@ export default function Agenda() {
             <Card className="shadow-lg border-none bg-white">
               <CardHeader className="border-b border-gray-100 pb-4">
                 <div className="flex items-center gap-3">
-                    <div className="flex flex-col items-center justify-center w-12 h-12 rounded-full bg-blue-600 text-white shadow-md">
-                        <span className="text-[10px] font-medium uppercase tracking-wider">{format(selectedDate, "EEE", { locale: ptBR })}</span>
+                    <div className="flex items-center justify-center w-12 h-12 rounded-full bg-blue-600 text-white shadow-md">
                         <span className="text-xl font-bold leading-none">{format(selectedDate, "dd")}</span>
                     </div>
                     <div>
-                        <CardTitle className="text-xl">
+                        <CardTitle className="text-xl capitalize">
                         {format(selectedDate, "MMMM 'de' yyyy", { locale: ptBR })}
                         </CardTitle>
-                        <p className="text-sm text-gray-500">Agenda diária</p>
+                        <p className="text-sm text-gray-500 capitalize">
+                            {format(selectedDate, "EEEE", { locale: ptBR })}
+                        </p>
                     </div>
                 </div>
               </CardHeader>
