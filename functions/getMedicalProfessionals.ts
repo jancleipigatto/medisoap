@@ -15,9 +15,9 @@ export default Deno.serve(async (req) => {
         const allUsers = await base44.asServiceRole.entities.User.list();
         
         // Filtrar apenas usuários que podem atender (médicos/profissionais)
-        // Critério: can_create_anamnesis = true OU is_master = true
+        // Critério: can_create_anamnesis = true OU is_master = true OU can_manage_own_schedule = true
         const professionals = allUsers.filter(u => 
-            u.can_create_anamnesis === true || u.is_master === true
+            u.can_create_anamnesis === true || u.is_master === true || u.can_manage_own_schedule === true
         );
 
         // Retornar apenas dados necessários e seguros
