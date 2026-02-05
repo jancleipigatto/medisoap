@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { User } from "@/entities/User";
+// import { User } from "@/entities/User"; // Using base44 client instead
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -52,7 +52,7 @@ export default function Settings() {
 
   const loadSettings = async () => {
     setIsLoading(true);
-    const user = await User.me();
+    const user = await base44.auth.me();
     
     // Carregar configurações do usuário
     if (user.app_settings) {

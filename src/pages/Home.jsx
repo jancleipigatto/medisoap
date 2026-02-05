@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { User } from "@/entities/User";
+import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,7 +22,7 @@ export default function Home() {
 
   const loadUser = async () => {
     setIsLoading(true);
-    const currentUser = await User.me();
+    const currentUser = await base44.auth.me();
     setUser(currentUser);
     setIsLoading(false);
   };
