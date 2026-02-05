@@ -71,6 +71,15 @@ export default function History() {
     
     // Filtrar apenas anamneses não deletadas
     let activeAnamneses = data.filter(a => !a.is_deleted);
+
+    // Filter confidential records
+    activeAnamneses = activeAnamneses.filter(a => {
+      if (a.is_confidential) {
+        const isCreator = (a.creator_id && a.creator_id === user.id) || (a.created_by === user.email);
+        return isCreator || user.is_master; // Only creator or master can see confidential records
+      }
+      return true;
+    });
     
     // Gerar números de atendimento para anamneses que não têm
     const needsUpdate = activeAnamneses.some(a => !a.numero_atendimento);
