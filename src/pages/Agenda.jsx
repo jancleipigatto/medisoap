@@ -807,9 +807,17 @@ export default function Agenda() {
                                                 </div>
                                                 
                                                 <div className="flex-1 min-w-0 flex items-center justify-between">
-                                                    <div>
+                                                    <div className="flex-1 cursor-pointer" onClick={(e) => {
+                                                        if (ag.is_block) return;
+                                                        e.stopPropagation();
+                                                        handleEdit(ag);
+                                                    }} title="Clique para editar ou ver detalhes">
                                                         <div className={`font-semibold text-sm truncate ${ag.is_block ? "text-red-900" : "text-emerald-950"}`}>
-                                                            {ag.patient_name}
+                                                            {ag.is_block ? ag.patient_name : (
+                                                                <span className="hover:underline decoration-emerald-500 underline-offset-2">
+                                                                    {ag.patient_name}
+                                                                </span>
+                                                            )}
                                                         </div>
                                                         {!ag.is_block && (
                                                             <div className="text-xs text-gray-500 flex items-center gap-2 truncate">
@@ -824,7 +832,7 @@ export default function Agenda() {
                                                         )}
                                                     </div>
 
-                                                    <div className="flex items-center gap-2">
+                                                    <div className="flex items-center gap-2 pl-3 border-l border-emerald-200/50">
                                                         {ag.is_block ? (
                                                             <Button 
                                                                 size="icon" 
@@ -843,17 +851,34 @@ export default function Agenda() {
                                                             </Button>
                                                         ) : (
                                                             <>
-                                                                <Badge className={`${statusColors[ag.status]} shadow-none border-0`}>
-                                                                    {ag.status}
-                                                                </Badge>
-                                                                <Button 
-                                                                    size="icon" 
-                                                                    variant="ghost" 
-                                                                    className="h-6 w-6 text-gray-400 hover:text-red-500"
-                                                                    onClick={(e) => { e.stopPropagation(); handleDelete(ag.id); }}
-                                                                >
-                                                                    <XCircle className="w-4 h-4" />
-                                                                </Button>
+                                                                <div className="flex flex-col items-end gap-1">
+                                                                    <Badge className={`${statusColors[ag.status]} shadow-none border-0 text-[10px] px-1.5 h-5`}>
+                                                                        {ag.status}
+                                                                    </Badge>
+                                                                </div>
+                                                                <div className="flex items-center">
+                                                                    <Button 
+                                                                        size="icon" 
+                                                                        variant="ghost" 
+                                                                        className="h-7 w-7 text-green-600 hover:bg-green-100"
+                                                                        onClick={(e) => { 
+                                                                            e.stopPropagation(); 
+                                                                            handleEdit(ag); // Opens dialog where msg can be sent
+                                                                        }}
+                                                                        title="Comunicação / WhatsApp"
+                                                                    >
+                                                                        <MessageSquare className="w-3.5 h-3.5" />
+                                                                    </Button>
+                                                                    <Button 
+                                                                        size="icon" 
+                                                                        variant="ghost" 
+                                                                        className="h-7 w-7 text-gray-400 hover:text-red-500 hover:bg-red-50"
+                                                                        onClick={(e) => { e.stopPropagation(); handleDelete(ag.id); }}
+                                                                        title="Excluir Agendamento"
+                                                                    >
+                                                                        <Trash2 className="w-3.5 h-3.5" />
+                                                                    </Button>
+                                                                </div>
                                                             </>
                                                         )}
                                                     </div>
