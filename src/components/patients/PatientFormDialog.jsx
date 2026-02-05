@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { MapPin, Upload, X, User, Camera } from "lucide-react";
+import WebcamCapture from "../common/WebcamCapture";
 import {
   Dialog,
   DialogContent,
@@ -39,6 +40,7 @@ export default function PatientFormDialog({ open, onOpenChange, patientToEdit, o
   });
   
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [showWebcam, setShowWebcam] = useState(false);
 
   useEffect(() => {
     loadConvenios();
@@ -109,6 +111,21 @@ export default function PatientFormDialog({ open, onOpenChange, patientToEdit, o
     }
   };
 
+  const handleWebcamCapture = async (file) => {
+    if (!file) return;
+    setIsUploadingPhoto(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setFormData(prev => ({ ...prev, foto_url: file_url }));
+      setShowWebcam(false);
+    } catch (error) {
+      console.error("Erro ao enviar foto da webcam:", error);
+      alert("Erro ao enviar foto");
+    } finally {
+      setIsUploadingPhoto(false);
+    }
+  };
+
   const loadConvenios = async () => {
     const data = await base44.entities.Convenio.list("nome");
     setConvenios(data);
@@ -154,54 +171,76 @@ export default function PatientFormDialog({ open, onOpenChange, patientToEdit, o
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           
-          <div className="flex justify-center mb-6">
-            <div className="flex flex-col items-center gap-3">
-              <div className="relative group">
-                {formData.foto_url ? (
-                  <>
-                    <img 
-                      src={formData.foto_url} 
-                      alt="Foto Paciente" 
-                      className="w-32 h-32 object-cover rounded-full shadow-lg border-4 border-white bg-gray-100" 
-                    />
-                    <Button
-                      type="button"
-                      size="icon"
-                      variant="destructive"
-                      className="absolute -top-1 -right-1 h-8 w-8 rounded-full shadow-md"
-                      onClick={() => setFormData({...formData, foto_url: ""})}
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
-                  </>
-                ) : (
-                  <div className="w-32 h-32 bg-gray-100 rounded-full flex items-center justify-center text-gray-400 border-2 border-dashed border-gray-300">
-                    <User className="w-16 h-16 opacity-50" />
-                  </div>
-                )}
-                
-                <div className="absolute bottom-0 right-0">
-                  <Label htmlFor="foto-upload" className="cursor-pointer">
-                    <div className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full shadow-lg transition-colors">
-                      {isUploadingPhoto ? (
-                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      ) : (
-                        <Camera className="w-4 h-4" />
-                      )}
+          <div className="mb-6">
+            {showWebcam ? (
+              <div className="flex flex-col items-center gap-4 p-4 border rounded-lg bg-gray-50">
+                <WebcamCapture 
+                  onCapture={handleWebcamCapture} 
+                  onCancel={() => setShowWebcam(false)} 
+                />
+              </div>
+            ) : (
+              <div className="flex justify-center">
+                <div className="flex flex-col items-center gap-3">
+                  <div className="relative group">
+                    {formData.foto_url ? (
+                      <>
+                        <img 
+                          src={formData.foto_url} 
+                          alt="Foto Paciente" 
+                          className="w-32 h-32 object-cover rounded-full shadow-lg border-4 border-white bg-gray-100" 
+                        />
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="destructive"
+                          className="absolute -top-1 -right-1 h-8 w-8 rounded-full shadow-md"
+                          onClick={() => setFormData({...formData, foto_url: ""})}
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </>
+                    ) : (
+                      <div className="w-32 h-32 bg-gray-100 rounded-full flex items-center justify-center text-gray-400 border-2 border-dashed border-gray-300">
+                        <User className="w-16 h-16 opacity-50" />
+                      </div>
+                    )}
+                    
+                    <div className="absolute bottom-0 -right-2 flex gap-2">
+                        <Button
+                            type="button"
+                            size="icon"
+                            className="bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg"
+                            onClick={() => setShowWebcam(true)}
+                            title="Tirar foto com a câmera"
+                        >
+                            <Camera className="w-4 h-4" />
+                        </Button>
+                        <div className="relative">
+                            <Label htmlFor="foto-upload" className="cursor-pointer block">
+                                <div className="bg-indigo-600 hover:bg-indigo-700 text-white p-2.5 rounded-full shadow-lg transition-colors">
+                                {isUploadingPhoto ? (
+                                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                ) : (
+                                    <Upload className="w-4 h-4" />
+                                )}
+                                </div>
+                            </Label>
+                            <Input
+                                id="foto-upload"
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={handleFileUpload}
+                                disabled={isUploadingPhoto}
+                            />
+                        </div>
                     </div>
-                  </Label>
-                  <Input
-                    id="foto-upload"
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleFileUpload}
-                    disabled={isUploadingPhoto}
-                  />
+                  </div>
+                  <span className="text-sm text-gray-500 font-medium">Foto do Paciente</span>
                 </div>
               </div>
-              <span className="text-sm text-gray-500 font-medium">Foto do Paciente</span>
-            </div>
+            )}
           </div>
 
           <div>

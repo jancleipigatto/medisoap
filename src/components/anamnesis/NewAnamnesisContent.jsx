@@ -13,6 +13,7 @@ import { ArrowLeft, Sparkles, Loader2, FileText, Copy, Check } from "lucide-reac
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import PatientSelector from "./PatientSelector";
+import PatientFormDialog from "../components/patients/PatientFormDialog";
 import ToolsSidebar from "../tools/ToolsSidebar";
 import DocumentsSidebar from "../medical/DocumentsSidebar";
 import GestationalAgeCalculator from "../tools/GestationalAgeCalculator";
@@ -25,7 +26,7 @@ import FloatingDocument from "../medical/FloatingDocument";
 import DocumentForm from "../medical/DocumentForm";
 import ReceitaFormAdvanced from "../medical/ReceitaFormAdvanced";
 import { AnimatePresence } from "framer-motion";
-import { Star, X, Activity, ClipboardList, FileCheck, Send, Info, Pill } from "lucide-react";
+import { Star, X, Activity, ClipboardList, FileCheck, Send, Info, Pill, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { AtestadoTemplate } from "@/entities/AtestadoTemplate";
 import { ExameTemplate } from "@/entities/ExameTemplate";
@@ -70,6 +71,7 @@ export default function NewAnamnesisContent() {
   const [linkedAppointment, setLinkedAppointment] = useState(null);
   const [showTriagem, setShowTriagem] = useState(true);
   const [previousStatus, setPreviousStatus] = useState(null);
+  const [showPatientDialog, setShowPatientDialog] = useState(false);
 
   useEffect(() => {
     loadTemplates();
@@ -639,7 +641,7 @@ ${result.plano || ''}`;
       </AnimatePresence>
 
       <div className="p-4 md:p-8 bg-gradient-to-br from-blue-50 to-indigo-50 min-h-screen pr-36">
-        <div className="max-w-4xl mx-auto">
+        <div className="w-full max-w-[95%] mx-auto">
         <div className="flex items-center gap-4 mb-6">
           <Button
             variant="outline"
@@ -658,16 +660,22 @@ ${result.plano || ''}`;
 
         <div className="space-y-6">
           <Card className="shadow-lg border-none">
-            <CardHeader>
-              <CardTitle className="text-base">Informações da Consulta</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="pt-6 space-y-4">
               {isInfoLocked ? (
                 <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                   <div className="flex justify-between items-start">
-                    <div>
-                      <Label className="text-xs text-gray-500 uppercase font-bold tracking-wide">Paciente</Label>
-                      <p className="text-lg font-medium text-gray-900">{selectedPatient?.nome}</p>
+                    <div className="flex items-center gap-4">
+                        {selectedPatient?.foto_url ? (
+                            <img src={selectedPatient.foto_url} alt={selectedPatient.nome} className="w-16 h-16 rounded-full object-cover border-2 border-white shadow-sm" />
+                        ) : (
+                            <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center border-2 border-white shadow-sm">
+                                <User className="w-8 h-8 text-gray-400" />
+                            </div>
+                        )}
+                        <div>
+                            <Label className="text-xs text-gray-500 uppercase font-bold tracking-wide">Paciente</Label>
+                            <p className="text-lg font-medium text-gray-900">{selectedPatient?.nome}</p>
+                        </div>
                     </div>
                     <Button variant="ghost" size="sm" onClick={() => window.open(createPageUrl(`PatientHistory?patientId=${selectedPatient.id}`), '_blank')}>
                       Histórico
@@ -703,7 +711,7 @@ ${result.plano || ''}`;
                       <Button
                         variant="outline"
                         className="text-sm h-9"
-                        onClick={() => window.open(createPageUrl(`Patients?new=true`), '_blank')}
+                        onClick={() => setShowPatientDialog(true)}
                       >
                         Novo Paciente
                       </Button>
@@ -720,7 +728,7 @@ ${result.plano || ''}`;
                   {!selectedPatient && (
                     <Button
                       variant="outline"
-                      onClick={() => window.open(createPageUrl(`Patients?new=true`), '_blank')}
+                      onClick={() => setShowPatientDialog(true)}
                       className="w-full text-sm h-9"
                     >
                       Criar Novo Paciente
@@ -1142,6 +1150,16 @@ ${result.plano || ''}`;
         </div>
         </div>
       </div>
+
+      <PatientFormDialog
+        open={showPatientDialog}
+        onOpenChange={setShowPatientDialog}
+        onSuccess={(newPatient) => {
+            if (newPatient) {
+                setSelectedPatient(newPatient);
+            }
+        }}
+      />
 
       <Dialog open={showCidDialog} onOpenChange={(open) => {
         setShowCidDialog(open);
