@@ -80,6 +80,7 @@ import Tools from './pages/Tools';
 import Triagem from './pages/Triagem';
 import UserManagement from './pages/UserManagement';
 import UserProfile from './pages/UserProfile';
+import DashboardAnalytics from './pages/DashboardAnalytics';
 import __Layout from './Layout.jsx';
 
 
@@ -117,6 +118,7 @@ export const PAGES = {
     "Triagem": Triagem,
     "UserManagement": UserManagement,
     "UserProfile": UserProfile,
+    "DashboardAnalytics": DashboardAnalytics,
 }
 
 export const pagesConfig = {

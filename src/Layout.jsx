@@ -215,6 +215,12 @@ export default function Layout({ children, currentPageName }) {
       masterOnly: true
     },
     {
+      title: "Inteligência Gerencial",
+      url: createPageUrl("DashboardAnalytics"),
+      icon: Activity,
+      masterOnly: true
+    },
+    {
       title: "Configurações",
       url: createPageUrl("Settings"),
       icon: Settings,
