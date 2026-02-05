@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Patient } from "@/entities/Patient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -132,9 +131,9 @@ export default function PatientFormDialog({ open, onOpenChange, patientToEdit, o
     try {
       let result;
       if (patientToEdit) {
-        result = await Patient.update(patientToEdit.id, formData);
+        result = await base44.entities.Patient.update(patientToEdit.id, formData);
       } else {
-        result = await Patient.create(formData);
+        result = await base44.entities.Patient.create(formData);
       }
       
       if (onSuccess) onSuccess(result);
