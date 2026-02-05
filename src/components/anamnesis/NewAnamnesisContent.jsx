@@ -70,6 +70,12 @@ export default function NewAnamnesisContent() {
   const [activeDocument, setActiveDocument] = useState(null);
   const [anamnesis, setAnamnesis] = useState(null);
   const [linkedAppointment, setLinkedAppointment] = useState(null);
+  
+  // Sidebar states
+  const [toolsSidebarOpen, setToolsSidebarOpen] = useState(false);
+  const [docsSidebarOpen, setDocsSidebarOpen] = useState(false);
+  const [toolsSidebarWidth, setToolsSidebarWidth] = useState(120);
+  const [docsSidebarWidth, setDocsSidebarWidth] = useState(120);
   const [showTriagem, setShowTriagem] = useState(true);
   const [previousStatus, setPreviousStatus] = useState(null);
   const [showPatientDialog, setShowPatientDialog] = useState(false);
@@ -569,8 +575,24 @@ ${result.plano || ''}`;
 
   return (
     <>
-      <ToolsSidebar onToolOpen={setActiveTool} isDocumentsOpen={!!activeDocument} />
-      <DocumentsSidebar onDocumentOpen={handleDocumentOpen} isToolsOpen={!!activeTool} />
+      <ToolsSidebar 
+        onToolOpen={setActiveTool} 
+        isOpen={toolsSidebarOpen}
+        setIsOpen={setToolsSidebarOpen}
+        width={toolsSidebarWidth}
+        setWidth={setToolsSidebarWidth}
+        otherSidebarOpen={docsSidebarOpen}
+        otherSidebarWidth={docsSidebarWidth}
+      />
+      <DocumentsSidebar 
+        onDocumentOpen={handleDocumentOpen} 
+        isOpen={docsSidebarOpen}
+        setIsOpen={setDocsSidebarOpen}
+        width={docsSidebarWidth}
+        setWidth={setDocsSidebarWidth}
+        otherSidebarOpen={toolsSidebarOpen}
+        otherSidebarWidth={toolsSidebarWidth}
+      />
       
       <AnimatePresence>
         {activeTool === 'gestational_age' && (
