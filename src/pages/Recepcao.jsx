@@ -322,8 +322,8 @@ export default function Recepcao() {
             </DialogHeader>
             <div className="space-y-4 py-2">
               <div>
-                <Label>Paciente</Label>
                 <PatientSelector
+                  selectedPatient={newAgendamentoData.patient_name ? { nome: newAgendamentoData.patient_name, id: newAgendamentoData.patient_id } : null}
                   onSelect={(p) => setNewAgendamentoData({...newAgendamentoData, patient_id: p.id, patient_name: p.nome})}
                 />
               </div>
