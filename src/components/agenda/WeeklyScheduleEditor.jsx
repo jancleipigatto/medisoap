@@ -6,8 +6,22 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, Save, Loader2 } from "lucide-react";
+import { Plus, Trash2, Save, Loader2, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const DAYS = [
   { id: 0, label: "Domingo" },
@@ -24,6 +38,7 @@ export default function WeeklyScheduleEditor({ user }) {
   const [settingsId, setSettingsId] = useState(null);
   const [schedule, setSchedule] = useState({});
   const [slotDuration, setSlotDuration] = useState(30);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   useEffect(() => {
     loadSettings();
@@ -86,7 +101,31 @@ export default function WeeklyScheduleEditor({ user }) {
     setSchedule(newSchedule);
   };
 
-  const handleSave = async () => {
+  const replicateSchedule = (sourceDayId, target) => {
+    const sourceIntervals = schedule[sourceDayId];
+    if (!sourceIntervals) return;
+
+    const newSchedule = { ...schedule };
+    // 1-5 for weekdays, 0-6 for all
+    const targets = target === 'weekdays' ? [1, 2, 3, 4, 5] : [0, 1, 2, 3, 4, 5, 6];
+
+    targets.forEach(dayId => {
+      if (dayId === sourceDayId) return;
+      // Enable the day if it wasn't
+      // Deep copy intervals to avoid reference issues
+      newSchedule[dayId] = sourceIntervals.map(i => ({ ...i }));
+    });
+
+    setSchedule(newSchedule);
+    toast.success(target === 'weekdays' ? "Replicado para dias úteis!" : "Replicado para todos os dias!");
+  };
+
+  const handleSaveClick = () => {
+    setShowConfirmDialog(true);
+  };
+
+  const confirmSave = async () => {
+    setShowConfirmDialog(false);
     setLoading(true);
     try {
       const data = {
@@ -143,9 +182,27 @@ export default function WeeklyScheduleEditor({ user }) {
                       <span className="font-medium text-lg">{day.label}</span>
                     </div>
                     {isEnabled && (
-                      <Button variant="outline" size="sm" onClick={() => addInterval(day.id)}>
-                        <Plus className="w-4 h-4 mr-2" /> Adicionar Período
-                      </Button>
+                      <div className="flex gap-2">
+                         <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700 hover:bg-blue-50">
+                              <Copy className="w-4 h-4 mr-2" /> Replicar
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent>
+                            <DropdownMenuItem onClick={() => replicateSchedule(day.id, 'weekdays')}>
+                              Para Dias Úteis (Seg-Sex)
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => replicateSchedule(day.id, 'all')}>
+                              Para Todos os Dias
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+
+                        <Button variant="outline" size="sm" onClick={() => addInterval(day.id)}>
+                          <Plus className="w-4 h-4 mr-2" /> Adicionar Período
+                        </Button>
+                      </div>
                     )}
                   </div>
 
@@ -203,13 +260,62 @@ export default function WeeklyScheduleEditor({ user }) {
           </div>
 
           <div className="flex justify-end mt-6">
-            <Button onClick={handleSave} disabled={loading} className="w-full sm:w-auto">
+            <Button onClick={handleSaveClick} disabled={loading} className="w-full sm:w-auto">
               {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
               Salvar Configurações
             </Button>
           </div>
         </CardContent>
       </Card>
+
+      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Confirmar Horários</DialogTitle>
+            <DialogDescription>
+              Verifique o espelho dos horários configurados antes de salvar.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
+            <div className="text-sm font-medium text-gray-500 mb-2">Duração do slot: {slotDuration} min</div>
+            
+            {DAYS.map(day => {
+               const intervals = schedule[day.id];
+               if (!intervals || intervals.length === 0) return null;
+               
+               return (
+                 <div key={day.id} className="border-b border-gray-100 pb-2 last:border-0">
+                    <div className="font-semibold text-gray-900 mb-1">{day.label}</div>
+                    <div className="space-y-1">
+                      {intervals.map((int, i) => (
+                        <div key={i} className="text-sm text-gray-600 flex items-center gap-2">
+                           <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                           {int.start} até {int.end} 
+                           {int.type && int.type !== 'all' && <span className="text-xs bg-gray-100 px-1.5 py-0.5 rounded uppercase">{int.type}</span>}
+                        </div>
+                      ))}
+                    </div>
+                 </div>
+               )
+            })}
+            
+            {Object.keys(schedule).length === 0 && (
+                <div className="text-center text-gray-500 py-4 italic">Nenhum horário configurado.</div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowConfirmDialog(false)}>
+              Voltar e Editar
+            </Button>
+            <Button onClick={confirmSave} className="bg-green-600 hover:bg-green-700 text-white">
+              <Check className="w-4 h-4 mr-2" />
+              Confirmar e Salvar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
