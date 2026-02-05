@@ -25,6 +25,17 @@ export default function Reports() {
   const [patientSearch, setPatientSearch] = useState("");
   const printRef = useRef(null);
 
+  const formatDateSafe = (dateStr, pattern = 'dd/MM/yyyy') => {
+    if (!dateStr) return '-';
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return '-';
+    try {
+      return format(date, pattern);
+    } catch (e) {
+      return '-';
+    }
+  };
+
   // Load Data based on tab and dates
   useEffect(() => {
     loadReportData();
@@ -210,7 +221,7 @@ export default function Reports() {
           pdf.setFontSize(12);
           pdf.text(`Paciente: ${patient.nome}`, 20, y);
           y += 7;
-          pdf.text(`CPF: ${patient.cpf || 'N/A'} | DN: ${patient.data_nascimento ? format(new Date(patient.data_nascimento), 'dd/MM/yyyy') : 'N/A'}`, 20, y);
+          pdf.text(`CPF: ${patient.cpf || 'N/A'} | DN: ${formatDateSafe(patient.data_nascimento)}`, 20, y);
           y += 7;
           pdf.text(`Convênio: ${patient.convenio || 'Particular'}`, 20, y);
           y += 15;
@@ -227,7 +238,7 @@ export default function Reports() {
               
               pdf.setFontSize(11);
               pdf.setFont(undefined, 'bold');
-              pdf.text(`${format(new Date(a.data_consulta), 'dd/MM/yyyy')} - ${a.horario_consulta || ''} (Dr. ID: ${a.creator_id})`, 20, y);
+              pdf.text(`${formatDateSafe(a.data_consulta)} - ${a.horario_consulta || ''} (Dr. ID: ${a.creator_id})`, 20, y);
               y += 7;
               
               pdf.setFont(undefined, 'normal');
@@ -372,7 +383,7 @@ export default function Reports() {
                                 <TableBody>
                                     {data.map((row, i) => (
                                         <TableRow key={i}>
-                                            <TableCell>{format(new Date(row.date), 'dd/MM/yyyy')} {row.time}</TableCell>
+                                            <TableCell>{formatDateSafe(row.date)} {row.time}</TableCell>
                                             <TableCell>{row.patient}</TableCell>
                                             <TableCell>{row.doctor}</TableCell>
                                             <TableCell>{row.status}</TableCell>
@@ -397,7 +408,7 @@ export default function Reports() {
                                 <TableBody>
                                     {data.map((row, i) => (
                                         <TableRow key={i}>
-                                            <TableCell>{format(new Date(row.date), 'dd/MM/yyyy')} {row.time}</TableCell>
+                                            <TableCell>{formatDateSafe(row.date)} {row.time}</TableCell>
                                             <TableCell>{row.patient}</TableCell>
                                             <TableCell>{row.professional}</TableCell>
                                             <TableCell>{row.type}</TableCell>
@@ -470,7 +481,7 @@ export default function Reports() {
                                         <TableRow key={i}>
                                             <TableCell className="font-medium">{row.nome}</TableCell>
                                             <TableCell>{row.cpf}</TableCell>
-                                            <TableCell>{row.data_nascimento ? format(new Date(row.data_nascimento), 'dd/MM/yyyy') : '-'}</TableCell>
+                                            <TableCell>{formatDateSafe(row.data_nascimento)}</TableCell>
                                             <TableCell>{row.convenio}</TableCell>
                                             <TableCell className="text-right">
                                                 <Button 
