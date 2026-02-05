@@ -13,7 +13,7 @@ import { ArrowLeft, Sparkles, Loader2, FileText, Copy, Check } from "lucide-reac
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import PatientSelector from "./PatientSelector";
-import PatientFormDialog from "../components/patients/PatientFormDialog";
+import PatientFormDialog from "@/components/patients/PatientFormDialog";
 import ToolsSidebar from "../tools/ToolsSidebar";
 import DocumentsSidebar from "../medical/DocumentsSidebar";
 import GestationalAgeCalculator from "../tools/GestationalAgeCalculator";
