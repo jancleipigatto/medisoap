@@ -33,6 +33,7 @@ export default function Agenda() {
   const [showDialog, setShowDialog] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [viewMode, setViewMode] = useState("day"); // day, week, month
+  const [availableSlots, setAvailableSlots] = useState([]);
   const [formData, setFormData] = useState({
     patient_id: "",
     patient_name: "",
@@ -109,55 +110,145 @@ export default function Agenda() {
     setIsLoading(false);
   };
 
-  const checkAvailability = (dateStr, startTime, endTime, profId) => {
-    // If no settings, assume available (or blocked? Default to available for backward compatibility)
-    if (!scheduleSettings && scheduleBlocks.length === 0) return { available: true };
+  // Calculate available slots when form data changes
+  useEffect(() => {
+    const calculateSlots = async () => {
+      if (!showDialog || !formData.professional_id || !formData.data_agendamento) {
+        setAvailableSlots([]);
+        return;
+      }
+      
+      let settings = scheduleSettings;
+      let blocks = scheduleBlocks;
+      
+      // If the selected professional in form is different from the page filter, fetch their specific settings
+      if (selectedProfessional !== "all" && selectedProfessional !== formData.professional_id) {
+         const s = await base44.entities.AgendaSettings.filter({ professional_id: formData.professional_id });
+         settings = s[0];
+         blocks = await base44.entities.ScheduleBlock.filter({ professional_id: formData.professional_id });
+      } else if (selectedProfessional === "all" && formData.professional_id) {
+         // If filter is All, we definitely need to fetch settings for the specific professional
+         const s = await base44.entities.AgendaSettings.filter({ professional_id: formData.professional_id });
+         settings = s[0];
+         blocks = await base44.entities.ScheduleBlock.filter({ professional_id: formData.professional_id });
+      }
+
+      // If no settings, we can't generate specific slots, so we might show empty or generic
+      if (!settings) {
+          setAvailableSlots([]); 
+          return;
+      }
+
+      const duration = settings.slot_duration || 30;
+      const date = parseISO(formData.data_agendamento);
+      const dayOfWeek = date.getDay();
+      const intervals = settings.weekly_schedule?.[dayOfWeek] || [];
+      
+      const slots = [];
+      
+      intervals.forEach(interval => {
+          let [currH, currM] = interval.start.split(':').map(Number);
+          const [endH, endM] = interval.end.split(':').map(Number);
+          
+          let currMinutes = currH * 60 + currM;
+          const endMinutes = endH * 60 + endM;
+          
+          while (currMinutes + duration <= endMinutes) {
+               const h = Math.floor(currMinutes / 60);
+               const m = currMinutes % 60;
+               const timeStr = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+               
+               // Calculate End Time for this slot
+               const slotEndMin = currMinutes + duration;
+               const slotEndH = Math.floor(slotEndMin / 60);
+               const slotEndM = slotEndMin % 60;
+               const timeEndStr = `${slotEndH.toString().padStart(2, '0')}:${slotEndM.toString().padStart(2, '0')}`;
+
+               // Check Block Overlap
+               const isBlocked = blocks.some(b => {
+                   if (b.start_date > formData.data_agendamento || b.end_date < formData.data_agendamento) return false;
+                   if (b.is_all_day) return true;
+                   return (timeStr >= b.start_time && timeStr < b.end_time); 
+               });
+               
+               if (!isBlocked) {
+                   // Check Appointment Overlap
+                   const overlap = agendamentos.some(a => {
+                       if (a.professional_id !== formData.professional_id) return false;
+                       if (a.data_agendamento !== formData.data_agendamento) return false;
+                       if (a.status === 'cancelado' || a.status === 'faltou') return false;
+                       if (a.id === editingId) return false; // Ignore self
+                       
+                       const startA = timeStr;
+                       const endA = timeEndStr;
+                       const startB = a.horario_inicio;
+                       const endB = a.horario_fim || a.horario_inicio; // fallback
+                       
+                       return (startA < endB) && (endA > startB);
+                   });
+                   
+                   if (!overlap) {
+                       slots.push(timeStr);
+                   }
+               }
+               
+               currMinutes += duration;
+          }
+      });
+      setAvailableSlots(slots);
+    };
+    
+    calculateSlots();
+  }, [formData.professional_id, formData.data_agendamento, showDialog, selectedProfessional, agendamentos, scheduleSettings, scheduleBlocks]);
+
+  const checkAvailability = async (dateStr, startTime, endTime, profId) => {
+    // Fetch settings fresh to ensure we check against correct rules
+    let settings = scheduleSettings;
+    let blocks = scheduleBlocks;
+
+    if (selectedProfessional === "all" || selectedProfessional !== profId) {
+        const s = await base44.entities.AgendaSettings.filter({ professional_id: profId });
+        settings = s[0];
+        blocks = await base44.entities.ScheduleBlock.filter({ professional_id: profId });
+    }
+
+    // If no settings, assume available (legacy behavior)
+    if (!settings && blocks.length === 0) return { available: true };
 
     const date = parseISO(dateStr);
     
     // 1. Check Blocks
-    const blocked = scheduleBlocks.find(b => {
+    const blocked = blocks.find(b => {
       const start = parseISO(b.start_date);
       const end = parseISO(b.end_date);
-      // Check if date overlaps with block date range
-      // Simplified: check if date is within range (inclusive)
       const isDateBlocked = date >= start && date <= end;
       
       if (!isDateBlocked) return false;
-
       if (b.is_all_day) return true;
       
-      // Partial block check
-      // If block has times, check if appointment overlaps
       if (b.start_time && b.end_time) {
-        // Simple string comparison works for HH:mm if format is consistent
         return (startTime >= b.start_time && startTime < b.end_time) || 
                (endTime > b.start_time && endTime <= b.end_time) ||
                (startTime <= b.start_time && endTime >= b.end_time);
       }
-      return true; // Fallback if times missing but not all day
+      return true;
     });
 
     if (blocked) return { available: false, reason: blocked.reason || "Horário bloqueado" };
 
-    // 2. Check Overlaps with OTHER appointments
-    // We filter by date and professional first to optimize
+    // 2. Check Overlaps
     const sameDayAppts = agendamentos.filter(a => 
         a.professional_id === profId && 
         a.data_agendamento === dateStr &&
         a.status !== 'cancelado' && a.status !== 'faltou' &&
-        a.id !== editingId // Exclude self if editing
+        a.id !== editingId
     );
 
     const overlap = sameDayAppts.find(a => {
-        // Simple overlap check: (StartA < EndB) and (EndA > StartB)
-        // Ensure we have end times. If not, assume 30m.
         const startA = startTime;
-        const endA = endTime || startTime; // fallback if empty? usually handled before check
-        
+        const endA = endTime || startTime;
         const startB = a.horario_inicio;
-        const endB = a.horario_fim || a.horario_inicio; // fallback
-
+        const endB = a.horario_fim || a.horario_inicio;
         return (startA < endB) && (endA > startB);
     });
 
@@ -165,23 +256,17 @@ export default function Agenda() {
         return { available: false, reason: `Conflito com agendamento de ${overlap.patient_name} (${overlap.horario_inicio})` };
     }
 
-    // 3. Check Weekly Schedule (only if settings exist)
-    if (scheduleSettings && scheduleSettings.weekly_schedule) {
-      const dayOfWeek = date.getDay(); // 0 = Sunday
-      const intervals = scheduleSettings.weekly_schedule[dayOfWeek];
+    // 3. Check Weekly Schedule
+    if (settings && settings.weekly_schedule) {
+      const dayOfWeek = date.getDay();
+      const intervals = settings.weekly_schedule[dayOfWeek];
 
       if (!intervals || intervals.length === 0) {
         return { available: false, reason: "Profissional não atende neste dia da semana" };
       }
 
-      // Check if time is within ANY interval
       const inInterval = intervals.some(inv => {
         return startTime >= inv.start && startTime < inv.end;
-        // Note: this simple check assumes appointment fits entirely? 
-        // Or just starts within? Let's check start time validity.
-        // Ideally checking full duration overlap.
-        // Assuming slots are small enough or user picks start time.
-        // Let's check if start time is valid.
       });
 
       if (!inInterval) {
@@ -209,24 +294,13 @@ export default function Agenda() {
         // Given complexity, let's rely on currently loaded settings if matches.
         
         // Always check availability if professional is selected
+    // STRICT Availability Check
     if (formData.professional_id) {
-        // Reload schedule settings if needed? 
-        // We assume checkAvailability uses current state `scheduleBlocks` and `scheduleSettings`.
-        // If formData.professional_id is different from `selectedProfessional`, the state `scheduleSettings` might be wrong!
-        // This is a risk. We should ideally fetch settings for the specific professional if not currently loaded.
-        // But for now, let's assume users mostly filter by the professional they are scheduling for.
-        // Or we can warn if contexts mismatch.
-        
-        // BETTER: If we can't trust the loaded settings because ID mismatch, we skip the weekly schedule check but still do the overlap check if we can filter agendamentos (which we have all of).
-        
-        const availability = checkAvailability(formData.data_agendamento, formData.horario_inicio, formData.horario_fim || formData.horario_inicio, formData.professional_id);
+        const availability = await checkAvailability(formData.data_agendamento, formData.horario_inicio, formData.horario_fim || formData.horario_inicio, formData.professional_id);
         
         if (!availability.available) {
-            // "aviso quem está fazendo a agenda"
-            const msg = `ALERTA DE CONFLITO:\n\n${availability.reason}\n\nDeseja prosseguir e agendar mesmo assim?`;
-            if (!confirm(msg)) {
-                return;
-            }
+            toast.error(`Não foi possível agendar: ${availability.reason}`);
+            return;
         }
     }
     }
@@ -974,12 +1048,45 @@ export default function Agenda() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="inicio">Horário Início *</Label>
-                <Input
-                  id="inicio"
-                  type="time"
+                <Select
                   value={formData.horario_inicio}
-                  onChange={(e) => setFormData({ ...formData, horario_inicio: e.target.value })}
-                />
+                  onValueChange={(value) => {
+                      // Calculate end time based on slot duration if possible
+                      // We don't have direct access to duration here without fetching settings again,
+                      // but we can default to 30 mins or leave it to the user/logic
+                      // Ideally we find the next slot?
+                      // Simple approach: just set start time.
+                      
+                      // Optional: Auto-set end time to +30m (or whatever duration is)
+                      // We can assume 30m for now or parse from settings if we had them in state.
+                      // Let's just set the start time and let the user adjust end time if needed,
+                      // OR (better) auto-calculate end time:
+                      const [h, m] = value.split(':').map(Number);
+                      const endM = m + 30; // Default 30
+                      const endH = h + Math.floor(endM / 60);
+                      const finalM = endM % 60;
+                      const endTime = `${endH.toString().padStart(2, '0')}:${finalM.toString().padStart(2, '0')}`;
+                      
+                      setFormData({ ...formData, horario_inicio: value, horario_fim: endTime });
+                  }}
+                >
+                    <SelectTrigger>
+                        <SelectValue placeholder={availableSlots.length > 0 ? "Selecione um horário" : "Sem horários livres"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {availableSlots.length > 0 ? (
+                            availableSlots.map(time => (
+                                <SelectItem key={time} value={time}>{time}</SelectItem>
+                            ))
+                        ) : (
+                            formData.horario_inicio && <SelectItem value={formData.horario_inicio}>{formData.horario_inicio} (Atual)</SelectItem>
+                        )}
+                        {/* Fallback manual entry? Maybe not needed if logic is strict */}
+                    </SelectContent>
+                </Select>
+                {availableSlots.length === 0 && (
+                    <p className="text-xs text-red-500 mt-1">Nenhum horário disponível para esta data.</p>
+                )}
               </div>
               <div>
                 <Label htmlFor="fim">Horário Fim</Label>
