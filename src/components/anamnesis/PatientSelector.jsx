@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Patient } from "@/entities/Patient";
+import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { User, Search, Star } from "lucide-react";
+import { User, Search, Star, Loader2 } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -15,29 +15,76 @@ export default function PatientSelector({ selectedPatient, onSelect }) {
   const [patients, setPatients] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    loadPatients();
-  }, []);
+    if (!searchTerm) {
+        loadInitialPatients();
+    }
+  }, [searchTerm, open]);
 
-  const loadPatients = async () => {
-    const data = await Patient.list("-created_date");
-    setPatients(data);
+  // Debounce search
+  useEffect(() => {
+      const timer = setTimeout(() => {
+          if (searchTerm) {
+              searchPatients(searchTerm);
+          }
+      }, 500);
+      return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  const loadInitialPatients = async () => {
+    setLoading(true);
+    try {
+        // Try to load favorites first
+        const favs = await base44.entities.Patient.filter({ is_favorite: true }, "-nome", 10);
+        
+        // If few favorites, load recent
+        if (favs.length < 10) {
+            const recents = await base44.entities.Patient.list("-created_date", 20);
+            // Merge unique
+            const map = new Map();
+            favs.forEach(p => map.set(p.id, p));
+            recents.forEach(p => {
+                if (!map.has(p.id)) map.set(p.id, p);
+            });
+            setPatients(Array.from(map.values()));
+        } else {
+            setPatients(favs);
+        }
+    } catch (e) {
+        console.error("Error loading patients", e);
+    } finally {
+        setLoading(false);
+    }
+  };
+
+  const searchPatients = async (term) => {
+    setLoading(true);
+    try {
+        // Search using regex for partial match
+        const results = await base44.entities.Patient.filter({ nome: { $regex: term, $options: 'i' } }, "nome", 20);
+        setPatients(results);
+    } catch (e) {
+        console.error("Search failed", e);
+    } finally {
+        setLoading(false);
+    }
   };
 
   const toggleFavorite = async (patient, e) => {
     e.stopPropagation();
-    await Patient.update(patient.id, { is_favorite: !patient.is_favorite });
-    loadPatients();
+    try {
+        await base44.entities.Patient.update(patient.id, { is_favorite: !patient.is_favorite });
+        // Update local state without reload
+        setPatients(prev => prev.map(p => p.id === patient.id ? { ...p, is_favorite: !p.is_favorite } : p));
+    } catch(e) {
+        console.error("Error toggling favorite", e);
+    }
   };
-
-  const filteredPatients = patients
-    .filter(p => p.nome.toLowerCase().includes(searchTerm.toLowerCase()))
-    .sort((a, b) => {
-      if (a.is_favorite && !b.is_favorite) return -1;
-      if (!a.is_favorite && b.is_favorite) return 1;
-      return 0;
-    });
+  
+  // Use patients directly as they are now filtered from backend
+  const filteredPatients = patients;
 
   const handleSelect = (patient) => {
     onSelect(patient);
@@ -85,7 +132,11 @@ export default function PatientSelector({ selectedPatient, onSelect }) {
             </div>
           </div>
           <ScrollArea className="h-[300px]">
-            {filteredPatients.length === 0 ? (
+            {loading ? (
+                 <div className="flex items-center justify-center h-full p-8">
+                     <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
+                 </div>
+            ) : filteredPatients.length === 0 ? (
               <div className="p-6 text-center text-gray-500">
                 <User className="w-12 h-12 mx-auto mb-2 text-gray-300" />
                 <p className="text-sm">Nenhum paciente encontrado</p>
