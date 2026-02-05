@@ -75,6 +75,18 @@ export default function NewAnamnesisContent() {
   const [showPatientDialog, setShowPatientDialog] = useState(false);
   const [isConfidential, setIsConfidential] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+  const [triageData, setTriageData] = useState({
+    pa: "",
+    temp: "",
+    peso: "",
+    altura: "",
+    spo2: "",
+    fc: "",
+    fr: "",
+    hgt: "",
+    queixa: ""
+  });
+  const [showManualTriage, setShowManualTriage] = useState(false);
 
   useEffect(() => {
     base44.auth.me().then(setCurrentUser).catch(console.error);
@@ -284,38 +296,47 @@ ${result.plano || ''}`;
     return `${nextNumber}_${dateStr}`;
   };
 
-  const saveAnamnesisWithoutSOAP = async () => {
+  const saveAnamnesisWithoutSOAP = async (silent = false) => {
     if (!selectedPatient) {
-      alert("Por favor, selecione um paciente");
+      if (!silent) alert("Por favor, selecione um paciente");
       return;
     }
 
-    if (!textoOriginal.trim()) {
-      alert("Por favor, digite o texto do atendimento");
+    if (!textoOriginal.trim() && !triageData.queixa && !triageData.pa) {
+      if (!silent) alert("Por favor, digite o texto do atendimento ou dados de triagem");
       return;
     }
 
-    setIsSaving(true);
+    // Don't set saving state for silent auto-saves to avoid UI flicker/locking
+    if (!silent) setIsSaving(true);
+
+    const commonData = {
+      patient_id: selectedPatient.id,
+      patient_name: selectedPatient.nome,
+      data_consulta: dataConsulta,
+      horario_consulta: horarioConsulta,
+      texto_original: textoOriginal,
+      // Include manual triage data
+      triagem_pa: triageData.pa,
+      triagem_temperatura: triageData.temp,
+      triagem_peso: triageData.peso,
+      triagem_altura: triageData.altura,
+      triagem_spo2: triageData.spo2,
+      triagem_fc: triageData.fc,
+      triagem_fr: triageData.fr,
+      triagem_hgt: triageData.hgt,
+      triagem_queixa: triageData.queixa,
+      // If manual triage is used, mark user as triage performer if not set? 
+      // Maybe not overwrite if existing?
+      // For now simple update.
+    };
 
     if (currentAnamnesisId) {
-      // Atualizar anamnese existente
-      // Adicionar histórico de edição
-      await base44.entities.Anamnesis.update(currentAnamnesisId, {
-        patient_id: selectedPatient.id,
-        patient_name: selectedPatient.nome,
-        data_consulta: dataConsulta,
-        horario_consulta: horarioConsulta,
-        texto_original: textoOriginal // Sobrescreve para evitar duplicação, já que o editor contém o texto completo
-      });
+      await base44.entities.Anamnesis.update(currentAnamnesisId, commonData);
     } else {
-      // Criar nova anamnese com número de atendimento
       const numeroAtendimento = await generateAttendanceNumber(dataConsulta);
       const created = await base44.entities.Anamnesis.create({
-        patient_id: selectedPatient.id,
-        patient_name: selectedPatient.nome,
-        data_consulta: dataConsulta,
-        horario_consulta: horarioConsulta,
-        texto_original: textoOriginal,
+        ...commonData,
         numero_atendimento: numeroAtendimento,
         subjetivo: "",
         objetivo: "",
@@ -325,9 +346,21 @@ ${result.plano || ''}`;
       setCurrentAnamnesisId(created.id);
     }
 
-    setIsSaving(false);
-    alert("Atendimento salvo com sucesso!");
+    if (!silent) {
+      setIsSaving(false);
+      alert("Atendimento salvo com sucesso!");
+    }
   };
+
+  // Auto-save effect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (selectedPatient && (textoOriginal || triageData.pa || triageData.queixa)) {
+        saveAnamnesisWithoutSOAP(true);
+      }
+    }, 5000); // 5 seconds debounce
+    return () => clearTimeout(timer);
+  }, [selectedPatient, textoOriginal, triageData, dataConsulta, horarioConsulta, currentAnamnesisId]);
 
   const finalizeAnamnesis = async () => {
     if (!selectedPatient) {
@@ -371,7 +404,17 @@ ${result.plano || ''}`;
       avaliacao: (finalSoapData?.avaliacao || "") + (cidText ? `\n\nCID: ${cidText}` : ""),
       plano: finalSoapData?.plano || "",
       is_confidential: isConfidential,
-      creator_id: currentUser?.id
+      creator_id: currentUser?.id,
+      // Include Manual Triage Data
+      triagem_pa: triageData.pa,
+      triagem_temperatura: triageData.temp,
+      triagem_peso: triageData.peso,
+      triagem_altura: triageData.altura,
+      triagem_spo2: triageData.spo2,
+      triagem_fc: triageData.fc,
+      triagem_fr: triageData.fr,
+      triagem_hgt: triageData.hgt,
+      triagem_queixa: triageData.queixa
     };
 
     let savedId = currentAnamnesisId;
@@ -778,6 +821,89 @@ ${result.plano || ''}`;
                 </>
               )}
 
+              {/* Manual Triage Section */}
+              <div className="border-t pt-4">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setShowManualTriage(!showManualTriage)}
+                  className="flex items-center gap-2 text-gray-600 hover:text-blue-600 w-full justify-start p-0 h-auto"
+                >
+                  <Activity className="w-4 h-4" />
+                  <span className="font-medium">Inserir Dados de Triagem Manualmente</span>
+                  <span className="text-xs text-gray-400 ml-auto">{showManualTriage ? "Ocultar" : "Mostrar"}</span>
+                </Button>
+                
+                {showManualTriage && (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3 bg-gray-50 p-3 rounded-lg animate-in fade-in slide-in-from-top-2">
+                    <div>
+                      <Label className="text-xs">PA (mmHg)</Label>
+                      <Input 
+                        value={triageData.pa} 
+                        onChange={(e) => setTriageData({...triageData, pa: e.target.value})}
+                        className="h-8 text-sm bg-white" placeholder="120/80" 
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Temp (°C)</Label>
+                      <Input 
+                        value={triageData.temp} 
+                        onChange={(e) => setTriageData({...triageData, temp: e.target.value})}
+                        className="h-8 text-sm bg-white" placeholder="36.5" 
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Peso (kg)</Label>
+                      <Input 
+                        value={triageData.peso} 
+                        onChange={(e) => setTriageData({...triageData, peso: e.target.value})}
+                        className="h-8 text-sm bg-white" placeholder="70" 
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Altura (cm)</Label>
+                      <Input 
+                        value={triageData.altura} 
+                        onChange={(e) => setTriageData({...triageData, altura: e.target.value})}
+                        className="h-8 text-sm bg-white" placeholder="170" 
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs">SpO2 (%)</Label>
+                      <Input 
+                        value={triageData.spo2} 
+                        onChange={(e) => setTriageData({...triageData, spo2: e.target.value})}
+                        className="h-8 text-sm bg-white" placeholder="98" 
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs">FC (bpm)</Label>
+                      <Input 
+                        value={triageData.fc} 
+                        onChange={(e) => setTriageData({...triageData, fc: e.target.value})}
+                        className="h-8 text-sm bg-white" placeholder="80" 
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs">HGT (mg/dL)</Label>
+                      <Input 
+                        value={triageData.hgt} 
+                        onChange={(e) => setTriageData({...triageData, hgt: e.target.value})}
+                        className="h-8 text-sm bg-white" placeholder="90" 
+                      />
+                    </div>
+                    <div className="col-span-2 md:col-span-4">
+                      <Label className="text-xs">Queixa Principal</Label>
+                      <Input 
+                        value={triageData.queixa} 
+                        onChange={(e) => setTriageData({...triageData, queixa: e.target.value})}
+                        className="h-8 text-sm bg-white" placeholder="Dor de cabeça..." 
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {linkedAppointment && (
                 <div className="bg-blue-50 p-3 rounded-md border border-blue-100 grid grid-cols-2 gap-4">
                     <div>
@@ -907,13 +1033,14 @@ ${result.plano || ''}`;
               <div className="flex justify-between items-center">
                 <CardTitle className="text-base">Atendimento</CardTitle>
                 {templates.length > 0 && (
-                  <div className="w-[250px]">
+                  <div className="w-[250px] flex items-center gap-2">
+                    <Label htmlFor="template" className="text-sm font-medium text-gray-600 whitespace-nowrap">Usar modelo</Label>
                     <Select
                       value={selectedTemplate}
                       onValueChange={handleTemplateSelect}
                     >
                       <SelectTrigger id="template" className="text-sm h-8">
-                        <SelectValue placeholder="Usar Modelo de Atendimento" />
+                        <SelectValue placeholder="Selecione..." />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="none">Nenhum modelo</SelectItem>
