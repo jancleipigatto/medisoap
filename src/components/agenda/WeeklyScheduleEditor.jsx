@@ -5,6 +5,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2, Save, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -64,7 +65,7 @@ export default function WeeklyScheduleEditor({ user }) {
   const addInterval = (dayId) => {
     const newSchedule = { ...schedule };
     if (!newSchedule[dayId]) newSchedule[dayId] = [];
-    newSchedule[dayId].push({ start: "09:00", end: "12:00" });
+    newSchedule[dayId].push({ start: "09:00", end: "12:00", type: "all" });
     setSchedule(newSchedule);
   };
 
@@ -165,6 +166,22 @@ export default function WeeklyScheduleEditor({ user }) {
                             value={interval.end} 
                             onChange={(e) => updateInterval(day.id, index, 'end', e.target.value)} 
                           />
+                          <div className="w-40">
+                            <Select 
+                              value={interval.type || "all"} 
+                              onValueChange={(val) => updateInterval(day.id, index, 'type', val)}
+                            >
+                              <SelectTrigger className="h-9">
+                                <SelectValue placeholder="Tipo" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="all">Qualquer</SelectItem>
+                                <SelectItem value="sus">SUS</SelectItem>
+                                <SelectItem value="convenio">Convênio</SelectItem>
+                                <SelectItem value="particular">Particular</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
                           <Button 
                             variant="ghost" 
                             size="icon" 

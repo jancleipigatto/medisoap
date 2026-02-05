@@ -191,7 +191,7 @@ export default function Agenda() {
                    });
                    
                    if (!overlap) {
-                       slots.push(timeStr);
+                       slots.push({ time: timeStr, type: interval.type || 'all' });
                    }
                }
                
@@ -719,24 +719,38 @@ export default function Agenda() {
                             const height = duration; 
                             
                             // Check Working Hour logic for this slot
-                            let isWorkingHour = true;
+                            let isWorkingHour = false;
+                            let slotType = 'all';
+
                             if (scheduleSettings && scheduleSettings.weekly_schedule) {
                                 const dayOfWeek = selectedDate.getDay();
                                 const intervals = scheduleSettings.weekly_schedule[dayOfWeek];
-                                if (!intervals || intervals.length === 0) {
-                                    isWorkingHour = false;
-                                } else {
-                                    const inInterval = intervals.some(inv => {
-                                        return (time >= inv.start && time < inv.end);
-                                    });
-                                    if (!inInterval) isWorkingHour = false;
+                                if (intervals && intervals.length > 0) {
+                                    const interval = intervals.find(inv => time >= inv.start && time < inv.end);
+                                    if (interval) {
+                                        isWorkingHour = true;
+                                        slotType = interval.type || 'all';
+                                    }
                                 }
+                            } else {
+                                // Fallback if no settings (assume working)
+                                isWorkingHour = true;
                             }
+                            
+                            // Type Colors
+                            const typeColors = {
+                                sus: "bg-yellow-50/30 hover:bg-yellow-50",
+                                convenio: "bg-purple-50/30 hover:bg-purple-50",
+                                particular: "bg-green-50/30 hover:bg-green-50",
+                                all: "hover:bg-blue-50"
+                            };
+
+                            const bgColor = !isWorkingHour && scheduleSettings ? 'bg-gray-50/50' : (typeColors[slotType] || typeColors.all) + ' cursor-pointer';
                             
                             return (
                                 <div 
                                     key={time} 
-                                    className={`flex border-b border-gray-100 group ${!isWorkingHour && scheduleSettings ? 'bg-gray-50/50' : 'hover:bg-blue-50 cursor-pointer'}`}
+                                    className={`flex border-b border-gray-100 group ${bgColor}`}
                                     style={{ height: `${height}px` }}
                                     onClick={() => {
                                         setFormData(prev => ({
@@ -761,9 +775,14 @@ export default function Agenda() {
                                     <div className="w-16 flex-shrink-0 border-r border-gray-100 bg-gray-50/50 text-xs text-gray-400 font-medium p-1 text-right">
                                         {time}
                                     </div>
-                                    <div className="flex-1 relative">
+                                    <div className="flex-1 relative flex items-center px-2">
                                         {!isWorkingHour && scheduleSettings && (
                                             <div className="absolute inset-0 bg-gray-100/30"></div>
+                                        )}
+                                        {isWorkingHour && slotType !== 'all' && (
+                                            <span className="text-[10px] uppercase font-bold text-gray-300 group-hover:text-gray-400 select-none">
+                                                {slotType}
+                                            </span>
                                         )}
                                         {/* Hover + button to indicate creation */}
                                         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
@@ -1227,16 +1246,6 @@ export default function Agenda() {
                 <Select
                   value={formData.horario_inicio}
                   onValueChange={(value) => {
-                      // Calculate end time based on slot duration if possible
-                      // We don't have direct access to duration here without fetching settings again,
-                      // but we can default to 30 mins or leave it to the user/logic
-                      // Ideally we find the next slot?
-                      // Simple approach: just set start time.
-                      
-                      // Optional: Auto-set end time to +30m (or whatever duration is)
-                      // We can assume 30m for now or parse from settings if we had them in state.
-                      // Let's just set the start time and let the user adjust end time if needed,
-                      // OR (better) auto-calculate end time:
                       const [h, m] = value.split(':').map(Number);
                       const endM = m + 30; // Default 30
                       const endH = h + Math.floor(endM / 60);
@@ -1251,13 +1260,14 @@ export default function Agenda() {
                     </SelectTrigger>
                     <SelectContent>
                         {availableSlots.length > 0 ? (
-                            availableSlots.map(time => (
-                                <SelectItem key={time} value={time}>{time}</SelectItem>
+                            availableSlots.map(slot => (
+                                <SelectItem key={slot.time} value={slot.time}>
+                                    {slot.time} {slot.type && slot.type !== 'all' ? `(${slot.type.toUpperCase()})` : ''}
+                                </SelectItem>
                             ))
                         ) : (
                             formData.horario_inicio && <SelectItem value={formData.horario_inicio}>{formData.horario_inicio} (Atual)</SelectItem>
                         )}
-                        {/* Fallback manual entry? Maybe not needed if logic is strict */}
                     </SelectContent>
                 </Select>
                 {availableSlots.length === 0 && (
