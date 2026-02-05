@@ -56,6 +56,7 @@ import CompletarPerfil from './pages/CompletarPerfil';
 import ConfirmAppointment from './pages/ConfirmAppointment';
 import Consulta from './pages/Consulta';
 import ConvenioManagement from './pages/ConvenioManagement';
+import DashboardAnalytics from './pages/DashboardAnalytics';
 import DashboardSettings from './pages/DashboardSettings';
 import EncaminhamentoTemplates from './pages/EncaminhamentoTemplates';
 import ExameTemplates from './pages/ExameTemplates';
@@ -74,14 +75,13 @@ import Patients from './pages/Patients';
 import ProfileManagement from './pages/ProfileManagement';
 import ReceitaTemplates from './pages/ReceitaTemplates';
 import Recepcao from './pages/Recepcao';
+import Reports from './pages/Reports';
 import Settings from './pages/Settings';
 import Templates from './pages/Templates';
 import Tools from './pages/Tools';
 import Triagem from './pages/Triagem';
 import UserManagement from './pages/UserManagement';
 import UserProfile from './pages/UserProfile';
-import DashboardAnalytics from './pages/DashboardAnalytics';
-import Reports from './pages/Reports';
 import __Layout from './Layout.jsx';
 
 
@@ -95,6 +95,7 @@ export const PAGES = {
     "ConfirmAppointment": ConfirmAppointment,
     "Consulta": Consulta,
     "ConvenioManagement": ConvenioManagement,
+    "DashboardAnalytics": DashboardAnalytics,
     "DashboardSettings": DashboardSettings,
     "EncaminhamentoTemplates": EncaminhamentoTemplates,
     "ExameTemplates": ExameTemplates,
@@ -113,14 +114,13 @@ export const PAGES = {
     "ProfileManagement": ProfileManagement,
     "ReceitaTemplates": ReceitaTemplates,
     "Recepcao": Recepcao,
+    "Reports": Reports,
     "Settings": Settings,
     "Templates": Templates,
     "Tools": Tools,
     "Triagem": Triagem,
     "UserManagement": UserManagement,
     "UserProfile": UserProfile,
-    "DashboardAnalytics": DashboardAnalytics,
-    "Reports": Reports,
 }
 
 export const pagesConfig = {

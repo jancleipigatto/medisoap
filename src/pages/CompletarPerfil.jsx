@@ -8,17 +8,31 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Stethoscope, Loader2, CheckCircle2 } from "lucide-react";
+import { Stethoscope, Loader2, CheckCircle2, User, Camera, Upload, X, ShieldCheck } from "lucide-react";
+import WebcamCapture from "@/components/common/WebcamCapture";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function CompletarPerfil() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [showWebcam, setShowWebcam] = useState(false);
+  const [showPhoneVerify, setShowPhoneVerify] = useState(false);
+  const [verificationCode, setVerificationCode] = useState("");
+  const [isVerifying, setIsVerifying] = useState(false);
   const [formData, setFormData] = useState({
     organizacao: "",
+    profession: "",
+    bio: "",
+    linkedin: "",
+    alternative_email: "",
+    photo_url: "",
     telefone: "",
     tem_whatsapp: false,
+    phone_verified: false,
     endereco_rua: "",
     endereco_numero: "",
     endereco_complemento: "",
@@ -47,8 +61,14 @@ export default function CompletarPerfil() {
       // Preenche com dados existentes, se houver
       setFormData({
         organizacao: currentUser.organizacao || "",
+        profession: currentUser.profession || "",
+        bio: currentUser.bio || "",
+        linkedin: currentUser.linkedin || "",
+        alternative_email: currentUser.alternative_email || "",
+        photo_url: currentUser.photo_url || "",
         telefone: currentUser.telefone || "",
         tem_whatsapp: currentUser.tem_whatsapp || false,
+        phone_verified: currentUser.phone_verified || false,
         endereco_rua: currentUser.endereco_rua || "",
         endereco_numero: currentUser.endereco_numero || "",
         endereco_complemento: currentUser.endereco_complemento || "",
@@ -66,6 +86,93 @@ export default function CompletarPerfil() {
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleCepBlur = async () => {
+    const cep = formData.endereco_cep.replace(/\D/g, '');
+    if (cep.length === 8) {
+      try {
+        const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+        const data = await response.json();
+        if (!data.erro) {
+          setFormData(prev => ({
+            ...prev,
+            endereco_rua: data.logradouro,
+            endereco_bairro: data.bairro,
+            endereco_cidade: data.localidade,
+            endereco_estado: data.uf
+          }));
+        } else {
+          alert('CEP não encontrado.');
+        }
+      } catch (error) {
+        console.error('Erro ao buscar CEP:', error);
+      }
+    }
+  };
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setIsUploadingPhoto(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setFormData(prev => ({ ...prev, photo_url: file_url }));
+    } catch (error) {
+      console.error("Erro ao fazer upload:", error);
+      alert("Erro ao enviar foto");
+    } finally {
+      setIsUploadingPhoto(false);
+    }
+  };
+
+  const handleWebcamCapture = async (file) => {
+    if (!file) return;
+    setIsUploadingPhoto(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setFormData(prev => ({ ...prev, photo_url: file_url }));
+      setShowWebcam(false);
+    } catch (error) {
+      console.error("Erro ao enviar foto da webcam:", error);
+      alert("Erro ao enviar foto");
+    } finally {
+      setIsUploadingPhoto(false);
+    }
+  };
+
+  const handleSendVerification = async () => {
+    if (!formData.telefone) {
+        alert("Preencha o telefone primeiro");
+        return;
+    }
+    setIsVerifying(true);
+    try {
+        const { demo_code } = await base44.functions.invoke("sendPhoneVerification", { phone: formData.telefone });
+        setShowPhoneVerify(true);
+        if (demo_code) alert(`Código de demonstração: ${demo_code}`);
+    } catch (e) {
+        console.error(e);
+        alert("Erro ao enviar código");
+    } finally {
+        setIsVerifying(false);
+    }
+  };
+
+  const handleVerifyCode = async () => {
+    setIsVerifying(true);
+    try {
+        await base44.functions.invoke("verifyPhoneCode", { code: verificationCode });
+        setFormData(prev => ({ ...prev, phone_verified: true }));
+        setShowPhoneVerify(false);
+        alert("Telefone verificado com sucesso!");
+    } catch (e) {
+        console.error(e);
+        alert("Código inválido");
+    } finally {
+        setIsVerifying(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -119,6 +226,68 @@ export default function CompletarPerfil() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+
+        {/* Foto de Perfil */}
+        <div className="flex justify-center mb-6">
+          <div className="flex flex-col items-center gap-3">
+              <div className="relative group">
+              {formData.photo_url ? (
+                  <>
+                  <img 
+                      src={formData.photo_url} 
+                      alt="Foto Perfil" 
+                      className="w-32 h-32 object-cover rounded-full shadow-lg border-4 border-white bg-gray-100" 
+                  />
+                  <Button
+                      type="button"
+                      size="icon"
+                      variant="destructive"
+                      className="absolute -top-1 -right-1 h-8 w-8 rounded-full shadow-md"
+                      onClick={() => setFormData({...formData, photo_url: ""})}
+                  >
+                      <X className="w-4 h-4" />
+                  </Button>
+                  </>
+              ) : (
+                  <div className="w-32 h-32 bg-gray-100 rounded-full flex items-center justify-center text-gray-400 border-2 border-dashed border-gray-300">
+                  <User className="w-16 h-16 opacity-50" />
+                  </div>
+              )}
+
+              <div className="absolute bottom-0 -right-2 flex gap-2">
+                  <Button
+                      type="button"
+                      size="icon"
+                      className="bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg"
+                      onClick={() => setShowWebcam(true)}
+                      title="Tirar foto com a câmera"
+                  >
+                      <Camera className="w-4 h-4" />
+                  </Button>
+                  <div className="relative">
+                      <Label htmlFor="foto-upload" className="cursor-pointer block">
+                          <div className="bg-indigo-600 hover:bg-indigo-700 text-white p-2.5 rounded-full shadow-lg transition-colors">
+                          {isUploadingPhoto ? (
+                              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          ) : (
+                              <Upload className="w-4 h-4" />
+                          )}
+                          </div>
+                      </Label>
+                      <Input
+                          id="foto-upload"
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={handleFileUpload}
+                          disabled={isUploadingPhoto}
+                      />
+                  </div>
+              </div>
+              </div>
+              <span className="text-sm text-gray-500 font-medium">Sua Foto de Perfil</span>
+          </div>
+        </div>
           {/* Informações Profissionais */}
           <Card className="shadow-lg border-none">
             <CardHeader>
@@ -134,6 +303,38 @@ export default function CompletarPerfil() {
                   placeholder="Nome da clínica ou organização"
                 />
               </div>
+              
+              <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="profession">Profissão</Label>
+                    <Input
+                        id="profession"
+                        value={formData.profession}
+                        onChange={(e) => handleChange("profession", e.target.value)}
+                        placeholder="Ex: Médico Cardiologista"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="linkedin">LinkedIn</Label>
+                    <Input
+                        id="linkedin"
+                        value={formData.linkedin}
+                        onChange={(e) => handleChange("linkedin", e.target.value)}
+                        placeholder="URL do seu perfil"
+                    />
+                  </div>
+              </div>
+
+              <div>
+                <Label htmlFor="bio">Biografia / Resumo Profissional</Label>
+                <Textarea
+                    id="bio"
+                    value={formData.bio}
+                    onChange={(e) => handleChange("bio", e.target.value)}
+                    placeholder="Conte um pouco sobre sua experiência..."
+                    rows={3}
+                />
+              </div>
             </CardContent>
           </Card>
 
@@ -145,11 +346,39 @@ export default function CompletarPerfil() {
             <CardContent className="space-y-4">
               <div>
                 <Label htmlFor="telefone">Telefone</Label>
+                <div className="flex gap-2">
+                    <Input
+                        id="telefone"
+                        value={formData.telefone}
+                        onChange={(e) => handleChange("telefone", e.target.value)}
+                        placeholder="(00) 00000-0000"
+                    />
+                    {formData.phone_verified ? (
+                        <div className="flex items-center gap-2 text-green-600 px-3 py-2 bg-green-50 rounded-md border border-green-200">
+                            <ShieldCheck className="w-5 h-5" />
+                            <span className="text-sm font-medium whitespace-nowrap">Verificado</span>
+                        </div>
+                    ) : (
+                        <Button 
+                            type="button" 
+                            variant="outline"
+                            onClick={handleSendVerification}
+                            disabled={isVerifying || !formData.telefone}
+                        >
+                            {isVerifying ? <Loader2 className="w-4 h-4 animate-spin" /> : "Verificar"}
+                        </Button>
+                    )}
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="alternative_email">E-mail Alternativo</Label>
                 <Input
-                  id="telefone"
-                  value={formData.telefone}
-                  onChange={(e) => handleChange("telefone", e.target.value)}
-                  placeholder="(00) 00000-0000"
+                  id="alternative_email"
+                  type="email"
+                  value={formData.alternative_email}
+                  onChange={(e) => handleChange("alternative_email", e.target.value)}
+                  placeholder="seu.email@exemplo.com"
                 />
               </div>
               
@@ -179,8 +408,11 @@ export default function CompletarPerfil() {
                     id="cep"
                     value={formData.endereco_cep}
                     onChange={(e) => handleChange("endereco_cep", e.target.value)}
+                    onBlur={handleCepBlur}
                     placeholder="00000-000"
+                    maxLength={9}
                   />
+                  <p className="text-xs text-gray-500 mt-1">Digite o CEP para preencher automaticamente</p>
                 </div>
                 
                 <div className="md:col-span-2">
@@ -301,6 +533,42 @@ export default function CompletarPerfil() {
           </div>
         </form>
       </div>
+
+      <Dialog open={showWebcam} onOpenChange={setShowWebcam}>
+        <DialogContent className="max-w-3xl">
+            <DialogHeader>
+                <DialogTitle>Tirar Foto</DialogTitle>
+            </DialogHeader>
+            <WebcamCapture 
+                onCapture={handleWebcamCapture}
+                onCancel={() => setShowWebcam(false)}
+            />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showPhoneVerify} onOpenChange={setShowPhoneVerify}>
+        <DialogContent>
+            <DialogHeader>
+                <DialogTitle>Verificar Telefone</DialogTitle>
+                <DialogDescription>
+                    Digite o código enviado para {formData.telefone}
+                </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+                <Input 
+                    value={verificationCode}
+                    onChange={(e) => setVerificationCode(e.target.value)}
+                    placeholder="Código de 6 dígitos"
+                    className="text-center text-2xl tracking-widest"
+                    maxLength={6}
+                />
+                <Button onClick={handleVerifyCode} className="w-full" disabled={isVerifying}>
+                    {isVerifying ? <Loader2 className="animate-spin" /> : "Confirmar Código"}
+                </Button>
+            </div>
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 }
