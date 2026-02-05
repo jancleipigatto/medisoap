@@ -57,40 +57,22 @@ export default function Agenda() {
     loadData();
   }, []);
 
-  useEffect(() => {
-    if (selectedProfessional && selectedProfessional !== "all") {
-      loadSchedule(selectedProfessional);
-    } else {
-      setScheduleSettings(null);
-      setScheduleBlocks([]);
-    }
-  }, [selectedProfessional]);
+  // loadSchedule logic is now integrated into the main fetch effect to avoid double fetching and race conditions
+  // Removing independent useEffect for selectedProfessional
 
-  const loadSchedule = async (profId) => {
-    try {
-      const settings = await base44.entities.AgendaSettings.filter({ professional_id: profId });
-      if (settings.length > 0) setScheduleSettings(settings[0]);
-      else setScheduleSettings(null);
-
-      const blocks = await base44.entities.ScheduleBlock.filter({ professional_id: profId });
-      setScheduleBlocks(blocks);
-    } catch (err) {
-      console.error("Error loading schedule:", err);
-    }
-  };
 
   const loadData = async () => {
+    // Initial load only for user/professionals
     setIsLoading(true);
     const user = await base44.auth.me();
     setCurrentUser(user);
     
-    // Load Professionals using backend function to bypass non-admin restriction
+    // Load Professionals
     try {
       const { data: docs } = await base44.functions.invoke("getMedicalProfessionals");
       setProfessionals(docs || []);
     } catch (err) {
       console.error("Failed to load professionals:", err);
-      // Fallback: se falhar, assume apenas o usuário atual se ele for médico ou puder gerenciar agenda
       if (user.can_create_anamnesis || user.can_manage_own_schedule) {
         setProfessionals([user]);
       } else {
@@ -99,19 +81,68 @@ export default function Agenda() {
     }
 
     // Set default filter
+    let initialProf = "all";
     if (user.is_master || user.can_manage_schedule) {
-       setSelectedProfessional("all");
+       initialProf = "all";
     } else if (user.can_create_anamnesis || user.can_manage_own_schedule) {
-       // Doctor or professional sees their own
-       setSelectedProfessional(user.id);
-    } else {
-       setSelectedProfessional("all");
+       initialProf = user.id;
     }
-
-    const data = await base44.entities.Agendamento.list("-data_agendamento");
-    setAgendamentos(data);
+    
+    // We set the state but don't fetch agendamentos yet, the useEffect [selectedDate, selectedProfessional] will do it
+    setSelectedProfessional(initialProf);
     setIsLoading(false);
   };
+
+  // Fetch appointments when date range or filter changes
+  useEffect(() => {
+      const fetchAppointments = async () => {
+          if (!currentUser) return; // Wait for user load
+
+          // Calculate range based on viewMode, but to be safe and efficient caching, let's always fetch the whole MONTH of the selectedDate
+          // This prevents refetching when switching day->week->month within same month
+          const start = format(startOfMonth(selectedDate), "yyyy-MM-dd");
+          const end = format(endOfMonth(selectedDate), "yyyy-MM-dd");
+
+          // Also fetch blocks for this range
+          const profFilter = selectedProfessional && selectedProfessional !== "all" ? { professional_id: selectedProfessional } : {};
+          
+          const query = {
+              data_agendamento: { $gte: start, $lte: end },
+              ...profFilter
+          };
+
+          try {
+              // Parallel fetch
+              const [agendamentosData, blocksData] = await Promise.all([
+                  base44.entities.Agendamento.filter(query, "-data_agendamento", 500), // Limit 500 per month seems reasonable, pagination could be added if needed
+                  selectedProfessional && selectedProfessional !== "all" 
+                      ? base44.entities.ScheduleBlock.filter({ 
+                          professional_id: selectedProfessional,
+                          // Ideally filter blocks by date too, but Schema dates are strings, simple compare works if format matches
+                          // Or just fetch all blocks for professional (usually not many) and filter in memory
+                        })
+                      : Promise.resolve([])
+              ]);
+
+              setAgendamentos(agendamentosData);
+              if (selectedProfessional && selectedProfessional !== "all") {
+                  setScheduleBlocks(blocksData);
+                  // Also fetch settings if needed
+                  const settings = await base44.entities.AgendaSettings.filter({ professional_id: selectedProfessional });
+                  setScheduleSettings(settings[0] || null);
+              } else {
+                  setScheduleBlocks([]);
+                  setScheduleSettings(null);
+              }
+
+          } catch (error) {
+              console.error("Error fetching agenda data:", error);
+              toast.error("Erro ao carregar agendamentos.");
+          }
+      };
+
+      fetchAppointments();
+  }, [selectedDate, selectedProfessional, currentUser]);
 
   // Calculate available slots when form data changes
   useEffect(() => {
@@ -286,17 +317,6 @@ export default function Agenda() {
       return;
     }
 
-    // Availability Check
-    if (formData.professional_id) {
-        // We need to load availability if not currently selected (e.g. creating for someone else)
-        // But the useEffect loads for 'selectedProfessional'.
-        // If formData.professional_id != selectedProfessional, we might miss data.
-        // However, the dialog usually matches selected or forces selection.
-        // If 'selectedProfessional' is 'all', we might not have settings loaded.
-        // For robustness, if selectedProfessional is 'all', we should skip check or fetch ad-hoc.
-        // Given complexity, let's rely on currently loaded settings if matches.
-        
-        // Always check availability if professional is selected
     // STRICT Availability Check
     if (formData.professional_id) {
         const availability = await checkAvailability(formData.data_agendamento, formData.horario_inicio, formData.horario_fim || formData.horario_inicio, formData.professional_id);
@@ -306,26 +326,29 @@ export default function Agenda() {
             return;
         }
     }
-    }
 
     let result;
     if (editingId) {
       result = await base44.entities.Agendamento.update(editingId, formData);
       handleCloseDialog();
       toast.success("Agendamento atualizado!");
+      
+      // Update local state to reflect changes immediately without full refetch if possible
+      setAgendamentos(prev => prev.map(a => a.id === editingId ? { ...a, ...formData } : a));
     } else {
       result = await base44.entities.Agendamento.create(formData);
-      // Don't close dialog, show success screen
       setSuccessData(result);
-      // Reload data in background
-      loadData(); 
+      
+      // Update local state
+      // Note: result might not have all fields if they are defaults, but usually good enough for UI
+      setAgendamentos(prev => [result, ...prev].sort((a, b) => a.horario_inicio.localeCompare(b.horario_inicio)));
     }
   };
 
   const handleDelete = async (id) => {
     if (!confirm("Deseja excluir este agendamento? Esta ação não pode ser desfeita.")) return;
     await base44.entities.Agendamento.delete(id);
-    await loadData();
+    setAgendamentos(prev => prev.filter(a => a.id !== id));
     handleCloseDialog();
   };
 
@@ -377,7 +400,7 @@ export default function Agenda() {
             reminder_sent: true 
         });
         setFormData(prev => ({ ...prev, message_history: history }));
-        await loadData(); 
+        // No need to reload full data
     } catch (err) {
         console.error("Error updating history", err);
     }
