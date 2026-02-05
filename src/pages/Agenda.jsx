@@ -359,34 +359,27 @@ export default function Agenda() {
     const link = `${window.location.origin}${createPageUrl('ConfirmAppointment')}?token=${token}`;
     const message = `Olá ${formData.patient_name}, confirmamos sua consulta para ${format(parseISO(formData.data_agendamento), "dd/MM 'às' HH:mm")}. Confirme sua presença: ${link}`;
 
-    try {
-        const { data } = await base44.functions.invoke("sendWhatsAppMessage", {
-            phone: formData.telefone_contato.replace(/\D/g, ''), // remove non-digits
-            message: message
-        });
+    const phone = formData.telefone_contato.replace(/\D/g, '');
+    const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+    window.open(url, '_blank');
 
-        if (data?.success) {
-            toast.success("Mensagem enviada!");
-            // Log history
-            const newLog = {
-                date: new Date().toISOString(),
-                type: 'whatsapp_confirmation',
-                status: 'sent'
-            };
-            const history = [...(formData.message_history || []), newLog];
-            
-            await base44.entities.Agendamento.update(apptId, { 
-                message_history: history,
-                reminder_sent: true 
-            });
-            setFormData(prev => ({ ...prev, message_history: history }));
-            await loadData(); // refresh list
-        } else {
-            toast.error("Erro ao enviar mensagem: " + (data?.warning || "Erro desconhecido"));
-        }
+    // Log history
+    const newLog = {
+        date: new Date().toISOString(),
+        type: 'whatsapp_confirmation',
+        status: 'sent' // assumed sent if opened
+    };
+    const history = [...(formData.message_history || []), newLog];
+    
+    try {
+        await base44.entities.Agendamento.update(apptId, { 
+            message_history: history,
+            reminder_sent: true 
+        });
+        setFormData(prev => ({ ...prev, message_history: history }));
+        await loadData(); 
     } catch (err) {
-        console.error(err);
-        toast.error("Falha ao comunicar com serviço de WhatsApp");
+        console.error("Error updating history", err);
     }
   };
 
@@ -405,6 +398,26 @@ export default function Agenda() {
     const link = `${window.location.origin}${createPageUrl('ConfirmAppointment')}?token=${token}`;
     navigator.clipboard.writeText(link);
     toast.success("Link copiado para a área de transferência!");
+  };
+
+  const handleCommunication = async (agendamento) => {
+    let updatedAg = { ...agendamento };
+    // Ensure token exists
+    if (!updatedAg.confirmation_token) {
+         const token = Math.random().toString(36).substring(2) + Date.now().toString(36);
+         // Update silently
+         try {
+            await base44.entities.Agendamento.update(agendamento.id, { confirmation_token: token });
+            updatedAg.confirmation_token = token;
+         } catch (e) {
+             console.error("Error generating token", e);
+         }
+    }
+    setSuccessData({
+        ...updatedAg,
+        is_existing: true 
+    });
+    setShowDialog(true);
   };
 
   const handleEdit = (agendamento) => {
@@ -863,7 +876,7 @@ export default function Agenda() {
                                                                         className="h-7 w-7 text-green-600 hover:bg-green-100"
                                                                         onClick={(e) => { 
                                                                             e.stopPropagation(); 
-                                                                            handleEdit(ag); // Opens dialog where msg can be sent
+                                                                            handleCommunication(ag);
                                                                         }}
                                                                         title="Comunicação / WhatsApp"
                                                                     >
@@ -1054,7 +1067,9 @@ export default function Agenda() {
                     <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                         <CheckCircle className="w-8 h-8 text-green-600" />
                     </div>
-                    <h3 className="text-xl font-bold text-gray-900">Agendamento Criado!</h3>
+                    <h3 className="text-xl font-bold text-gray-900">
+                        {successData.is_existing ? "Comunicação com Paciente" : "Agendamento Criado!"}
+                    </h3>
                     <p className="text-gray-500 mt-1">
                         {successData.patient_name} - {format(parseISO(successData.data_agendamento), "dd/MM 'às' HH:mm")}
                     </p>
