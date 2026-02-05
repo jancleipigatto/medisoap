@@ -91,6 +91,15 @@ export default function AnamnesisDetail() {
           return;
         }
 
+        const currentUser = await base44.auth.me();
+        
+        // Confidentiality Check
+        if (found.is_confidential && found.creator_id !== currentUser?.id && !currentUser?.is_master) {
+            alert("Este prontuário está em sigilo médico e só pode ser acessado pelo criador.");
+            navigate(createPageUrl("Home"));
+            return;
+        }
+
         setAnamnesis(found);
         setEditData({
           atestado: found.atestado || "",

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { MapPin, Upload, X, User, Camera } from "lucide-react";
+import { MapPin, Upload, X, User, Camera, FileText } from "lucide-react";
 import WebcamCapture from "../common/WebcamCapture";
 import {
   Dialog,
@@ -342,6 +342,42 @@ export default function PatientFormDialog({ open, onOpenChange, patientToEdit, o
                   onChange={(e) => setFormData({...formData, convenio: e.target.value})}
                 />
               )}
+            </div>
+          </div>
+
+          <div className="border-t pt-4">
+            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <FileText className="w-5 h-5" />
+              Informações Médicas
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="comorbidades">Comorbidades</Label>
+                <Textarea
+                  id="comorbidades"
+                  value={formData.comorbidades}
+                  onChange={(e) => setFormData({...formData, comorbidades: e.target.value})}
+                  placeholder="Diabetes, Hipertensão, etc."
+                />
+              </div>
+              <div>
+                <Label htmlFor="medicamentos_uso_continuo">Medicamentos de Uso Contínuo</Label>
+                <Textarea
+                  id="medicamentos_uso_continuo"
+                  value={formData.medicamentos_uso_continuo}
+                  onChange={(e) => setFormData({...formData, medicamentos_uso_continuo: e.target.value})}
+                  placeholder="Lista de medicamentos e posologia"
+                />
+              </div>
+              <div>
+                <Label htmlFor="observacoes">Observações Gerais</Label>
+                <Textarea
+                  id="observacoes"
+                  value={formData.observacoes}
+                  onChange={(e) => setFormData({...formData, observacoes: e.target.value})}
+                  placeholder="Alergias, histórico familiar, etc."
+                />
+              </div>
             </div>
           </div>
 

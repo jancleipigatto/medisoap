@@ -26,7 +26,8 @@ import FloatingDocument from "../medical/FloatingDocument";
 import DocumentForm from "../medical/DocumentForm";
 import ReceitaFormAdvanced from "../medical/ReceitaFormAdvanced";
 import { AnimatePresence } from "framer-motion";
-import { Star, X, Activity, ClipboardList, FileCheck, Send, Info, Pill, User } from "lucide-react";
+import { Star, X, Activity, ClipboardList, FileCheck, Send, Info, Pill, User, Lock, Unlock } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { AtestadoTemplate } from "@/entities/AtestadoTemplate";
 import { ExameTemplate } from "@/entities/ExameTemplate";
@@ -72,6 +73,12 @@ export default function NewAnamnesisContent() {
   const [showTriagem, setShowTriagem] = useState(true);
   const [previousStatus, setPreviousStatus] = useState(null);
   const [showPatientDialog, setShowPatientDialog] = useState(false);
+  const [isConfidential, setIsConfidential] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+
+  useEffect(() => {
+    base44.auth.me().then(setCurrentUser).catch(console.error);
+  }, []);
 
   useEffect(() => {
     loadTemplates();
@@ -362,7 +369,9 @@ ${result.plano || ''}`;
       subjetivo: finalSoapData?.subjetivo || "",
       objetivo: finalSoapData?.objetivo || "",
       avaliacao: (finalSoapData?.avaliacao || "") + (cidText ? `\n\nCID: ${cidText}` : ""),
-      plano: finalSoapData?.plano || ""
+      plano: finalSoapData?.plano || "",
+      is_confidential: isConfidential,
+      creator_id: currentUser?.id
     };
 
     let savedId = currentAnamnesisId;
@@ -1025,6 +1034,17 @@ ${result.plano || ''}`;
                       </SelectContent>
                     </Select>
                   )}
+                  <div className="flex items-center space-x-2 border p-2 rounded-md bg-white">
+                    <Switch
+                        id="confidential-mode"
+                        checked={isConfidential}
+                        onCheckedChange={setIsConfidential}
+                    />
+                    <Label htmlFor="confidential-mode" className="text-sm cursor-pointer flex items-center gap-1">
+                        {isConfidential ? <Lock className="w-3 h-3 text-red-600" /> : <Unlock className="w-3 h-3 text-green-600" />}
+                        Sigilo Médico
+                    </Label>
+                  </div>
                   <Button
                     onClick={finalizeAnamnesis}
                     disabled={isSaving || !textoOriginal.trim() || !selectedPatient || !cidText.trim()}
