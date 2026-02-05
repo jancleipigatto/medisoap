@@ -221,6 +221,12 @@ export default function Layout({ children, currentPageName }) {
       masterOnly: true
     },
     {
+      title: "Relatórios",
+      url: createPageUrl("Reports"),
+      icon: FileText,
+      permission: "can_create_anamnesis"
+    },
+    {
       title: "Configurações",
       url: createPageUrl("Settings"),
       icon: Settings,
