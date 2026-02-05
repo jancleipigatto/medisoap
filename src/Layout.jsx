@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { User } from "@/entities/User";
+import { base44 } from "@/api/base44Client";
 import { Stethoscope, Home, Plus, Users, FileText, LayoutTemplate, Shield, ClipboardList, FileCheck, Send, Trash2, PanelLeftClose, PanelLeft, Calculator, Pill, LogOut, UserCircle, Edit, Settings, Building2, Info, Calendar, X, Activity } from "lucide-react";
 import {
   Sidebar,
@@ -40,7 +40,7 @@ export default function Layout({ children, currentPageName }) {
 
     const logoutUser = () => {
       console.log("User inactive for 30 minutes. Logging out...");
-      User.logout();
+      base44.auth.logout();
     };
 
     const resetTimer = () => {
@@ -73,7 +73,7 @@ export default function Layout({ children, currentPageName }) {
 
   const loadUser = async () => {
     try {
-      let currentUser = await User.me();
+      let currentUser = await base44.auth.me();
       
       // Check for default profile assignment if missing
       if (currentUser && !currentUser.profile_template_id && !currentUser.is_master) {
@@ -103,7 +103,7 @@ export default function Layout({ children, currentPageName }) {
   };
 
   const handleLogout = async () => {
-    await User.logout();
+    await base44.auth.logout();
   };
 
   const navigationItems = [

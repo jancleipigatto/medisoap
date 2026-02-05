@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { User } from "@/entities/User";
+import { base44 } from "@/api/base44Client";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -43,7 +43,7 @@ export default function UserProfile() {
 
   const loadUser = async () => {
     setIsLoading(true);
-    const currentUser = await User.me();
+    const currentUser = await base44.auth.me();
     setUser(currentUser);
     setFormData({
       full_name: currentUser.full_name || "",
@@ -62,7 +62,7 @@ export default function UserProfile() {
 
   const handleSave = async () => {
     setIsSaving(true);
-    await User.updateMe({
+    await base44.auth.updateMe({
       full_name: formData.full_name,
       profession: formData.profession,
       bio: formData.bio,
