@@ -19,6 +19,7 @@ import { ptBR } from "date-fns/locale";
 import { Skeleton } from "@/components/ui/skeleton";
 import PermissionGuard from "../components/PermissionGuard";
 import PatientSelector from "../components/anamnesis/PatientSelector";
+import PatientFormDialog from "../components/patients/PatientFormDialog"; // Import Patient Dialog
 
 export default function Agenda() {
   const navigate = useNavigate();
@@ -33,6 +34,8 @@ export default function Agenda() {
   const [showDialog, setShowDialog] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [viewMode, setViewMode] = useState("day"); // day, week, month
+  const [showPatientDialog, setShowPatientDialog] = useState(false); // State for new patient dialog
+  const [successData, setSuccessData] = useState(null); // State for success screen { id, ...data }
   const [availableSlots, setAvailableSlots] = useState([]);
   const [formData, setFormData] = useState({
     patient_id: "",
@@ -305,14 +308,18 @@ export default function Agenda() {
     }
     }
 
+    let result;
     if (editingId) {
-      await base44.entities.Agendamento.update(editingId, formData);
+      result = await base44.entities.Agendamento.update(editingId, formData);
+      handleCloseDialog();
+      toast.success("Agendamento atualizado!");
     } else {
-      await base44.entities.Agendamento.create(formData);
+      result = await base44.entities.Agendamento.create(formData);
+      // Don't close dialog, show success screen
+      setSuccessData(result);
+      // Reload data in background
+      loadData(); 
     }
-
-    await loadData();
-    handleCloseDialog();
   };
 
   const handleDelete = async (id) => {
@@ -423,6 +430,7 @@ export default function Agenda() {
   const handleCloseDialog = () => {
     setShowDialog(false);
     setEditingId(null);
+    setSuccessData(null); // Reset success state
     setFormData({
       patient_id: "",
       patient_name: "",
@@ -438,6 +446,26 @@ export default function Agenda() {
       message_history: [],
       confirmation_token: ""
     });
+  };
+
+  // Function to get slots for the day view
+  const getDaySlots = () => {
+      const startHour = 6;
+      const endHour = 23;
+      const duration = scheduleSettings?.slot_duration || 30;
+      
+      const slots = [];
+      let currentMin = startHour * 60;
+      const endMin = endHour * 60;
+      
+      while (currentMin < endMin) {
+          const h = Math.floor(currentMin / 60);
+          const m = currentMin % 60;
+          const time = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+          slots.push(time);
+          currentMin += duration;
+      }
+      return slots;
   };
 
   const getAgendamentosByDate = (date) => {
@@ -669,14 +697,15 @@ export default function Agenda() {
                 </div>
               </CardHeader>
               <CardContent className="p-0">
-                <div className="relative min-h-[600px] bg-white">
-                    {/* Time Grid Background */}
-                    <div className="absolute inset-0 flex flex-col pointer-events-none">
-                        {Array.from({ length: 18 }).map((_, i) => { // 6am to 23pm
-                            const hour = i + 6; 
+                <div className="relative bg-white">
+                    {/* Time Grid Background with Slots */}
+                    <div className="flex flex-col">
+                        {getDaySlots().map((time, i) => { 
+                            const duration = scheduleSettings?.slot_duration || 30;
+                            // Calculate height: 1px per minute
+                            const height = duration; 
                             
-                            // Visualize Weekly Schedule
-                            // Check if this hour is working hour
+                            // Check Working Hour logic for this slot
                             let isWorkingHour = true;
                             if (scheduleSettings && scheduleSettings.weekly_schedule) {
                                 const dayOfWeek = selectedDate.getDay();
@@ -684,27 +713,49 @@ export default function Agenda() {
                                 if (!intervals || intervals.length === 0) {
                                     isWorkingHour = false;
                                 } else {
-                                    // Check if hour is within any interval
-                                    // Simple check: if hour start matches any hour in intervals
-                                    const hourStr = hour.toString().padStart(2, '0') + ":00";
                                     const inInterval = intervals.some(inv => {
-                                        // Simplified: Hour start is inside [start, end)
-                                        // or interval is inside hour [hour, hour+1)
-                                        return (hourStr >= inv.start && hourStr < inv.end);
+                                        return (time >= inv.start && time < inv.end);
                                     });
                                     if (!inInterval) isWorkingHour = false;
                                 }
                             }
                             
                             return (
-                                <div key={hour} className={`flex-1 flex border-b border-gray-100 min-h-[60px] ${!isWorkingHour && scheduleSettings ? 'bg-gray-50/50' : ''}`}>
-                                    <div className="w-16 flex-shrink-0 border-r border-gray-100 bg-gray-50/50 text-xs text-gray-400 font-medium p-2 text-right">
-                                        {hour.toString().padStart(2, '0')}:00
+                                <div 
+                                    key={time} 
+                                    className={`flex border-b border-gray-100 group ${!isWorkingHour && scheduleSettings ? 'bg-gray-50/50' : 'hover:bg-blue-50 cursor-pointer'}`}
+                                    style={{ height: `${height}px` }}
+                                    onClick={() => {
+                                        setFormData(prev => ({
+                                            ...prev,
+                                            // Ensure professional is selected
+                                            professional_id: ((currentUser?.can_create_anamnesis || currentUser?.can_manage_own_schedule) && !currentUser?.is_master && !currentUser?.can_manage_schedule) ? currentUser.id : selectedProfessional !== "all" ? selectedProfessional : "",
+                                            professional_name: ((currentUser?.can_create_anamnesis || currentUser?.can_manage_own_schedule) && !currentUser?.is_master && !currentUser?.can_manage_schedule) ? currentUser.full_name : professionals.find(p => p.id === selectedProfessional)?.full_name || "",
+                                            data_agendamento: format(selectedDate, "yyyy-MM-dd"),
+                                            horario_inicio: time,
+                                            // Auto-calc end time
+                                            horario_fim: (() => {
+                                                const [h, m] = time.split(':').map(Number);
+                                                const endM = m + duration;
+                                                const endH = h + Math.floor(endM / 60);
+                                                const finalM = endM % 60;
+                                                return `${endH.toString().padStart(2, '0')}:${finalM.toString().padStart(2, '0')}`;
+                                            })()
+                                        }));
+                                        setShowDialog(true);
+                                    }}
+                                >
+                                    <div className="w-16 flex-shrink-0 border-r border-gray-100 bg-gray-50/50 text-xs text-gray-400 font-medium p-1 text-right">
+                                        {time}
                                     </div>
                                     <div className="flex-1 relative">
                                         {!isWorkingHour && scheduleSettings && (
-                                            <div className="absolute inset-0 bg-gray-100/30" title="Fora do horário de atendimento"></div>
+                                            <div className="absolute inset-0 bg-gray-100/30"></div>
                                         )}
+                                        {/* Hover + button to indicate creation */}
+                                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                            <Plus className="w-4 h-4 text-blue-400" />
+                                        </div>
                                     </div>
                                 </div>
                             );
@@ -712,16 +763,8 @@ export default function Agenda() {
                     </div>
 
                     {/* Appointments Overlay */}
-                    <div className="relative pt-[1px] ml-16 min-h-[1080px]"> 
-                        {/* 18 hours * 60px = 1080px height approx */}
-                        {getAgendamentosByDate(selectedDate).length === 0 ? (
-                             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                <div className="text-center py-12 text-gray-400 bg-white/80 p-6 rounded-xl">
-                                    <Calendar className="w-10 h-10 mx-auto mb-2 opacity-30" />
-                                    <p>Nenhum agendamento</p>
-                                </div>
-                            </div>
-                        ) : (
+                    <div className="absolute top-0 left-0 right-0 ml-16 pointer-events-none"> 
+                        {getAgendamentosByDate(selectedDate).length > 0 && (
                             getAgendamentosByDate(selectedDate).map(ag => {
                                 // Calculate position based on time
                                 const [h, m] = ag.horario_inicio.split(':').map(Number);
@@ -980,6 +1023,88 @@ export default function Agenda() {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
+          {successData ? (
+             <div className="space-y-6 py-4">
+                <div className="text-center">
+                    <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <CheckCircle className="w-8 h-8 text-green-600" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900">Agendamento Criado!</h3>
+                    <p className="text-gray-500 mt-1">
+                        {successData.patient_name} - {format(parseISO(successData.data_agendamento), "dd/MM 'às' HH:mm")}
+                    </p>
+                </div>
+
+                <div className="grid grid-cols-1 gap-3">
+                    <Button 
+                        size="lg"
+                        className="w-full gap-3 bg-[#25D366] hover:bg-[#128C7E] text-white font-semibold shadow-md transition-all transform hover:scale-[1.02]"
+                        onClick={() => {
+                            const phone = successData.telefone_contato?.replace(/\D/g, '');
+                            // Generate token if needed or use ID. Assuming logic uses token.
+                            // If confirmation_token wasn't set on create (it should be in default state if empty? No, we might need to update it).
+                            // But usually we can use a generic link or the ID if the page supports it.
+                            // Let's assume we generated a token or just send a message.
+                            const token = successData.confirmation_token || "TOKEN"; // Should ensure token is generated on create if missing?
+                            const link = `${window.location.origin}${createPageUrl('ConfirmAppointment')}?token=${token}`;
+                            const message = `Olá ${successData.patient_name}, confirmamos sua consulta para ${format(parseISO(successData.data_agendamento), "dd/MM 'às' HH:mm")}. Confirme sua presença: ${link}`;
+                            
+                            const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+                            window.open(url, '_blank');
+                        }}
+                        disabled={!successData.telefone_contato}
+                    >
+                        <svg viewBox="0 0 24 24" className="w-6 h-6 fill-current"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.008-.57-.008-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+                        Enviar WhatsApp Web
+                    </Button>
+
+                    <Button 
+                        variant="outline"
+                        size="lg"
+                        className="w-full gap-3 text-blue-600 border-blue-200 hover:bg-blue-50"
+                        onClick={async () => {
+                             // Fetch patient email if not in successData (it might not be fully populated)
+                             let email = "";
+                             if (successData.patient_id) {
+                                 const p = await base44.entities.Patient.filter({ id: successData.patient_id });
+                                 if (p && p[0]) email = p[0].email;
+                             }
+                             if (!email) {
+                                 toast.error("Paciente sem e-mail cadastrado.");
+                                 return;
+                             }
+                             
+                             const token = successData.confirmation_token || "TOKEN";
+                             const link = `${window.location.origin}${createPageUrl('ConfirmAppointment')}?token=${token}`;
+                             const subject = `Confirmação de Consulta - MediSOAP`;
+                             const body = `Olá ${successData.patient_name},\n\nConfirmamos sua consulta para ${format(parseISO(successData.data_agendamento), "dd/MM 'às' HH:mm")}.\n\nPor favor, confirme sua presença clicando no link abaixo:\n${link}\n\nAtenciosamente,\nEquipe MediSOAP`;
+                             
+                             const url = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+                             window.open(url, '_blank');
+                        }}
+                    >
+                        <Send className="w-5 h-5" />
+                        Enviar E-mail
+                    </Button>
+
+                    <Button 
+                        variant="outline"
+                        size="lg"
+                        className="w-full gap-3 text-gray-600 border-gray-200 hover:bg-gray-50"
+                        onClick={() => {
+                             const token = successData.confirmation_token || "TOKEN";
+                             const link = `${window.location.origin}${createPageUrl('ConfirmAppointment')}?token=${token}`;
+                             navigator.clipboard.writeText(link);
+                             toast.success("Link copiado!");
+                        }}
+                    >
+                        <LinkIcon className="w-5 h-5" />
+                        Copiar Link
+                    </Button>
+                </div>
+             </div>
+          ) : (
+            <div className="space-y-4 py-4">
             <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2">
                     <Label>Profissional (Médico) *</Label>
@@ -1002,17 +1127,28 @@ export default function Agenda() {
                     </Select>
                 </div>
 
-                <div className="col-span-2">
-                  <PatientSelector
-                    selectedPatient={formData.patient_name ? { nome: formData.patient_name, id: formData.patient_id } : null}
-                    onSelect={(patient) => {
-                      setFormData({
-                        ...formData,
-                        patient_id: patient?.id || "",
-                        patient_name: patient?.nome || ""
-                      });
-                    }}
-                  />
+                <div className="col-span-2 flex items-end gap-2">
+                  <div className="flex-1">
+                    <PatientSelector
+                        selectedPatient={formData.patient_name ? { nome: formData.patient_name, id: formData.patient_id } : null}
+                        onSelect={(patient) => {
+                        setFormData({
+                            ...formData,
+                            patient_id: patient?.id || "",
+                            patient_name: patient?.nome || ""
+                        });
+                        }}
+                    />
+                  </div>
+                  <Button 
+                    type="button" 
+                    onClick={() => setShowPatientDialog(true)}
+                    className="mb-[2px] bg-green-600 hover:bg-green-700 text-white"
+                    title="Novo Paciente"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Novo
+                  </Button>
                 </div>
             </div>
 
@@ -1193,24 +1329,47 @@ export default function Agenda() {
           </div>
           
           <div className="flex justify-between gap-3 pt-4 border-t mt-4">
-            {editingId ? (
-                <Button variant="destructive" onClick={() => handleDelete(editingId)} className="gap-2">
-                    <Trash2 className="w-4 h-4" />
-                    Excluir
+            {successData ? (
+                <Button variant="outline" onClick={handleCloseDialog} className="w-full">
+                    Fechar
                 </Button>
-            ) : <div />}
-            
-            <div className="flex gap-2">
-                <Button variant="outline" onClick={handleCloseDialog}>
-                    Cancelar
-                </Button>
-                <Button onClick={handleSave} className="bg-blue-600 hover:bg-blue-700">
-                    {editingId ? "Atualizar" : "Criar"} Agendamento
-                </Button>
-            </div>
+            ) : (
+                <>
+                    {editingId ? (
+                        <Button variant="destructive" onClick={() => handleDelete(editingId)} className="gap-2">
+                            <Trash2 className="w-4 h-4" />
+                            Excluir
+                        </Button>
+                    ) : <div />}
+                    
+                    <div className="flex gap-2">
+                        <Button variant="outline" onClick={handleCloseDialog}>
+                            Cancelar
+                        </Button>
+                        <Button onClick={handleSave} className="bg-blue-600 hover:bg-blue-700">
+                            {editingId ? "Atualizar" : "Criar"} Agendamento
+                        </Button>
+                    </div>
+                </>
+            )}
           </div>
         </DialogContent>
       </Dialog>
+
+      <PatientFormDialog 
+        open={showPatientDialog} 
+        onOpenChange={setShowPatientDialog}
+        onSuccess={(newPatient) => {
+            if (newPatient) {
+                setFormData(prev => ({
+                    ...prev,
+                    patient_id: newPatient.id,
+                    patient_name: newPatient.nome
+                }));
+                toast.success("Paciente criado e selecionado!");
+            }
+        }}
+      />
     </PermissionGuard>
   );
 }

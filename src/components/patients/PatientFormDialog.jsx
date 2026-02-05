@@ -130,13 +130,14 @@ export default function PatientFormDialog({ open, onOpenChange, patientToEdit, o
     e.preventDefault();
     
     try {
+      let result;
       if (patientToEdit) {
-        await Patient.update(patientToEdit.id, formData);
+        result = await Patient.update(patientToEdit.id, formData);
       } else {
-        await Patient.create(formData);
+        result = await Patient.create(formData);
       }
       
-      if (onSuccess) onSuccess();
+      if (onSuccess) onSuccess(result);
       onOpenChange(false);
     } catch (error) {
       console.error("Erro ao salvar paciente:", error);
