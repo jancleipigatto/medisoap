@@ -6,7 +6,7 @@ export async function syncExternalCalendars(req) {
     let professionalId;
     try {
         const body = await req.json();
-        professionalId = body.professional_id;
+        professionalId = body?.professional_id;
     } catch (e) {
         // Request might be empty (scheduled task)
     }
@@ -16,9 +16,6 @@ export async function syncExternalCalendars(req) {
         const pId = settings.professional_id;
         try {
             // Note: Currently we use the APP OWNER'S token for all syncs because of connector limitations.
-            // If the app is intended for multiple doctors with their OWN google accounts, 
-            // the current architecture (using app owner connector) puts everyone on the SAME calendar.
-            // However, assuming single-tenant or shared practice calendar for now.
             const accessToken = await base44.asServiceRole.connectors.getAccessToken("googlecalendar");
             if (!accessToken) {
                 console.error(`No Google Token for sync (Prof: ${pId})`);
@@ -113,21 +110,6 @@ export async function syncExternalCalendars(req) {
         }
         return Response.json({ message: "Global sync completed", totalBlocks });
     }
-
-    // End of modified code block (removed original single-user logic below to avoid dup)
-    // 1. Fetch upcoming events... (this part is now inside syncProfessional)
-    const now = new Date();
-    const next30Days = new Date();
-    next30Days.setDate(now.getDate() + 30);
-
-    // Logic moved to syncProfessional helper
-  } catch (error) {
-    console.error("Sync Error:", error);
-    return Response.json({ error: error.message }, { status: 500 });
-  }
-}
-
-Deno.serve(syncExternalCalendars);
 
   } catch (error) {
     console.error("Sync Error:", error);
