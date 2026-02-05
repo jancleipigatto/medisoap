@@ -1327,6 +1327,8 @@ export default function Agenda() {
                 </div>
             )}
           </div>
+          )}
+          </div>
           
           <div className="flex justify-between gap-3 pt-4 border-t mt-4">
             {successData ? (
