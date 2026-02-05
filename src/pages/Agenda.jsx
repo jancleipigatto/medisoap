@@ -784,7 +784,7 @@ export default function Agenda() {
                                 return (
                                     <div 
                                         key={ag.id}
-                                        className={`absolute left-1 right-2 rounded-lg border-l-4 shadow-sm hover:shadow-md transition-all cursor-pointer overflow-hidden group z-10 
+                                        className={`absolute left-1 right-2 rounded-lg border-l-4 shadow-sm hover:shadow-md transition-all cursor-pointer overflow-hidden group z-10 pointer-events-auto
                                             ${ag.is_block ? "bg-red-100 border-red-600" : "bg-emerald-100 border-emerald-600"}
                                         `}
                                         style={{ top: `${top}px`, height: `${height}px` }}
