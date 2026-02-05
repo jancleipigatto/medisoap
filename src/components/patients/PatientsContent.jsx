@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Patient } from "@/entities/Patient";
+// Patient entity imported via base44 client
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,13 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, User, Phone, Mail, MapPin, Edit, ExternalLink, ArrowLeft, FileText } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import PatientFormDialog from "./PatientFormDialog";
 
 export default function PatientsContent() {
   const navigate = useNavigate();
@@ -63,15 +57,17 @@ export default function PatientsContent() {
   }, []);
 
   const loadAndEditPatient = async (id) => {
-    const data = await Patient.list(); // Or fetch a single patient if API supports it
-    const patient = data.find(p => p.id === id);
-    if (patient) {
-      handleEdit(patient);
-    }
+    try {
+      const patient = await base44.entities.Patient.get(id);
+      if (patient) {
+        setEditingPatient(patient);
+        setShowForm(true);
+      }
+    } catch (e) { console.error(e); }
   };
 
   const loadPatients = async () => {
-    const data = await Patient.list("-created_date");
+    const data = await base44.entities.Patient.list("-created_date");
     setPatients(data);
   };
 
@@ -118,22 +114,11 @@ export default function PatientsContent() {
 
   const toggleFavorite = async (patient, e) => {
     e.stopPropagation(); // Prevent card edit from being triggered
-    await Patient.update(patient.id, { is_favorite: !patient.is_favorite });
+    await base44.entities.Patient.update(patient.id, { is_favorite: !patient.is_favorite });
     loadPatients();
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (editingPatient) {
-      await Patient.update(editingPatient.id, formData);
-    } else {
-      await Patient.create(formData);
-    }
-    
-    handleCloseForm(); // Reset form and close dialog after submit
-    loadPatients();
-  };
+  // handleSubmit removed (handled by PatientFormDialog)
 
   const calculateAge = (birthDate) => {
     if (!birthDate) return null;
