@@ -24,18 +24,19 @@ export default function Consulta() {
     setIsLoading(true);
     try {
       const user = await base44.auth.me();
-      const data = await base44.entities.Agendamento.list("-data_agendamento");
+      const dateStr = format(selectedDate, 'yyyy-MM-dd');
       
-      let filtered = data.filter(ag => isSameDay(parseISO(ag.data_agendamento), selectedDate));
+      const query = { data_agendamento: dateStr };
       
-      // If user is doctor (can create anamnesis) and NOT master/manager, filter by professional
+      // If user is doctor (can create anamnesis) and NOT master/manager, filter by professional on backend
       if (user.can_create_anamnesis && !user.is_master && !user.can_manage_schedule) {
-          filtered = filtered.filter(ag => ag.professional_id === user.id);
+          query.professional_id = user.id;
       }
+
+      const data = await base44.entities.Agendamento.filter(query, "horario_inicio");
       
-      // Sort: Priority to those waiting (recepcionado, em_triagem, etc)
-      // But showing ALL as requested
-      setAgendamentos(filtered.sort((a, b) => a.horario_inicio.localeCompare(b.horario_inicio)));
+      // Client-side sort just in case (though backend sort requested)
+      setAgendamentos(data.sort((a, b) => a.horario_inicio.localeCompare(b.horario_inicio)));
     } catch (error) {
       console.error("Erro ao carregar agendamentos:", error);
     } finally {
