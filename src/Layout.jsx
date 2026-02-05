@@ -328,9 +328,12 @@ export default function Layout({ children, currentPageName }) {
             <div className="fixed left-0 top-1/2 -translate-y-1/2 z-[60]">
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="bg-white shadow-lg p-3 rounded-r-lg hover:bg-gray-50 transition-colors duration-200 border-r border-t border-b border-gray-200"
+                className="bg-white shadow-lg py-4 px-2 rounded-r-lg hover:bg-gray-50 transition-colors duration-200 border-r border-t border-b border-gray-200 flex flex-col items-center gap-2"
               >
                 <PanelLeft className="w-5 h-5 text-gray-700" />
+                <span className="text-xs font-medium text-gray-600" style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}>
+                  Painel
+                </span>
               </button>
             </div>
           )}
