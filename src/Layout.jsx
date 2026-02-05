@@ -73,7 +73,21 @@ export default function Layout({ children, currentPageName }) {
 
   const loadUser = async () => {
     try {
-      const currentUser = await User.me();
+      let currentUser = await User.me();
+      
+      // Check for default profile assignment if missing
+      if (currentUser && !currentUser.profile_template_id && !currentUser.is_master) {
+          try {
+              const res = await base44.functions.invoke('assignDefaultProfile');
+              if (res.success && res.profile) {
+                  // Update local user state with new permissions
+                  currentUser = { ...currentUser, ...res.profile };
+              }
+          } catch (e) {
+              console.error("Failed to assign default profile:", e);
+          }
+      }
+
       setUser(currentUser);
       
       // Se o perfil não está completo, redireciona para completar

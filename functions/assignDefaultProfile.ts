@@ -3,18 +3,18 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 Deno.serve(async (req) => {
     try {
         const base44 = createClientFromRequest(req);
-        
-        // This function is triggered by User create event
-        const payload = await req.json();
-        const { event, data } = payload;
-        
-        // If not a create event or missing data, skip
-        if (event.type !== 'create' || !data || !data.id) {
-            return Response.json({ message: "Ignored event" });
+        const user = await base44.auth.me();
+
+        if (!user) {
+            return Response.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const user = data;
-        console.log(`Processing new user: ${user.email} (${user.id})`);
+        // Check if user already has a profile template
+        if (user.profile_template_id) {
+             return Response.json({ message: "User already has a profile" });
+        }
+
+        console.log(`Assigning default profile to user: ${user.email} (${user.id})`);
 
         // Find default profile template
         const templates = await base44.asServiceRole.entities.ProfileTemplate.filter({ is_default: true });
@@ -38,25 +38,17 @@ Deno.serve(async (req) => {
                 can_manage_own_schedule: defaultTemplate.can_manage_own_schedule
             };
             
-            // If user is the very first user (or master), we might not want to override if they are admin?
-            // Usually the first user is created as admin by the system, but let's assume standard behavior.
-            // If the user already has a role 'admin', we might want to skip or be careful.
-            // But usually new invites are 'user'.
+            // Update user
+            await base44.asServiceRole.entities.User.update(user.id, updateData);
+            console.log(`Applied default profile to user ${user.id}`);
             
-            if (user.role !== 'admin') {
-                await base44.asServiceRole.entities.User.update(user.id, updateData);
-                console.log(`Applied default profile to user ${user.id}`);
-            } else {
-                 console.log(`User ${user.id} is admin, skipping default profile application`);
-            }
-            
-            return Response.json({ success: true, message: `Applied profile ${defaultTemplate.nome}` });
+            return Response.json({ success: true, message: `Applied profile ${defaultTemplate.nome}`, profile: updateData });
         } else {
             console.log("No default profile template found.");
             return Response.json({ success: false, message: "No default profile found" });
         }
     } catch (error) {
-        console.error("Error in onUserCreate:", error);
+        console.error("Error in assignDefaultProfile:", error);
         return Response.json({ error: error.message }, { status: 500 });
     }
 });
