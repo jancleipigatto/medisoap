@@ -290,11 +290,11 @@ export default function CIDManagement() {
           </CardContent>
         </Card>
 
-        {/* Add Dialog */}
-        <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+        {/* Add/Edit Dialog */}
+        <Dialog open={showAddDialog} onOpenChange={(open) => { setShowAddDialog(open); if (!open) { setEditingCid(null); setFormData({ codigo: "", descricao: "", categoria: "", restrito_sexo: "", causa_obito: false }); } }}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Adicionar Novo CID</DialogTitle>
+              <DialogTitle>{editingCid ? "Editar CID" : "Adicionar Novo CID"}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div>
@@ -321,8 +321,41 @@ export default function CIDManagement() {
                   onChange={(e) => setFormData({ ...formData, categoria: e.target.value })}
                 />
               </div>
+              <div>
+                <Label>Restrito ao Sexo</Label>
+                <div className="flex gap-3 mt-1">
+                  {[{ label: "Sem Restrição", value: "" }, { label: "Masculino (M)", value: "M" }, { label: "Feminino (F)", value: "F" }].map((opt) => (
+                    <label key={opt.value} className="flex items-center gap-1.5 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="restrito_sexo"
+                        value={opt.value}
+                        checked={formData.restrito_sexo === opt.value}
+                        onChange={() => setFormData({ ...formData, restrito_sexo: opt.value })}
+                      />
+                      <span className="text-sm">{opt.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <Label>Causa de Óbito</Label>
+                <div className="flex gap-3 mt-1">
+                  {[{ label: "Não", value: false }, { label: "Sim", value: true }].map((opt) => (
+                    <label key={String(opt.value)} className="flex items-center gap-1.5 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="causa_obito"
+                        checked={formData.causa_obito === opt.value}
+                        onChange={() => setFormData({ ...formData, causa_obito: opt.value })}
+                      />
+                      <span className="text-sm">{opt.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
               <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setShowAddDialog(false)}>
+                <Button variant="outline" onClick={() => { setShowAddDialog(false); setEditingCid(null); setFormData({ codigo: "", descricao: "", categoria: "", restrito_sexo: "", causa_obito: false }); }}>
                   Cancelar
                 </Button>
                 <Button onClick={handleSave}>Salvar</Button>
