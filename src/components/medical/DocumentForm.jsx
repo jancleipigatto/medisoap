@@ -133,11 +133,11 @@ export default function DocumentForm({ tipo, tipoLabel, icon: Icon, templateEnti
             <ArrowLeft className="w-4 h-4" />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+            <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
               {Icon && <Icon className="w-8 h-8 text-indigo-600" />}
               {tipoLabel}
             </h1>
-            <p className="text-gray-600 mt-1">Preencha os dados para gerar o documento</p>
+            <p className="text-muted-foreground mt-1">Preencha os dados para gerar o documento</p>
           </div>
         </div>
 
