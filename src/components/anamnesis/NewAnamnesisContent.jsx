@@ -1155,29 +1155,21 @@ Retorne JSON com: cabecalho, subjetivo, objetivo, avaliacao, plano.`;
             <CardHeader>
               <div className="flex justify-between items-center">
                 <CardTitle className="text-base">Atendimento</CardTitle>
-                {templates.length > 0 && (
-                  <div className="w-[250px] flex items-center gap-2">
-                    <Label htmlFor="template" className="text-sm font-medium text-gray-600 whitespace-nowrap">Usar modelo</Label>
-                    <Select
-                      value={selectedTemplate}
-                      onValueChange={handleTemplateSelect}
-                    >
-                      <SelectTrigger id="template" className="text-sm h-8">
-                        <SelectValue placeholder="Selecione..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">Nenhum modelo</SelectItem>
-                        {templates.map((template) => (
-                          <SelectItem key={template.id} value={template.id}>
-                            {template.nome}
-                            {template.is_medisoap_public && " 🌐"}
-                            {template.is_public_org && !template.is_medisoap_public && " 👥"}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowTemplateDialog(true)}
+                  className="text-sm text-gray-500 hover:text-blue-600 h-8 px-3"
+                >
+                  {selectedTemplateObj ? (
+                    <span className="flex items-center gap-1">
+                      <span className="font-medium text-blue-700">{selectedTemplateObj.nome}</span>
+                      <span className="text-gray-400 text-xs">· Modelo</span>
+                    </span>
+                  ) : (
+                    "Modelos"
+                  )}
+                </Button>
               </div>
             </CardHeader>
             <CardContent>
