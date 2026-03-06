@@ -64,6 +64,7 @@ export default function NewAnamnesisContent() {
   const [activeTool, setActiveTool] = useState(null);
   const [currentAnamnesisId, setCurrentAnamnesisId] = useState(null);
   const [isFinalized, setIsFinalized] = useState(false);
+  const [showHistoryDrawer, setShowHistoryDrawer] = useState(false);
   const [showCidDialog, setShowCidDialog] = useState(false);
   const [showCid10Dialog, setShowCid10Dialog] = useState(false);
   const [showCid11Dialog, setShowCid11Dialog] = useState(false);
