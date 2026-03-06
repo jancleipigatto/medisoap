@@ -250,32 +250,31 @@ export default function CIDManagement() {
                   className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
                 >
                   <div className="flex-1">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-mono font-bold text-blue-600">{cid.codigo}</span>
-                      {cid.uso_frequente && <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />}
+                      {cid.uso_frequente && <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />}
+                      {cid.restrito_sexo && (
+                        <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${cid.restrito_sexo === 'M' ? 'bg-blue-100 text-blue-700' : 'bg-pink-100 text-pink-700'}`}>
+                          {cid.restrito_sexo === 'M' ? 'Masculino' : 'Feminino'}
+                        </span>
+                      )}
+                      {cid.causa_obito && (
+                        <span className="text-xs px-1.5 py-0.5 rounded font-medium bg-red-100 text-red-700">Causa de Óbito</span>
+                      )}
                     </div>
                     <p className="text-sm text-gray-700">{cid.descricao}</p>
                     {cid.categoria && (
                       <p className="text-xs text-gray-500 mt-1">{cid.categoria}</p>
                     )}
                   </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => toggleFavorite(cid)}
-                    >
-                      <Star
-                        className={`w-4 h-4 ${
-                          cid.uso_frequente ? "text-yellow-500 fill-yellow-500" : "text-gray-400"
-                        }`}
-                      />
+                  <div className="flex gap-1">
+                    <Button variant="ghost" size="icon" onClick={() => toggleFavorite(cid)}>
+                      <Star className={`w-4 h-4 ${cid.uso_frequente ? "text-yellow-500 fill-yellow-500" : "text-gray-400"}`} />
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDelete(cid.id)}
-                    >
+                    <Button variant="ghost" size="icon" onClick={() => handleEdit(cid)}>
+                      <Pencil className="w-4 h-4 text-blue-500" />
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => handleDelete(cid.id)}>
                       <Trash2 className="w-4 h-4 text-red-500" />
                     </Button>
                   </div>
