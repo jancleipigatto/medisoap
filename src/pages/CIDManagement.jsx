@@ -224,7 +224,7 @@ export default function CIDManagement() {
             {importing && (
               <Alert className="mb-4">
                 <AlertDescription>
-                  Importando CIDs... Isso pode levar alguns minutos.
+                  {importProgress || "Importando CIDs... Isso pode levar alguns minutos."}
                 </AlertDescription>
               </Alert>
             )}
