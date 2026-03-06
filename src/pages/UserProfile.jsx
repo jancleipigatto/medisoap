@@ -21,6 +21,7 @@ export default function UserProfile() {
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [showWebcam, setShowWebcam] = useState(false);
   const [showPhoneVerify, setShowPhoneVerify] = useState(false);
+  const [showDeleteAccount, setShowDeleteAccount] = useState(false);
   const [verificationCode, setVerificationCode] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
   
