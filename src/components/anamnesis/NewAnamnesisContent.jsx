@@ -1429,6 +1429,22 @@ Retorne JSON com: cabecalho, subjetivo, objetivo, avaliacao, plano.`;
         </DialogContent>
       </Dialog>
 
+      <TemplatePickerDialog
+        open={showTemplateDialog}
+        onOpenChange={setShowTemplateDialog}
+        templates={templates}
+        selectedId={selectedTemplateObj?.id}
+        onSelect={(t) => { setSelectedTemplateObj(t); setSelectedTemplate(t?.id || "none"); }}
+      />
+
+      <CID11Dialog
+        open={showCid11Dialog}
+        onOpenChange={setShowCid11Dialog}
+        onAdd={(text) => {
+          setCidText(prev => prev ? `${prev}\n${text}` : text);
+        }}
+      />
+
       {/* Diálogo CID-10 */}
       <Dialog open={showCid10Dialog} onOpenChange={(open) => {
         setShowCid10Dialog(open);
