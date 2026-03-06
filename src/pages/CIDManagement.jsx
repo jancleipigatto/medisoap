@@ -56,13 +56,16 @@ export default function CIDManagement() {
           const parts = line.split(';').map(p => p.trim().replace(/^"|"$/g, ''));
           
           if (parts.length >= 2) {
-            const codigo = parts[0].trim();
-            const descricao = parts[1].trim();
-            
-            if (codigo && descricao) {
-              cidsToImport.push({ codigo, descricao });
-            }
-          }
+                    const codigo = parts[0].trim();
+                    const descricao = parts[1].trim();
+                    const categoria = parts[2]?.trim() || "";
+                    const restrito_sexo = parts[3]?.trim().toUpperCase() === "M" ? "M" : parts[3]?.trim().toUpperCase() === "F" ? "F" : "";
+                    const causa_obito = parts[4]?.trim().toLowerCase() === "sim" || parts[4]?.trim() === "1" || parts[4]?.trim().toLowerCase() === "true";
+
+                    if (codigo && descricao) {
+                      cidsToImport.push({ codigo, descricao, categoria, restrito_sexo, causa_obito });
+                    }
+                  }
         }
 
         if (cidsToImport.length > 0) {
