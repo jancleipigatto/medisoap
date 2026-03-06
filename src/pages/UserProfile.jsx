@@ -351,7 +351,55 @@ export default function UserProfile() {
             </Button>
           </CardContent>
         </Card>
+
+        {/* Delete Account */}
+        <Card className="shadow-lg border-red-200 mt-6">
+          <CardHeader>
+            <CardTitle className="text-red-600 flex items-center gap-2">
+              <Trash2 className="w-5 h-5" />
+              Zona de Perigo
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-4">
+              Ao excluir sua conta, todos os seus dados serão removidos permanentemente. Esta ação não pode ser desfeita.
+            </p>
+            <Button
+              variant="destructive"
+              className="w-full"
+              onClick={() => setShowDeleteAccount(true)}
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Deletar Conta
+            </Button>
+          </CardContent>
+        </Card>
       </div>
+
+      <AlertDialog open={showDeleteAccount} onOpenChange={setShowDeleteAccount}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-red-600">Deletar Conta?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação é irreversível. Todos os seus dados, prontuários e configurações serão excluídos permanentemente.
+              Você será desconectado imediatamente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700"
+              onClick={() => {
+                // In a real app, call a backend function to delete account data
+                alert("Para deletar sua conta, entre em contato com o suporte.");
+                setShowDeleteAccount(false);
+              }}
+            >
+              Deletar Permanentemente
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <Dialog open={showWebcam} onOpenChange={setShowWebcam}>
         <DialogContent className="max-w-3xl">
