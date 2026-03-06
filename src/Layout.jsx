@@ -3,6 +3,13 @@ import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
 import { Stethoscope, Home, Plus, Users, FileText, LayoutTemplate, Shield, ClipboardList, FileCheck, Send, Trash2, PanelLeftClose, PanelLeft, Calculator, Pill, LogOut, UserCircle, Edit, Settings, Building2, Info, Calendar, X, Activity } from "lucide-react";
+
+const BOTTOM_TABS = [
+  { title: "Início", url: createPageUrl("Home"), icon: Home },
+  { title: "Agenda", url: createPageUrl("Agenda"), icon: Calendar },
+  { title: "Pacientes", url: createPageUrl("Patients"), icon: Users },
+  { title: "Config.", url: createPageUrl("Settings"), icon: Settings },
+];
 import {
   Sidebar,
   SidebarContent,

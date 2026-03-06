@@ -75,7 +75,7 @@ export default function Home() {
 
   return (
     <PermissionGuard permission="can_create_anamnesis">
-      <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      <div className="p-4 md:p-8 min-h-screen bg-background">
         <div className="max-w-7xl mx-auto">
           {/* Header com botão de personalização no canto superior direito */}
           <div className="flex justify-end mb-6">
