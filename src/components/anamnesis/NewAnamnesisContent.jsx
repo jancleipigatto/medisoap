@@ -854,7 +854,7 @@ Retorne JSON com: cabecalho, subjetivo, objetivo, avaliacao, plano.`;
                             <p className="text-lg font-medium text-gray-900">{selectedPatient?.nome}</p>
                         </div>
                     </div>
-                    <Button variant="ghost" size="sm" onClick={() => window.open(createPageUrl(`PatientHistory?patientId=${selectedPatient.id}`), '_blank')}>
+                    <Button variant="ghost" size="sm" onClick={() => setShowHistoryDrawer(true)}>
                       Histórico
                     </Button>
                   </div>
