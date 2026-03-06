@@ -252,30 +252,35 @@ Retorne JSON com: cabecalho, subjetivo, objetivo, avaliacao, plano.`;
 
       setSoapData(result);
 
-      // Processar cabeçalho: cada item # em linha separada
-      let cabecalhoFormatado = "";
+      // Helper: converte texto plano em HTML com parágrafos
+      const toHtmlParagraphs = (text) => {
+        if (!text) return "";
+        return text
+          .split(/\n+/)
+          .map(line => line.trim())
+          .filter(line => line.length > 0)
+          .map(line => `<p>${line}</p>`)
+          .join("");
+      };
+
+      // Processar cabeçalho: cada item # em parágrafo separado
+      let cabecalhoHtml = "";
       if (result.cabecalho) {
-        // Divide por "#" e reconstrói cada item em sua própria linha
         const itens = result.cabecalho
           .split(/#/)
           .map(s => s.trim())
           .filter(s => s.length > 0);
-        cabecalhoFormatado = itens.map(item => `# ${item}`).join("\n") + "\n\n";
+        cabecalhoHtml = itens.map(item => `<p><strong># ${item}</strong></p>`).join("") + "<p><br></p>";
       }
 
-      const formattedText = `${cabecalhoFormatado}S - SUBJETIVO:
-${result.subjetivo || ''}
+      const formattedHtml = 
+        cabecalhoHtml +
+        `<p><strong>S - SUBJETIVO:</strong></p>${toHtmlParagraphs(result.subjetivo)}` +
+        `<p><br></p><p><strong>O - OBJETIVO:</strong></p>${toHtmlParagraphs(result.objetivo)}` +
+        `<p><br></p><p><strong>A - AVALIAÇÃO:</strong></p>${toHtmlParagraphs(result.avaliacao)}` +
+        `<p><br></p><p><strong>P - PLANO:</strong></p>${toHtmlParagraphs(result.plano)}`;
 
-O - OBJETIVO:
-${result.objetivo || ''}
-
-A - AVALIAÇÃO:
-${result.avaliacao || ''}
-
-P - PLANO:
-${result.plano || ''}`;
-
-      setSoapTextContent(formattedText);
+      setSoapTextContent(formattedHtml);
 
     } catch (error) {
       console.error("Erro na conversão:", error);
