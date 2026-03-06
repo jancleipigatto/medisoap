@@ -65,6 +65,9 @@ export default function NewAnamnesisContent() {
   const [isFinalized, setIsFinalized] = useState(false);
   const [showCidDialog, setShowCidDialog] = useState(false);
   const [showCid10Dialog, setShowCid10Dialog] = useState(false);
+  const [showCid11Dialog, setShowCid11Dialog] = useState(false);
+  const [showTemplateDialog, setShowTemplateDialog] = useState(false);
+  const [selectedTemplateObj, setSelectedTemplateObj] = useState(null);
   const [cidText, setCidText] = useState("");
   const [appSettings, setAppSettings] = useState(null);
   const [cids, setCids] = useState([]);
