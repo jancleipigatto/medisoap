@@ -183,8 +183,44 @@ export default function NewAnamnesisContent() {
     }
 
     setIsProcessing(true);
-    
+
     try {
+      // --- SE HÁ MODELO SELECIONADO: reescrever com correções para o modelo ---
+      if (selectedTemplateObj) {
+        const prompt = `Você é um assistente médico especializado em prontuário eletrônico.
+Sua tarefa é reescrever o texto do atendimento abaixo fazendo APENAS as seguintes correções:
+- Corrigir erros ortográficos e gramaticais
+- Melhorar organização e clareza
+- Corrigir concordância e sintaxe
+- Adaptar o texto para seguir a estrutura e estilo do MODELO DE REFERÊNCIA abaixo
+
+IMPORTANTE: Mantenha TODAS as informações clínicas do texto original. Não invente ou omita dados clínicos.
+
+MODELO DE REFERÊNCIA (estrutura e estilo a seguir):
+${selectedTemplateObj.template_texto}
+
+TEXTO ORIGINAL DO ATENDIMENTO:
+${textoOriginal}
+
+Responda APENAS com o texto reescrito, sem explicações ou comentários.`;
+
+        const result = await base44.integrations.Core.InvokeLLM({ prompt });
+
+        // Converter resultado para HTML com parágrafos
+        const toHtml = (text) => text
+          .split(/\n+/)
+          .map(l => l.trim())
+          .filter(l => l.length > 0)
+          .map(l => `<p>${l}</p>`)
+          .join("");
+
+        setSoapData({ subjetivo: result, objetivo: "", avaliacao: "", plano: "" });
+        setSoapTextContent(toHtml(result));
+        setIsProcessing(false);
+        return;
+      }
+
+      // --- SEM MODELO: fluxo SOAP padrão ---
       // Montar dados de triagem disponíveis (da anamnese salva ou manual)
       const tData = {
         pa: anamnesis?.triagem_pa || triageData.pa || "",
