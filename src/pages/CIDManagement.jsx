@@ -114,10 +114,27 @@ export default function CIDManagement() {
       return;
     }
 
-    await base44.entities.CID.create(formData);
+    if (editingCid) {
+      await base44.entities.CID.update(editingCid.id, formData);
+    } else {
+      await base44.entities.CID.create(formData);
+    }
     await loadCIDs();
     setShowAddDialog(false);
-    setFormData({ codigo: "", descricao: "", categoria: "" });
+    setEditingCid(null);
+    setFormData({ codigo: "", descricao: "", categoria: "", restrito_sexo: "", causa_obito: false });
+  };
+
+  const handleEdit = (cid) => {
+    setEditingCid(cid);
+    setFormData({
+      codigo: cid.codigo || "",
+      descricao: cid.descricao || "",
+      categoria: cid.categoria || "",
+      restrito_sexo: cid.restrito_sexo || "",
+      causa_obito: cid.causa_obito || false,
+    });
+    setShowAddDialog(true);
   };
 
   const toggleFavorite = async (cid) => {
