@@ -19,7 +19,8 @@ export default function CIDManagement() {
   const [importing, setImporting] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [showAddDialog, setShowAddDialog] = useState(false);
-  const [formData, setFormData] = useState({ codigo: "", descricao: "", categoria: "" });
+  const [editingCid, setEditingCid] = useState(null);
+  const [formData, setFormData] = useState({ codigo: "", descricao: "", categoria: "", restrito_sexo: "", causa_obito: false });
 
   useEffect(() => {
     loadCIDs();
