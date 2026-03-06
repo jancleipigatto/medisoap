@@ -82,6 +82,7 @@ import Tools from './pages/Tools';
 import Triagem from './pages/Triagem';
 import UserManagement from './pages/UserManagement';
 import UserProfile from './pages/UserProfile';
+import CID11Search from './pages/CID11Search';
 import __Layout from './Layout.jsx';
 
 
@@ -121,6 +122,7 @@ export const PAGES = {
     "Triagem": Triagem,
     "UserManagement": UserManagement,
     "UserProfile": UserProfile,
+    "CID11Search": CID11Search,
 }
 
 export const pagesConfig = {
