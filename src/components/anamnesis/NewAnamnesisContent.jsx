@@ -1374,6 +1374,7 @@ ${result.plano || ''}`;
         }}
       />
 
+      {/* Diálogo de escolha CID-10 ou CID-11 */}
       <Dialog open={showCidDialog} onOpenChange={(open) => {
         setShowCidDialog(open);
         if (!open) {
@@ -1381,13 +1382,50 @@ ${result.plano || ''}`;
           setSelectedCids([]);
         }
       }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-base">Incluir CID — Escolha a versão</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-3 py-2">
+            <Button
+              className="h-14 text-base bg-blue-600 hover:bg-blue-700"
+              onClick={() => {
+                setShowCidDialog(false);
+                setShowCid10Dialog(true);
+              }}
+            >
+              CID - 10
+              <span className="ml-2 text-xs opacity-80">(base local cadastrada)</span>
+            </Button>
+            <Button
+              className="h-14 text-base bg-indigo-600 hover:bg-indigo-700"
+              onClick={() => {
+                setShowCidDialog(false);
+                window.open(createPageUrl("CID11Search"), '_blank');
+              }}
+            >
+              CID - 11
+              <span className="ml-2 text-xs opacity-80">(busca na OMS)</span>
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Diálogo CID-10 */}
+      <Dialog open={showCid10Dialog} onOpenChange={(open) => {
+        setShowCid10Dialog(open);
+        if (!open) {
+          setCidSearchTerm("");
+          setSelectedCids([]);
+        }
+      }}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="text-base">Incluir CID</DialogTitle>
+            <DialogTitle className="text-base">Incluir CID-10</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div>
-              <Label htmlFor="cid" className="text-sm">Buscar CID</Label>
+              <Label htmlFor="cid" className="text-sm">Buscar CID-10</Label>
               <div className="mt-2">
                 <Input
                   placeholder="Buscar por código ou descrição..."
@@ -1443,7 +1481,7 @@ ${result.plano || ''}`;
           </div>
           <div className="flex justify-end gap-3">
             <Button variant="outline" onClick={() => { 
-              setShowCidDialog(false); 
+              setShowCid10Dialog(false); 
               setCidSearchTerm(""); 
               setSelectedCids([]);
             }} className="text-sm h-9">
@@ -1453,7 +1491,7 @@ ${result.plano || ''}`;
               onClick={() => {
                 const cidsText = selectedCids.map(c => `${c.codigo} - ${c.descricao}`).join('\n');
                 setCidText(cidText ? `${cidText}\n${cidsText}` : cidsText);
-                setShowCidDialog(false);
+                setShowCid10Dialog(false);
                 setCidSearchTerm("");
                 setSelectedCids([]);
               }}
