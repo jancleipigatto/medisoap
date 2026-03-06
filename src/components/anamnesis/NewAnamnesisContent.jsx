@@ -1227,11 +1227,11 @@ Retorne JSON com: cabecalho, subjetivo, objetivo, avaliacao, plano.`;
                     )}
                   </Button>
                   <Button
-                    onClick={applyTemplateToText}
-                    disabled={isProcessing || !textoOriginal.trim() || !selectedTemplate || selectedTemplate === "none"}
+                    onClick={convertToSOAP}
+                    disabled={isProcessing || !textoOriginal.trim()}
                     variant="outline"
                     className="flex-1 min-w-[140px] text-sm h-9"
-                    title="Reescreve seu texto usando a estrutura do modelo selecionado"
+                    title={selectedTemplateObj ? "Reescreve o texto com correções usando o modelo selecionado" : "Gera o prontuário SOAP automaticamente"}
                   >
                     {isProcessing ? (
                       <>
@@ -1241,41 +1241,10 @@ Retorne JSON com: cabecalho, subjetivo, objetivo, avaliacao, plano.`;
                     ) : (
                       <>
                         <Sparkles className="w-4 h-4 mr-2" />
-                        Aplicar Modelo
+                        Reescrever com AI
                       </>
                     )}
                   </Button>
-                  <Button
-                    onClick={convertToSOAP}
-                    disabled={isProcessing || !textoOriginal.trim()}
-                    variant="outline"
-                    className="flex-1 min-w-[140px] text-sm h-9"
-                    title="Gera o prontuário SOAP automaticamente"
-                  >
-                     <FileText className="w-4 h-4 mr-2" />
-                     Gerar SOAP
-                  </Button>
-                  {templates.length > 0 && (
-                    <Select
-                      value={selectedTemplate}
-                      onValueChange={setSelectedTemplate}
-                      disabled={isProcessing}
-                    >
-                      <SelectTrigger className="flex-1 min-w-[140px] h-9 text-sm">
-                        <SelectValue placeholder="Modelo para IA" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">Sem modelo</SelectItem>
-                        {templates.map((template) => (
-                          <SelectItem key={template.id} value={template.id}>
-                            {template.nome}
-                            {template.is_medisoap_public && " 🌐"}
-                            {template.is_public_org && !template.is_medisoap_public && " 👥"}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
                   <div className="flex items-center space-x-2 border p-2 rounded-md bg-white">
                     <Switch
                         id="confidential-mode"
