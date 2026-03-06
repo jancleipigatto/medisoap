@@ -16,6 +16,7 @@ import PatientSelector from "./PatientSelector";
 import PatientFormDialog from "@/components/patients/PatientFormDialog";
 import TemplatePickerDialog from "./TemplatePickerDialog";
 import CID11Dialog from "./CID11Dialog";
+import PatientHistoryDrawer from "./PatientHistoryDrawer";
 import ToolsSidebar from "../tools/ToolsSidebar";
 import DocumentsSidebar from "../medical/DocumentsSidebar";
 import GestationalAgeCalculator from "../tools/GestationalAgeCalculator";
