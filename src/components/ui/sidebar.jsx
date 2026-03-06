@@ -441,14 +441,16 @@ const sidebarMenuButtonVariants = cva(
   }
 )
 
-const SidebarMenuButton = React.forwardRef(function SidebarMenuButton(
-  { asChild, isActive, variant, size, tooltip, className, ...props },
-  ref
-) {
-  asChild = asChild ?? false;
-  isActive = isActive ?? false;
-  variant = variant ?? "default";
-  size = size ?? "default";
+const SidebarMenuButton = React.forwardRef(function SidebarMenuButtonInner(props, ref) {
+  const {
+    asChild = false,
+    isActive = false,
+    variant = "default",
+    size = "default",
+    tooltip,
+    className,
+    ...rest
+  } = props;
 
   const Comp = asChild ? Slot : "button";
   const { isMobile, state } = useSidebar();
@@ -460,7 +462,7 @@ const SidebarMenuButton = React.forwardRef(function SidebarMenuButton(
       data-size={size}
       data-active={isActive}
       className={cn(sidebarMenuButtonVariants({ variant, size }), className)}
-      {...props}
+      {...rest}
     />
   );
 
@@ -468,9 +470,7 @@ const SidebarMenuButton = React.forwardRef(function SidebarMenuButton(
     return button;
   }
 
-  if (typeof tooltip === "string") {
-    tooltip = { children: tooltip };
-  }
+  const tooltipProps = typeof tooltip === "string" ? { children: tooltip } : tooltip;
 
   return (
     <Tooltip>
@@ -479,7 +479,7 @@ const SidebarMenuButton = React.forwardRef(function SidebarMenuButton(
         side="right"
         align="center"
         hidden={state !== "collapsed" || isMobile}
-        {...tooltip}
+        {...tooltipProps}
       />
     </Tooltip>
   );
