@@ -155,7 +155,7 @@ export default function UserProfile() {
   }
 
   return (
-    <div className="p-4 md:p-8 bg-gradient-to-br from-blue-50 to-indigo-50 min-h-screen">
+    <div className="p-4 md:p-8 bg-background min-h-screen">
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center gap-4 mb-6">
           <Button
