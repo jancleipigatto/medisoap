@@ -20,29 +20,48 @@ function stripHtml(html) {
   return tmp.textContent || tmp.innerText || "";
 }
 
+const VITAL_OPTIONS = [
+  { key: "pa",   label: "Pressão Arterial (PA)",       lines: [{ dataKey: "pas", name: "PAS", stroke: "#ef4444" }, { dataKey: "pad", name: "PAD", stroke: "#f97316" }], domain: [40, 220] },
+  { key: "fc",   label: "Frequência Cardíaca (FC)",    lines: [{ dataKey: "fc",  name: "FC",  stroke: "#3b82f6" }], domain: [30, 200] },
+  { key: "fr",   label: "Frequência Respiratória (FR)",lines: [{ dataKey: "fr",  name: "FR",  stroke: "#06b6d4" }], domain: [0, 50]  },
+  { key: "spo2", label: "SpO2 (%)",                    lines: [{ dataKey: "spo2",name: "SpO2",stroke: "#10b981" }], domain: [80, 100]},
+  { key: "temp", label: "Temperatura (°C)",            lines: [{ dataKey: "temp",name: "Temp",stroke: "#f59e0b" }], domain: [34, 42] },
+  { key: "peso", label: "Peso (kg)",                   lines: [{ dataKey: "peso",name: "Peso",stroke: "#8b5cf6" }], domain: undefined},
+  { key: "altura",label: "Altura (cm)",               lines: [{ dataKey: "altura",name: "Altura",stroke: "#64748b" }], domain: undefined},
+  { key: "hgt",  label: "HGT / Glicemia (mg/dL)",     lines: [{ dataKey: "hgt", name: "HGT", stroke: "#ec4899" }], domain: [0, 500] },
+];
+
 function VitalChart({ anamneses }) {
-  const data = anamneses
-    .filter(a => a.triagem_pa || a.triagem_fc || a.triagem_spo2 || a.triagem_temperatura)
+  const allData = anamneses
     .map(a => {
-      const entry = {
-        date: format(new Date(a.data_consulta), "dd/MM/yy", { locale: ptBR }),
-      };
+      const entry = { date: format(new Date(a.data_consulta), "dd/MM/yy", { locale: ptBR }) };
       if (a.triagem_pa) {
         const parts = a.triagem_pa.replace(/\s*(mmhg|mmHg)/i, "").split(/[x\/]/);
-        if (parts.length >= 2) {
-          entry.pas = parseInt(parts[0]);
-          entry.pad = parseInt(parts[1]);
-        }
+        if (parts.length >= 2) { entry.pas = parseInt(parts[0]); entry.pad = parseInt(parts[1]); }
       }
       if (a.triagem_fc) entry.fc = parseInt(a.triagem_fc);
+      if (a.triagem_fr) entry.fr = parseInt(a.triagem_fr);
       if (a.triagem_spo2) entry.spo2 = parseFloat(a.triagem_spo2);
       if (a.triagem_temperatura) entry.temp = parseFloat(a.triagem_temperatura);
       if (a.triagem_peso) entry.peso = parseFloat(a.triagem_peso);
+      if (a.triagem_altura) entry.altura = parseFloat(a.triagem_altura);
+      if (a.triagem_hgt) entry.hgt = parseFloat(a.triagem_hgt);
       return entry;
     })
     .reverse();
 
-  if (data.length === 0) {
+  // Only show options that have at least one data point
+  const availableOptions = VITAL_OPTIONS.filter(opt =>
+    opt.lines.some(l => allData.some(d => d[l.dataKey] != null))
+  );
+
+  const [selectedKey, setSelectedKey] = React.useState(null);
+
+  // Auto-select first available on load
+  const activeKey = selectedKey || availableOptions[0]?.key;
+  const activeOption = VITAL_OPTIONS.find(o => o.key === activeKey);
+
+  if (availableOptions.length === 0) {
     return (
       <div className="py-12 text-center text-gray-400">
         <BarChart2 className="w-8 h-8 mx-auto mb-2 opacity-40" />
@@ -51,67 +70,31 @@ function VitalChart({ anamneses }) {
     );
   }
 
-  const hasPa = data.some(d => d.pas);
-  const hasFc = data.some(d => d.fc);
-  const hasSpo2 = data.some(d => d.spo2);
-  const hasPeso = data.some(d => d.peso);
-
   return (
-    <div className="space-y-6">
-      {hasPa && (
+    <div className="space-y-4">
+      <select
+        value={activeKey}
+        onChange={e => setSelectedKey(e.target.value)}
+        className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-300"
+      >
+        {availableOptions.map(opt => (
+          <option key={opt.key} value={opt.key}>{opt.label}</option>
+        ))}
+      </select>
+
+      {activeOption && (
         <div>
-          <p className="text-xs font-semibold text-gray-600 mb-2">Pressão Arterial (mmHg)</p>
-          <ResponsiveContainer width="100%" height={180}>
-            <LineChart data={data}>
+          <p className="text-xs font-semibold text-gray-600 mb-2">{activeOption.label}</p>
+          <ResponsiveContainer width="100%" height={220}>
+            <LineChart data={allData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-              <YAxis domain={[40, 200]} tick={{ fontSize: 11 }} />
+              <YAxis domain={activeOption.domain} tick={{ fontSize: 11 }} />
               <Tooltip />
-              <Legend iconSize={10} wrapperStyle={{ fontSize: 11 }} />
-              <Line type="monotone" dataKey="pas" name="PAS" stroke="#ef4444" strokeWidth={2} dot={{ r: 4 }} connectNulls />
-              <Line type="monotone" dataKey="pad" name="PAD" stroke="#f97316" strokeWidth={2} dot={{ r: 4 }} connectNulls />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      )}
-      {hasFc && (
-        <div>
-          <p className="text-xs font-semibold text-gray-600 mb-2">Frequência Cardíaca (bpm)</p>
-          <ResponsiveContainer width="100%" height={150}>
-            <LineChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-              <YAxis domain={[40, 180]} tick={{ fontSize: 11 }} />
-              <Tooltip />
-              <Line type="monotone" dataKey="fc" name="FC" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4 }} connectNulls />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      )}
-      {hasSpo2 && (
-        <div>
-          <p className="text-xs font-semibold text-gray-600 mb-2">SpO2 (%)</p>
-          <ResponsiveContainer width="100%" height={150}>
-            <LineChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-              <YAxis domain={[80, 100]} tick={{ fontSize: 11 }} />
-              <Tooltip />
-              <Line type="monotone" dataKey="spo2" name="SpO2" stroke="#10b981" strokeWidth={2} dot={{ r: 4 }} connectNulls />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      )}
-      {hasPeso && (
-        <div>
-          <p className="text-xs font-semibold text-gray-600 mb-2">Peso (kg)</p>
-          <ResponsiveContainer width="100%" height={150}>
-            <LineChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 11 }} />
-              <Tooltip />
-              <Line type="monotone" dataKey="peso" name="Peso" stroke="#8b5cf6" strokeWidth={2} dot={{ r: 4 }} connectNulls />
+              {activeOption.lines.length > 1 && <Legend iconSize={10} wrapperStyle={{ fontSize: 11 }} />}
+              {activeOption.lines.map(l => (
+                <Line key={l.dataKey} type="monotone" dataKey={l.dataKey} name={l.name} stroke={l.stroke} strokeWidth={2} dot={{ r: 4 }} connectNulls />
+              ))}
             </LineChart>
           </ResponsiveContainer>
         </div>
