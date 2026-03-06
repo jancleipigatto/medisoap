@@ -14,6 +14,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import PatientSelector from "./PatientSelector";
 import PatientFormDialog from "@/components/patients/PatientFormDialog";
+import TemplatePickerDialog from "./TemplatePickerDialog";
+import CID11Dialog from "./CID11Dialog";
 import ToolsSidebar from "../tools/ToolsSidebar";
 import DocumentsSidebar from "../medical/DocumentsSidebar";
 import GestationalAgeCalculator from "../tools/GestationalAgeCalculator";
