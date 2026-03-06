@@ -245,31 +245,31 @@ export default function PatientHistoryDrawer({ open, onOpenChange, patient }) {
                         {a.subjetivo && (
                           <div className="bg-green-50 rounded p-3">
                             <p className="font-semibold text-green-700 text-xs mb-1">S - Subjetivo</p>
-                            <p className="text-gray-700 whitespace-pre-wrap">{stripHtml(a.subjetivo)}</p>
+                            <div className="text-gray-700 prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: a.subjetivo }} />
                           </div>
                         )}
                         {a.objetivo && (
                           <div className="bg-blue-50 rounded p-3">
                             <p className="font-semibold text-blue-700 text-xs mb-1">O - Objetivo</p>
-                            <p className="text-gray-700 whitespace-pre-wrap">{stripHtml(a.objetivo)}</p>
+                            <div className="text-gray-700 prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: a.objetivo }} />
                           </div>
                         )}
                         {a.avaliacao && (
                           <div className="bg-purple-50 rounded p-3">
                             <p className="font-semibold text-purple-700 text-xs mb-1">A - Avaliação</p>
-                            <p className="text-gray-700 whitespace-pre-wrap">{stripHtml(a.avaliacao)}</p>
+                            <div className="text-gray-700 prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: a.avaliacao }} />
                           </div>
                         )}
                         {a.plano && (
                           <div className="bg-orange-50 rounded p-3">
                             <p className="font-semibold text-orange-700 text-xs mb-1">P - Plano</p>
-                            <p className="text-gray-700 whitespace-pre-wrap">{stripHtml(a.plano)}</p>
+                            <div className="text-gray-700 prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: a.plano }} />
                           </div>
                         )}
                         {a.texto_original && !a.subjetivo && (
                           <div className="bg-gray-50 rounded p-3">
                             <p className="font-semibold text-gray-600 text-xs mb-1">Texto do Atendimento</p>
-                            <p className="text-gray-700 whitespace-pre-wrap text-xs">{stripHtml(a.texto_original)}</p>
+                            <div className="text-gray-700 prose prose-sm max-w-none text-xs" dangerouslySetInnerHTML={{ __html: a.texto_original }} />
                           </div>
                         )}
                       </div>
