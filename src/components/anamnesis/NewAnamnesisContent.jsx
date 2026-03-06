@@ -1431,6 +1431,12 @@ Retorne JSON com: cabecalho, subjetivo, objetivo, avaliacao, plano.`;
         </DialogContent>
       </Dialog>
 
+      <PatientHistoryDrawer
+        open={showHistoryDrawer}
+        onOpenChange={setShowHistoryDrawer}
+        patient={selectedPatient}
+      />
+
       <TemplatePickerDialog
         open={showTemplateDialog}
         onOpenChange={setShowTemplateDialog}
