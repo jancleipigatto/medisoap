@@ -479,9 +479,17 @@ ${anamnesis.plano || "Não informado"}`;
         </div>
       )}
 
-      <div className="p-4 md:p-8 bg-gradient-to-br from-blue-50 to-indigo-50 min-h-screen pr-36">
+      {/* Mobile header */}
+      <div className="sticky top-0 z-30 bg-background border-b border-border px-4 py-3 md:hidden flex items-center gap-3">
+        <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+          <ArrowLeft className="w-5 h-5" />
+        </Button>
+        <span className="font-semibold text-sm truncate flex-1">{anamnesis?.patient_name}</span>
+      </div>
+
+      <div className="p-4 md:p-8 bg-background min-h-screen pr-4 md:pr-36">
         <div className="max-w-4xl mx-auto">
-          <div className="flex items-center gap-4 mb-6">
+          <div className="hidden md:flex items-center gap-4 mb-6">
             <Button
               variant="outline"
               size="icon"
