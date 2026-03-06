@@ -449,7 +449,7 @@ const SidebarMenuButton = React.forwardRef((
     size = "default",
     tooltip,
     className,
-    ...props // Fixed syntax
+    ...props
   },
   ref
 ) => {
