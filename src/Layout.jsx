@@ -273,7 +273,7 @@ export default function Layout({ children, currentPageName }) {
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-gradient-to-br from-blue-50 to-indigo-50">
         {sidebarOpen && (
-          <Sidebar className="border-r border-gray-200 bg-white">
+          <Sidebar className="hidden md:flex border-r border-gray-200 bg-white">
           <SidebarHeader className="border-b border-gray-200 p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="flex-1" />
