@@ -42,7 +42,7 @@ export default function CIDManagement() {
       const fileExtension = file.name.split('.').pop().toLowerCase();
       
       // Se for arquivo .txt, fazer parse manual
-      if (fileExtension === 'txt') {
+      if (fileExtension === 'txt' || fileExtension === 'csv') {
         const text = await file.text();
         const lines = text.split('\n');
         const cidsToImport = [];
