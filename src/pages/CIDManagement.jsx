@@ -33,82 +33,82 @@ export default function CIDManagement() {
     setLoading(false);
   };
 
+  const [importProgress, setImportProgress] = useState("");
+
   const handleFileImport = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
+    event.target.value = ""; // reset input
 
     setImporting(true);
+    setImportProgress("Lendo arquivo...");
     try {
-      const fileExtension = file.name.split('.').pop().toLowerCase();
+      const text = await file.text();
+      const lines = text.split('\n');
+      const cidsToImport = [];
+
+      // Detecta o header e os índices das colunas
+      // Formato esperado: SUBCAT;CLASSIF;RESTRSEXO;CAUSAOBITO;DESCRICAO;...
+      const headerLine = lines[0].trim();
+      const headerParts = headerLine.split(';').map(h => h.trim().toUpperCase().replace(/[^A-Z]/g, ''));
       
-      // Se for arquivo .txt, fazer parse manual
-      if (fileExtension === 'txt' || fileExtension === 'csv') {
-        const text = await file.text();
-        const lines = text.split('\n');
-        const cidsToImport = [];
+      const idxSubcat = headerParts.findIndex(h => h === 'SUBCAT');
+      const idxRestrsexo = headerParts.findIndex(h => h === 'RESTRSEXO');
+      const idxCausaobito = headerParts.findIndex(h => h === 'CAUSAOBITO');
+      const idxDescricao = headerParts.findIndex(h => h === 'DESCRICAO');
 
-        // Parse do formato: "code"; "description"
-        for (let line of lines) {
-          line = line.trim();
-          if (!line || line.startsWith('"code"')) continue; // Pula header e linhas vazias
-          
-          // Separa por ponto e vírgula
-          const parts = line.split(';').map(p => p.trim().replace(/^"|"$/g, ''));
-          
-          if (parts.length >= 2) {
-                    const codigo = parts[0].trim();
-                    const descricao = parts[1].trim();
-                    const categoria = parts[2]?.trim() || "";
-                    const restrito_sexo = parts[3]?.trim().toUpperCase() === "M" ? "M" : parts[3]?.trim().toUpperCase() === "F" ? "F" : "";
-                    const causa_obito = parts[4]?.trim().toLowerCase() === "sim" || parts[4]?.trim() === "1" || parts[4]?.trim().toLowerCase() === "true";
+      // Fallback: se não encontrar header, assume posições fixas SUBCAT;CLASSIF;RESTRSEXO;CAUSAOBITO;DESCRICAO
+      const useHeader = idxSubcat !== -1 && idxDescricao !== -1;
+      const colSubcat    = useHeader ? idxSubcat    : 0;
+      const colRestrsexo = useHeader ? idxRestrsexo : 2;
+      const colCausaobito= useHeader ? idxCausaobito: 3;
+      const colDescricao = useHeader ? idxDescricao : 4;
 
-                    if (codigo && descricao) {
-                      cidsToImport.push({ codigo, descricao, categoria, restrito_sexo, causa_obito });
-                    }
-                  }
-        }
+      const startLine = useHeader ? 1 : 0;
 
-        if (cidsToImport.length > 0) {
-          await base44.entities.CID.bulkCreate(cidsToImport);
-          await loadCIDs();
-          alert(`${cidsToImport.length} CIDs importados com sucesso!`);
-        } else {
-          alert("Nenhum CID válido encontrado no arquivo");
-        }
-      } else {
-        // Para CSV/XLSX usar a integração
-        const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      for (let i = startLine; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
 
-        const result = await base44.integrations.Core.ExtractDataFromUploadedFile({
-          file_url,
-          json_schema: {
-            type: "object",
-            properties: {
-              items: {
-                type: "array",
-                items: {
-                  type: "object",
-                  properties: {
-                    codigo: { type: "string" },
-                    descricao: { type: "string" },
-                    categoria: { type: "string" }
-                  }
-                }
-              }
-            }
-          }
-        });
+        const parts = line.split(';').map(p => p.trim().replace(/^"|"$/g, ''));
 
-        if (result.status === "success" && result.output?.items) {
-          await base44.entities.CID.bulkCreate(result.output.items);
-          await loadCIDs();
-          alert("CIDs importados com sucesso!");
-        }
+        const codigo = parts[colSubcat]?.trim() || "";
+        const descricao = parts[colDescricao]?.trim() || "";
+        const restrsexo = parts[colRestrsexo]?.trim().toUpperCase() || "";
+        const causaobito = parts[colCausaobito]?.trim() || "";
+
+        if (!codigo || !descricao) continue;
+
+        const restrito_sexo = restrsexo === "M" ? "M" : restrsexo === "F" ? "F" : "";
+        const causa_obito = causaobito === "1" || causaobito.toLowerCase() === "sim" || causaobito.toLowerCase() === "true";
+
+        cidsToImport.push({ codigo, descricao, restrito_sexo, causa_obito });
       }
+
+      if (cidsToImport.length === 0) {
+        alert("Nenhum CID válido encontrado no arquivo.");
+        setImporting(false);
+        setImportProgress("");
+        return;
+      }
+
+      // Importação em lotes de 500 para suportar 13mil+ registros
+      const BATCH_SIZE = 500;
+      let imported = 0;
+      for (let i = 0; i < cidsToImport.length; i += BATCH_SIZE) {
+        const batch = cidsToImport.slice(i, i + BATCH_SIZE);
+        await base44.entities.CID.bulkCreate(batch);
+        imported += batch.length;
+        setImportProgress(`Importando... ${imported} de ${cidsToImport.length}`);
+      }
+
+      await loadCIDs();
+      alert(`${cidsToImport.length} CIDs importados com sucesso!`);
     } catch (error) {
       alert("Erro ao importar arquivo: " + error.message);
     }
     setImporting(false);
+    setImportProgress("");
   };
 
   const handleSave = async () => {
