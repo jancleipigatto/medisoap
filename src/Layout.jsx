@@ -217,6 +217,12 @@ export default function Layout({ children, currentPageName }) {
       permission: "can_access_templates"
     },
     {
+      title: "CIDs 11ª",
+      url: createPageUrl("CID11Search"),
+      icon: Search,
+      permission: "can_access_templates"
+    },
+    {
       title: "Modelos Orientações",
       url: createPageUrl("OrientacoesTemplates"),
       icon: Info,
