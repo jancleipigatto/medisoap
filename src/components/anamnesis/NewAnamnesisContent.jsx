@@ -251,9 +251,19 @@ Retorne JSON com: cabecalho, subjetivo, objetivo, avaliacao, plano.`;
       });
 
       setSoapData(result);
-      
-      const cabecalho = result.cabecalho ? result.cabecalho.trim() + "\n\n" : "";
-      const formattedText = `${cabecalho}S - SUBJETIVO:
+
+      // Processar cabeçalho: cada item # em linha separada
+      let cabecalhoFormatado = "";
+      if (result.cabecalho) {
+        // Divide por "#" e reconstrói cada item em sua própria linha
+        const itens = result.cabecalho
+          .split(/#/)
+          .map(s => s.trim())
+          .filter(s => s.length > 0);
+        cabecalhoFormatado = itens.map(item => `# ${item}`).join("\n") + "\n\n";
+      }
+
+      const formattedText = `${cabecalhoFormatado}S - SUBJETIVO:
 ${result.subjetivo || ''}
 
 O - OBJETIVO:
