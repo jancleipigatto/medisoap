@@ -358,7 +358,7 @@ export default function Layout({ children, currentPageName }) {
 
         <main className="flex-1 flex flex-col">
           {!sidebarOpen && (
-            <div className="fixed left-0 top-1/2 -translate-y-1/2 z-[60]">
+            <div className="fixed left-0 top-1/2 -translate-y-1/2 z-[60] hidden md:flex">
               <button
                 onClick={() => setSidebarOpen(true)}
                 className="bg-white shadow-lg py-4 px-2 rounded-r-lg hover:bg-gray-50 transition-colors duration-200 border-r border-t border-b border-gray-200 flex flex-col items-center gap-2"
@@ -370,19 +370,39 @@ export default function Layout({ children, currentPageName }) {
               </button>
             </div>
           )}
-          <header className="bg-white border-b border-gray-200 px-6 py-4 md:hidden shadow-sm">
-            <div className="flex items-center gap-4">
-              <SidebarTrigger className="hover:bg-gray-100 p-2 rounded-lg transition-colors duration-200" />
-              <div className="flex items-center gap-2">
-                <Stethoscope className="w-5 h-5 text-blue-600" />
-                <h1 className="text-lg font-bold text-gray-900">MediSOAP</h1>
+          <header className="bg-background border-b border-border px-4 py-3 md:hidden shadow-sm sticky top-0 z-40" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 0.75rem)' }}>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 flex-1">
+                <div className="w-7 h-7 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                  <Stethoscope className="w-4 h-4 text-white" />
+                </div>
+                <h1 className="text-base font-bold text-foreground">MediSOAP</h1>
               </div>
             </div>
           </header>
 
-          <div className="flex-1 overflow-auto">
+          <div className="flex-1 overflow-auto pb-20 md:pb-0">
             {children}
           </div>
+
+          {/* Mobile Bottom Tab Bar */}
+          <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border md:hidden flex" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+            {BOTTOM_TABS.map((tab) => {
+              const isActive = location.pathname === tab.url;
+              return (
+                <Link
+                  key={tab.title}
+                  to={tab.url}
+                  className={`flex-1 flex flex-col items-center justify-center py-2 gap-0.5 transition-colors select-none ${
+                    isActive ? 'text-blue-600' : 'text-muted-foreground'
+                  }`}
+                >
+                  <tab.icon className={`w-5 h-5 ${isActive ? 'text-blue-600' : ''}`} />
+                  <span className="text-[10px] font-medium">{tab.title}</span>
+                </Link>
+              );
+            })}
+          </nav>
         </main>
       </div>
     </SidebarProvider>
