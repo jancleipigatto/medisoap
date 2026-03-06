@@ -547,6 +547,18 @@ ${anamnesis.plano || "Não informado"}`;
               </Button>
             </div>
           </div>
+          <div className="md:hidden mb-4">
+            <h1 className="text-xl font-bold text-foreground">{anamnesis.patient_name}</h1>
+            <div className="flex items-center gap-2 mt-1 text-muted-foreground text-sm">
+              <Calendar className="w-4 h-4" />
+              {new Date(anamnesis.data_consulta + 'T12:00:00').toLocaleString("pt-BR", {
+                timeZone: "America/Sao_Paulo",
+                day: "2-digit",
+                month: "long",
+                year: "numeric"
+              })}
+            </div>
+          </div>
 
           <Tabs defaultValue={(() => {
             const urlParams = new URLSearchParams(window.location.search);
