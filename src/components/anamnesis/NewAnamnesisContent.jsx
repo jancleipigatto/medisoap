@@ -1419,7 +1419,7 @@ Retorne JSON com: cabecalho, subjetivo, objetivo, avaliacao, plano.`;
               className="h-14 text-base bg-indigo-600 hover:bg-indigo-700"
               onClick={() => {
                 setShowCidDialog(false);
-                window.open(createPageUrl("CID11Search"), '_blank');
+                setShowCid11Dialog(true);
               }}
             >
               CID - 11
