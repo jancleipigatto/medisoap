@@ -13,7 +13,7 @@ import PrintableDocument from "./PrintableDocument";
 import PatientSelector from "../anamnesis/PatientSelector";
 
 export default function DocumentForm({ tipo, tipoLabel, icon: Icon, templateEntity, patient, dataConsulta: initialData, horarioConsulta: initialHorario, onSuccess }) {
-  // const navigate = useNavigate(); // Removed navigation
+  const navigate = useNavigate();
   const [templates, setTemplates] = useState([]);
   const [patientName, setPatientName] = useState(patient?.nome || "");
   const [dataConsulta, setDataConsulta] = useState(initialData || new Date().toISOString().split('T')[0]);
