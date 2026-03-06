@@ -199,7 +199,7 @@ export default function CIDManagement() {
               <div>
                 <input
                   type="file"
-                  accept=".csv,.xlsx,.txt"
+                  accept=".csv,.txt"
                   onChange={handleFileImport}
                   className="hidden"
                   id="file-upload"
