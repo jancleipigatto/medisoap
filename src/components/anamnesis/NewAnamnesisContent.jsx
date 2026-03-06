@@ -179,22 +179,68 @@ export default function NewAnamnesisContent() {
     setIsProcessing(true);
     
     try {
-      // 1. Preparar Prompt para SOAP
-      let systemPrompt = appSettings?.prompt_prontuario || `Você é um assistente médico especializado. Analise o seguinte texto de um atendimento médico e organize-o no formato SOAP.`;
-      let userContent = `TEXTO DO ATENDIMENTO:\n${textoOriginal}`;
+      // Montar dados de triagem disponíveis (da anamnese salva ou manual)
+      const tData = {
+        pa: anamnesis?.triagem_pa || triageData.pa || "",
+        temp: anamnesis?.triagem_temperatura || triageData.temp || "",
+        peso: anamnesis?.triagem_peso || triageData.peso || "",
+        altura: anamnesis?.triagem_altura || triageData.altura || "",
+        spo2: anamnesis?.triagem_spo2 || triageData.spo2 || "",
+        fc: anamnesis?.triagem_fc || triageData.fc || "",
+        fr: anamnesis?.triagem_fr || triageData.fr || "",
+        hgt: anamnesis?.triagem_hgt || triageData.hgt || "",
+        queixa: anamnesis?.triagem_queixa || triageData.queixa || "",
+      };
+      const triagemLines = [];
+      if (tData.pa) triagemLines.push(`PA: ${tData.pa} mmHg`);
+      if (tData.fc) triagemLines.push(`FC: ${tData.fc} bpm`);
+      if (tData.fr) triagemLines.push(`FR: ${tData.fr} irpm`);
+      if (tData.temp) triagemLines.push(`Temperatura: ${tData.temp}°C`);
+      if (tData.spo2) triagemLines.push(`SpO2: ${tData.spo2}%`);
+      if (tData.peso) triagemLines.push(`Peso: ${tData.peso} kg`);
+      if (tData.altura) triagemLines.push(`Altura: ${tData.altura} cm`);
+      if (tData.hgt) triagemLines.push(`HGT: ${tData.hgt} mg/dL`);
+      const triagemTexto = triagemLines.length > 0 ? `\n\nDADOS DE TRIAGEM (use estes no O - Objetivo):\n${triagemLines.join('\n')}` : "";
 
-      if (!systemPrompt.includes("JSON")) {
-          systemPrompt += `\n\nResponda ESTRITAMENTE com um objeto JSON válido contendo os campos: subjetivo, objetivo, avaliacao, plano. Mantenha a formatação original do texto.`;
-      }
+      // Dados do paciente para contexto
+      const pacienteInfo = selectedPatient ? `\n\nDADOS DO PACIENTE:\nNome: ${selectedPatient.nome}${selectedPatient.data_nascimento ? `\nNascimento: ${selectedPatient.data_nascimento}` : ''}${selectedPatient.comorbidades ? `\nComorbidades: ${selectedPatient.comorbidades}` : ''}${selectedPatient.medicamentos_uso_continuo ? `\nMedicamentos contínuos: ${selectedPatient.medicamentos_uso_continuo}` : ''}` : "";
 
-      const fullPrompt = `${systemPrompt}\n\n${userContent}`;
+      // Prompt customizado do usuário ou padrão detalhado
+      const customPrompt = appSettings?.prompt_prontuario;
 
-      // 2. Chamar LLM
+      const systemPrompt = customPrompt || `Você é um médico assistente especializado em prontuário eletrônico no formato SOAP.`;
+
+      const instrucoes = `
+INSTRUÇÕES PARA GERAÇÃO DO PRONTUÁRIO SOAP:
+
+1. CABEÇALHO obrigatório com informações relevantes do paciente (use apenas as disponíveis):
+   - Comorbidades (ex: "# Comorbidades: HAS, DM2" ou "# Comorbidades: Nega")
+   - MUC - Medicamentos de Uso Contínuo (ex: "# MUC: Losartana 50mg 1x/dia" ou "# MUC: Nega")
+   - Alergias medicamentosas (ex: "# Alergias: Nega atopias medicamentosas")
+   - Cirurgias prévias (ex: "# Cirurgias prévias: Appendicectomia 2010" ou "# Cirurgias prévias: Nega")
+   - Histórico familiar relevante (ex: "# HF: Nega histórico familiar relevante")
+   - Uso de antibiótico nos últimos 3 meses (ex: "# ATB < 3 meses: Nega")
+   Inclua APENAS informações que foram mencionadas no texto. Se algo for negado, escreva "Nega".
+
+2. S - SUBJETIVO: Descrição detalhada da queixa principal, história da doença atual (HDA) com cronologia, qualidade, intensidade, fatores de melhora/piora, sintomas associados. Seja completo e narrativo.
+
+3. O - OBJETIVO: Use os dados de triagem disponíveis (PA, FC, FR, Temperatura, SpO2, Peso, Altura, HGT). Descreva exame físico de forma objetiva e concisa. Ex: "BEG, LOTE, PA: 120/80mmHg, FC: 80bpm, SpO2: 98%..."
+
+4. A - AVALIAÇÃO: Diagnóstico(s) de forma objetiva e direta. Liste as hipóteses diagnósticas. Seja conciso.
+
+5. P - PLANO: Conduta terapêutica de forma objetiva. Liste medicamentos, exames, orientações, retorno. Seja direto e conciso.
+
+Retorne JSON com: cabecalho, subjetivo, objetivo, avaliacao, plano.`;
+
+      const userContent = `TEXTO DO ATENDIMENTO:\n${textoOriginal}${triagemTexto}${pacienteInfo}`;
+      const fullPrompt = `${systemPrompt}\n\n${instrucoes}\n\n${userContent}`;
+
       const result = await base44.integrations.Core.InvokeLLM({
         prompt: fullPrompt,
         response_json_schema: {
           type: "object",
           properties: {
+            cabecalho: { type: "string" },
             subjetivo: { type: "string" },
             objetivo: { type: "string" },
             avaliacao: { type: "string" },
@@ -203,12 +249,10 @@ export default function NewAnamnesisContent() {
         }
       });
 
-      // 3. Atualizar Estados
       setSoapData(result);
       
-      const formattedText = `ATENDIMENTO - FORMATO SOAP
-
-S - SUBJETIVO:
+      const cabecalho = result.cabecalho ? result.cabecalho.trim() + "\n\n" : "";
+      const formattedText = `${cabecalho}S - SUBJETIVO:
 ${result.subjetivo || ''}
 
 O - OBJETIVO:

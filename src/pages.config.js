@@ -51,6 +51,7 @@ import Agenda from './pages/Agenda';
 import AgendaConfig from './pages/AgendaConfig';
 import AnamnesisDetail from './pages/AnamnesisDetail';
 import AtestadoTemplates from './pages/AtestadoTemplates';
+import CID11Search from './pages/CID11Search';
 import CIDManagement from './pages/CIDManagement';
 import CompletarPerfil from './pages/CompletarPerfil';
 import ConfirmAppointment from './pages/ConfirmAppointment';
@@ -82,7 +83,6 @@ import Tools from './pages/Tools';
 import Triagem from './pages/Triagem';
 import UserManagement from './pages/UserManagement';
 import UserProfile from './pages/UserProfile';
-import CID11Search from './pages/CID11Search';
 import __Layout from './Layout.jsx';
 
 
@@ -91,6 +91,7 @@ export const PAGES = {
     "AgendaConfig": AgendaConfig,
     "AnamnesisDetail": AnamnesisDetail,
     "AtestadoTemplates": AtestadoTemplates,
+    "CID11Search": CID11Search,
     "CIDManagement": CIDManagement,
     "CompletarPerfil": CompletarPerfil,
     "ConfirmAppointment": ConfirmAppointment,
@@ -122,7 +123,6 @@ export const PAGES = {
     "Triagem": Triagem,
     "UserManagement": UserManagement,
     "UserProfile": UserProfile,
-    "CID11Search": CID11Search,
 }
 
 export const pagesConfig = {

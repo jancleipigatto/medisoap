@@ -329,7 +329,7 @@ export default function Settings() {
               </div>
 
               <div>
-                <Label htmlFor="prompt">Prompt para Prontuário Eletrônico com IA</Label>
+                <Label htmlFor="prompt">Prompt para Prontuário SOAP - AI</Label>
                 <Textarea
                   id="prompt"
                   placeholder="Digite o prompt que será usado para converter o texto em prontuário eletrônico..."

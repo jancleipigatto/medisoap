@@ -211,7 +211,7 @@ export default function Layout({ children, currentPageName }) {
       permission: "can_access_templates"
     },
     {
-      title: "CIDs Cadastrados",
+      title: "CIDs - 10 Cadastrados",
       url: createPageUrl("CIDManagement"),
       icon: FileText,
       permission: "can_access_templates"
